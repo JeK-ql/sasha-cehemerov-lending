@@ -1,0 +1,26 @@
+export interface CheckoutInput {
+  fullName: string;
+  phone: string;
+  email: string;
+  city: string;
+  cityRef: string;
+  warehouse: string;
+}
+
+export interface WayForPayParams {
+  merchantAccount: string;
+  merchantDomainName: string;
+  merchantSignature: string;
+  orderReference: string;
+  orderDate: number;
+  amount: number;
+  currency: string;
+  productName: string[];
+  productCount: number[];
+  productPrice: number[];
+  clientFirstName: string;
+  clientLastName: string;
+  clientEmail: string;
+  clientPhone: string;
+  language: string;
+}
