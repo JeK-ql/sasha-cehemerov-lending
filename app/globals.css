@@ -33,7 +33,7 @@ a { color: inherit; }
 }
 
 .display {
-  font-family: var(--font-archivo), sans-serif;
+  font-family: var(--font-display), sans-serif;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.01em;
