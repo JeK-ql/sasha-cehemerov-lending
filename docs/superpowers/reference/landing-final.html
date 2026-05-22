@@ -1,295 +1,790 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sasha Chemerov — Фінальний макет</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;800;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{ --bg:#FAFAFA; --ink:#0D0D0D; --red:#F14933; --grey:#7A7A7A; }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#c9c9c6;color:#1c1c1c;font-family:'Inter',system-ui,sans-serif;
-       -webkit-font-smoothing:antialiased;line-height:1.5;padding-bottom:128px}
-  .wrap{max-width:1280px;margin:0 auto;padding:0 36px}
-  .mono{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em}
-  .poster{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;line-height:.82;letter-spacing:.004em}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sasha Chemerov — Фінальний макет</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;800;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Oswald:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #fafafa;
+        --ink: #0d0d0d;
+        --red: #f14933;
+        --grey: #7a7a7a;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #c9c9c6;
+        color: #1c1c1c;
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.5;
+        padding-bottom: 128px;
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 36px;
+      }
+      .mono {
+        font-family: "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      .poster {
+        font-family: "Oswald", sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        line-height: 0.82;
+        letter-spacing: 0.004em;
+      }
 
-  .pgtop{background:#0e0e0e;color:#eee;position:sticky;top:0;z-index:50}
-  .pgtop .wrap{display:flex;justify-content:space-between;align-items:center;padding:15px 36px;font-size:11px}
-  .pgtop .dot{color:var(--red)}
-  .lead{padding:34px 0 4px}
-  .lead h1{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:24px;color:#111}
-  .lead p{max-width:680px;margin-top:8px;font-size:13.5px;color:#444}
-  .sh{display:flex;gap:12px;align-items:center;margin:40px 0 20px;font-size:11px;color:#333}
-  .sh .n{color:var(--red);font-weight:700}.sh .ln{flex:1;height:2px;background:#0d0d0d}
+      .pgtop {
+        background: #0e0e0e;
+        color: #eee;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .pgtop .wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 36px;
+        font-size: 11px;
+      }
+      .pgtop .dot {
+        color: var(--red);
+      }
+      .lead {
+        padding: 34px 0 4px;
+      }
+      .lead h1 {
+        font-family: "Archivo";
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 24px;
+        color: #111;
+      }
+      .lead p {
+        max-width: 680px;
+        margin-top: 8px;
+        font-size: 13.5px;
+        color: #444;
+      }
+      .sh {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin: 40px 0 20px;
+        font-size: 11px;
+        color: #333;
+      }
+      .sh .n {
+        color: var(--red);
+        font-weight: 700;
+      }
+      .sh .ln {
+        flex: 1;
+        height: 2px;
+        background: #0d0d0d;
+      }
 
-  /* ============ shared site type ============ */
-  .siteLogo .a{font-size:8px;letter-spacing:.18em;color:var(--ink);font-family:'IBM Plex Mono',monospace;display:block}
-  .siteLogo .b{font-family:'Archivo';font-weight:900;letter-spacing:.01em;color:var(--ink)}
+      /* ============ shared site type ============ */
+      .siteLogo .a {
+        font-size: 8px;
+        letter-spacing: 0.18em;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", monospace;
+        display: block;
+      }
+      .siteLogo .b {
+        font-family: "Archivo";
+        font-weight: 900;
+        letter-spacing: 0.01em;
+        color: var(--ink);
+      }
 
-  /* ============ MOBILE ============ */
-  .phone{width:366px;height:752px;background:#000;border-radius:46px;padding:11px;flex:none;
-    box-shadow:0 32px 64px rgba(0,0,0,.4)}
-  .pscreen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--bg)}
-  .pnotch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:104px;height:21px;
-    background:#000;border-radius:13px;z-index:20}
-  .pscroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
-  .pscroll::-webkit-scrollbar{width:0}
+      /* ============ MOBILE ============ */
+      .phone {
+        width: 366px;
+        height: 752px;
+        background: #000;
+        border-radius: 46px;
+        padding: 11px;
+        flex: none;
+        box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+      }
+      .pscreen {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 36px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .pnotch {
+        position: absolute;
+        top: 9px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 104px;
+        height: 21px;
+        background: #000;
+        border-radius: 13px;
+        z-index: 20;
+      }
+      .pscroll {
+        position: absolute;
+        inset: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .pscroll::-webkit-scrollbar {
+        width: 0;
+      }
 
-  .pHead{position:sticky;top:0;height:50px;display:flex;justify-content:space-between;align-items:center;
-    padding:0 15px;background:rgba(250,250,250,.92);backdrop-filter:blur(6px);
-    border-bottom:1.5px solid var(--ink);z-index:15}
-  .pHead .siteLogo .b{font-size:12px}
-  .pHead .drop{font-size:7.5px;color:var(--grey);font-family:'IBM Plex Mono',monospace;
-    letter-spacing:.1em;text-align:right;line-height:1.3}
+      .pHead {
+        position: sticky;
+        top: 0;
+        height: 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 15px;
+        background: rgba(250, 250, 250, 0.92);
+        backdrop-filter: blur(6px);
+        border-bottom: 1.5px solid var(--ink);
+        z-index: 15;
+      }
+      .pHead .siteLogo .b {
+        font-size: 12px;
+      }
+      .pHead .drop {
+        font-size: 7.5px;
+        color: var(--grey);
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.1em;
+        text-align: right;
+        line-height: 1.3;
+      }
 
-  .pHero{position:relative;height:498px;overflow:hidden;background:#000}
-  .pHero>img{width:100%;height:100%;object-fit:cover;object-position:50% 32%}
-  .pHero .grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.95) 4%,rgba(0,0,0,0) 52%)}
-  .pHero .ttl{position:absolute;left:16px;right:16px;bottom:20px;z-index:3}
-  .pHero .ttl div{font-size:43px;color:#fff}
-  .pHero .ttl .r{color:var(--red)}
-  .pHero .cue{position:absolute;left:16px;top:64px;z-index:3;font-size:8px;color:#d6d6d6;
-    font-family:'IBM Plex Mono',monospace;letter-spacing:.16em}
+      .pHero {
+        position: relative;
+        height: 498px;
+        overflow: hidden;
+        background: #000;
+      }
+      .pHero > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 32%;
+      }
+      .pHero .grad {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.95) 4%,
+          rgba(0, 0, 0, 0) 52%
+        );
+      }
+      .pHero .ttl {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 20px;
+        z-index: 3;
+      }
+      .pHero .ttl div {
+        font-size: 43px;
+        color: #fff;
+      }
+      .pHero .ttl .r {
+        color: var(--red);
+      }
+      .pHero .cue {
+        position: absolute;
+        left: 16px;
+        top: 64px;
+        z-index: 3;
+        font-size: 8px;
+        color: #d6d6d6;
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.16em;
+      }
 
-  .pGal{background:var(--bg);padding:20px 0 24px}
-  .pGlabel{display:flex;justify-content:space-between;padding:0 16px 12px;font-size:8.5px;color:var(--grey);
-    font-family:'IBM Plex Mono',monospace;letter-spacing:.12em}
-  .pStage{position:relative;width:100%;aspect-ratio:3/2;background:#000;overflow:hidden}
-  .pStage .fr{position:absolute;inset:0;opacity:0;transform:scale(1.05);
-    transition:opacity .7s ease,transform .7s ease}
-  .pStage .fr.on{opacity:1;transform:scale(1)}
-  .pStage .fr img{width:100%;height:100%;object-fit:cover}
-  .pBar{height:2px;background:#e2e2e2}
-  .pBar i{display:block;height:100%;width:0;background:var(--red);animation:fill 2.8s linear infinite}
-  @keyframes fill{from{width:0}to{width:100%}}
-  .pGcap{display:flex;justify-content:space-between;padding:9px 16px 0;font-size:8.5px;color:var(--grey);
-    font-family:'IBM Plex Mono',monospace;letter-spacing:.1em}
+      .pGal {
+        background: var(--bg);
+        padding: 20px 0 24px;
+      }
+      .pGlabel {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 16px 12px;
+        font-size: 8.5px;
+        color: var(--grey);
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.12em;
+      }
+      .pStage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3/2;
+        background: #000;
+        overflow: hidden;
+      }
+      .pStage .fr {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transform: scale(1.05);
+        transition:
+          opacity 0.7s ease,
+          transform 0.7s ease;
+      }
+      .pStage .fr.on {
+        opacity: 1;
+        transform: scale(1);
+      }
+      .pStage .fr img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .pBar {
+        height: 2px;
+        background: #e2e2e2;
+      }
+      .pBar i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--red);
+        animation: fill 2.8s linear infinite;
+      }
+      @keyframes fill {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+      .pGcap {
+        display: flex;
+        justify-content: space-between;
+        padding: 9px 16px 0;
+        font-size: 8.5px;
+        color: var(--grey);
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.1em;
+      }
 
-  .pInfo{padding:22px 16px 26px;background:var(--bg);border-top:1.5px solid var(--ink);margin-top:8px}
-  .pInfo .spec{font-size:8.5px;color:var(--grey);font-family:'IBM Plex Mono',monospace;
-    letter-spacing:.09em;line-height:1.7}
-  .pFoot{padding:16px;background:var(--bg);font-size:8px;color:#b3b3b3;
-    font-family:'IBM Plex Mono',monospace;letter-spacing:.08em;text-align:center}
-  .pSpacer{height:62px}
-  .pCta{position:absolute;bottom:0;left:0;right:0;height:62px;background:var(--red);color:#fff;
-    display:flex;align-items:center;justify-content:center;gap:10px;z-index:18;
-    font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;font-size:13px}
-  .pCta .px{font-weight:500}
+      .pInfo {
+        padding: 22px 16px 26px;
+        background: var(--bg);
+        border-top: 1.5px solid var(--ink);
+        margin-top: 8px;
+      }
+      .pInfo .spec {
+        font-size: 8.5px;
+        color: var(--grey);
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.09em;
+        line-height: 1.7;
+      }
+      .pFoot {
+        padding: 16px;
+        background: var(--bg);
+        font-size: 8px;
+        color: #b3b3b3;
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+      .pSpacer {
+        height: 62px;
+      }
+      .pCta {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 62px;
+        background: var(--red);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        z-index: 18;
+        font-family: "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+      }
+      .pCta .px {
+        font-weight: 500;
+      }
 
-  /* ============ DESKTOP ============ */
-  .browser{width:100%;background:#0e0e0e;border-radius:14px;padding:10px;
-    box-shadow:0 32px 64px rgba(0,0,0,.36)}
-  .bbar{display:flex;gap:6px;padding:3px 6px 10px}
-  .bbar i{width:11px;height:11px;border-radius:50%;background:#3a3a3a}
-  .dsite{background:var(--bg);overflow:hidden}
+      /* ============ DESKTOP ============ */
+      .browser {
+        width: 100%;
+        background: #0e0e0e;
+        border-radius: 14px;
+        padding: 10px;
+        box-shadow: 0 32px 64px rgba(0, 0, 0, 0.36);
+      }
+      .bbar {
+        display: flex;
+        gap: 6px;
+        padding: 3px 6px 10px;
+      }
+      .bbar i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #3a3a3a;
+      }
+      .dsite {
+        background: var(--bg);
+        overflow: hidden;
+      }
 
-  .dHead{position:relative;z-index:6;display:flex;justify-content:space-between;align-items:center;
-    padding:18px 40px;border-bottom:1.5px solid var(--ink);background:var(--bg)}
-  .dHead .siteLogo .b{font-size:18px}
-  .dHead .drop{font-size:10px;color:var(--grey);font-family:'IBM Plex Mono',monospace;letter-spacing:.14em}
+      .dHead {
+        position: relative;
+        z-index: 6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 40px;
+        border-bottom: 1.5px solid var(--ink);
+        background: var(--bg);
+      }
+      .dHead .siteLogo .b {
+        font-size: 18px;
+      }
+      .dHead .drop {
+        font-size: 10px;
+        color: var(--grey);
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.14em;
+      }
 
-  .dHero{position:relative;height:612px;overflow:hidden;background:#000}
-  .dHero>img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
-  .dHero .grad{position:absolute;inset:0;
-    background:linear-gradient(to top,rgba(0,0,0,.92) 2%,rgba(0,0,0,0) 46%),
-               linear-gradient(to right,rgba(0,0,0,.55),rgba(0,0,0,0) 55%)}
-  .dHero .ttl{position:absolute;left:38px;bottom:34px;z-index:3}
-  .dHero .ttl div{font-size:118px;color:#fff}
-  .dHero .ttl .r{color:var(--red)}
-  .dHero .cue{position:absolute;right:38px;bottom:40px;z-index:3;font-size:10px;color:#d6d6d6;
-    font-family:'IBM Plex Mono',monospace;letter-spacing:.18em}
+      .dHero {
+        position: relative;
+        height: 612px;
+        overflow: hidden;
+        background: #000;
+      }
+      .dHero > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 30%;
+      }
+      .dHero .grad {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(to top, rgba(0, 0, 0, 0.92) 2%, rgba(0, 0, 0, 0) 46%),
+          linear-gradient(to right, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 55%);
+      }
+      .dHero .ttl {
+        position: absolute;
+        left: 38px;
+        bottom: 34px;
+        z-index: 3;
+      }
+      .dHero .ttl div {
+        font-size: 118px;
+        color: #fff;
+      }
+      .dHero .ttl .r {
+        color: var(--red);
+      }
+      .dHero .cue {
+        position: absolute;
+        right: 38px;
+        bottom: 40px;
+        z-index: 3;
+        font-size: 10px;
+        color: #d6d6d6;
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.18em;
+      }
 
-  .dGal{padding:64px 40px 60px;background:var(--bg)}
-  .dGtop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:30px}
-  .dGtop h2{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:30px;letter-spacing:-.01em}
-  .dGtop .hint{font-size:10px;color:var(--grey);font-family:'IBM Plex Mono',monospace;letter-spacing:.12em}
-  .dip{display:flex;gap:24px}
-  .plate{position:relative;flex:1;aspect-ratio:3/2;background:#000;overflow:hidden;cursor:crosshair}
-  .plate>img,.plate .reveal{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-    transition:opacity .45s ease}
-  .plate .reveal{opacity:0}
-  .plate:hover>img{opacity:0}
-  .plate:hover .reveal{opacity:1}
-  .plate .tag{position:absolute;top:13px;left:13px;z-index:3;font-family:'IBM Plex Mono',monospace;
-    font-size:9px;letter-spacing:.12em;color:#fff;background:rgba(0,0,0,.5);padding:5px 9px}
-  .plate .hov{position:absolute;bottom:13px;left:50%;transform:translateX(-50%);z-index:3;
-    font-family:'IBM Plex Mono',monospace;font-size:9px;color:#fff;background:var(--red);padding:5px 10px}
+      .dGal {
+        padding: 64px 40px 60px;
+        background: var(--bg);
+      }
+      .dGtop {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 30px;
+      }
+      .dGtop h2 {
+        font-family: "Archivo";
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 30px;
+        letter-spacing: -0.01em;
+      }
+      .dGtop .hint {
+        font-size: 10px;
+        color: var(--grey);
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.12em;
+      }
+      .dip {
+        display: flex;
+        gap: 24px;
+      }
+      .plate {
+        position: relative;
+        flex: 1;
+        aspect-ratio: 3/2;
+        background: #000;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .plate > img,
+      .plate .reveal {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.45s ease;
+      }
+      .plate .reveal {
+        opacity: 0;
+      }
+      .plate:hover > img {
+        opacity: 0;
+      }
+      .plate:hover .reveal {
+        opacity: 1;
+      }
+      .plate .tag {
+        position: absolute;
+        top: 13px;
+        left: 13px;
+        z-index: 3;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 5px 9px;
+      }
+      .plate .hov {
+        position: absolute;
+        bottom: 13px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        color: #fff;
+        background: var(--red);
+        padding: 5px 10px;
+      }
 
-  .dInfo{padding:0 40px 0;background:var(--bg)}
-  .dSpec{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;padding:14px 0 40px;
-    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--grey);letter-spacing:.1em}
-  .dCta{display:block;width:100%;border:none;background:var(--red);color:#fff;cursor:pointer;
-    font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-    font-size:48px;padding:34px 20px;transition:background .25s,color .25s}
-  .dCta:hover{background:var(--ink)}
-  .dFoot{display:flex;justify-content:space-between;padding:20px 40px;background:var(--bg);
-    border-top:1.5px solid var(--ink);font-family:'IBM Plex Mono',monospace;font-size:9px;
-    color:#b3b3b3;letter-spacing:.1em}
+      .dInfo {
+        padding: 0 40px 0;
+        background: var(--bg);
+      }
+      .dSpec {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        padding: 14px 0 40px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--grey);
+        letter-spacing: 0.1em;
+      }
+      .dCta {
+        display: block;
+        width: 100%;
+        border: none;
+        background: var(--red);
+        color: #fff;
+        cursor: pointer;
+        font-family: "Oswald", sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-size: 48px;
+        padding: 34px 20px;
+        transition:
+          background 0.25s,
+          color 0.25s;
+      }
+      .dCta:hover {
+        background: var(--ink);
+      }
+      .dFoot {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 40px;
+        background: var(--bg);
+        border-top: 1.5px solid var(--ink);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        color: #b3b3b3;
+        letter-spacing: 0.1em;
+      }
 
-  .modnote{margin-top:16px;font-size:12.5px;color:#444;border-left:3px solid var(--red);padding-left:14px}
-  .modnote b{color:#111}
+      .modnote {
+        margin-top: 16px;
+        font-size: 12.5px;
+        color: #444;
+        border-left: 3px solid var(--red);
+        padding-left: 14px;
+      }
+      .modnote b {
+        color: #111;
+      }
 
-  .bar{position:fixed;left:0;right:0;bottom:0;background:#000;border-top:4px solid var(--red);z-index:60}
-  .bar .wrap{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px 36px}
-  .bar .q{font-size:12.5px;color:#ddd;line-height:1.5}
-  .bar .q b{color:var(--red)}
-  .bar .step{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:#777;white-space:nowrap}
+      .bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #000;
+        border-top: 4px solid var(--red);
+        z-index: 60;
+      }
+      .bar .wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 36px;
+      }
+      .bar .q {
+        font-size: 12.5px;
+        color: #ddd;
+        line-height: 1.5;
+      }
+      .bar .q b {
+        color: var(--red);
+      }
+      .bar .step {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: #777;
+        white-space: nowrap;
+      }
 
-  @media(max-width:1080px){ .dHero .ttl div{font-size:64px} .dCta{font-size:30px} }
-</style>
-</head>
-<body>
-
-<div class="pgtop">
-  <div class="wrap">
-    <span class="mono">SASHA CHEMEROV · ФІНАЛЬНИЙ МАКЕТ</span>
-    <span class="mono"><span class="dot">●</span>&nbsp; ГОЛОВНА — РЕАЛЬНІ ФОТО</span>
-  </div>
-</div>
-
-<div class="wrap lead">
-  <h1>Зібрав з твоїми фото</h1>
-  <p>Усі 5 згенерованих кадрів — у макеті. Зліва мобільна версія (скрол усередині телефону,
-     слайдер сам крутиться), праворуч нижче — десктоп (наведи на фото товару — зʼявиться Чемеров).</p>
-</div>
-
-<!-- ===== MOBILE ===== -->
-<div class="wrap">
-  <div class="sh"><span class="n mono">01</span><span class="mono">МОБІЛЬНА — 90% ТРАФІКУ</span><span class="ln"></span></div>
-
-  <div class="phone">
-    <div class="pscreen">
-      <div class="pnotch"></div>
-      <div class="pscroll">
-
-        <div class="pHead">
-          <div class="siteLogo"><span class="a">димна суміш</span><span class="b">САША ЧЄМЄРОВ</span></div>
-          <div class="drop">DROP 01<br>ONE SIZE</div>
-        </div>
-
-        <div class="pHero">
-          <img src="/files/r-hero.jpg" alt="">
-          <div class="grad"></div>
-          <div class="cue">↓ АРТЕФАКТ</div>
-          <div class="ttl poster">
-            <div>TOO MUCH</div><div>ЯРОМ</div>
-            <div>TOO MUCH</div><div class="r">ДОЛИНОЮ</div>
-          </div>
-        </div>
-
-        <div class="pGal">
-          <div class="pGlabel"><span>АРТЕФАКТ — 01</span><span>АВТО-СЛАЙДЕР ●</span></div>
-          <div class="pStage">
-            <div class="fr on"><img src="/files/r-front.jpg" alt=""></div>
-            <div class="fr"><img src="/files/r-back.jpg" alt=""></div>
-            <div class="fr"><img src="/files/r-artist-front.jpg" alt=""></div>
-            <div class="fr"><img src="/files/r-artist-back.jpg" alt=""></div>
-          </div>
-          <div class="pBar"><i></i></div>
-          <div class="pGcap"><span id="mcap">ПЕРЕД</span><span id="mnum">01 / 04</span></div>
-        </div>
-
-        <div class="pInfo">
-          <div class="spec">
-            HEAVYWEIGHT COTTON · 100% БАВОВНА<br>
-            OVERSIZE · ОДИН РОЗМІР<br>
-            ДОСТАВКА — НОВА ПОШТА · ОПЛАТА — WAYFORPAY
-          </div>
-        </div>
-        <div class="pFoot">ДИМНА СУМІШ © 2026 — TOO MUCH ЯРОМ TOO MUCH ДОЛИНОЮ</div>
-        <div class="pSpacer"></div>
+      @media (max-width: 1080px) {
+        .dHero .ttl div {
+          font-size: 64px;
+        }
+        .dCta {
+          font-size: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pgtop">
+      <div class="wrap">
+        <span class="mono">SASHA CHEMEROV · ФІНАЛЬНИЙ МАКЕТ</span>
+        <span class="mono"
+          ><span class="dot">●</span>&nbsp; ГОЛОВНА — РЕАЛЬНІ ФОТО</span
+        >
       </div>
-
-      <div class="pCta">ЗАМОВИТИ <span class="px">— 2200&nbsp;₴</span></div>
     </div>
-  </div>
-</div>
 
-<!-- ===== DESKTOP ===== -->
-<div class="wrap">
-  <div class="sh"><span class="n mono">02</span><span class="mono">ДЕСКТОП</span><span class="ln"></span></div>
-
-  <div class="browser">
-    <div class="bbar"><i></i><i></i><i></i></div>
-    <div class="dsite">
-
-      <div class="dHead">
-        <div class="siteLogo"><span class="a">димна суміш</span><span class="b">САША ЧЄМЄРОВ</span></div>
-        <div class="drop">DROP 01 // ONE SIZE (OVERSIZE)</div>
-      </div>
-
-      <div class="dHero">
-        <img src="/files/r-hero.jpg" alt="">
-        <div class="grad"></div>
-        <div class="ttl poster">
-          <div>TOO MUCH ЯРОМ</div>
-          <div>TOO MUCH <span class="r">ДОЛИНОЮ</span></div>
-        </div>
-        <div class="cue">↓ АРТЕФАКТ</div>
-      </div>
-
-      <div class="dGal">
-        <div class="dGtop">
-          <h2>Артефакт</h2>
-          <span class="hint">наведи на кадр → Чемеров у ній</span>
-        </div>
-        <div class="dip">
-          <div class="plate">
-            <img src="/files/r-front.jpg" alt="">
-            <img class="reveal" src="/files/r-artist-front.jpg" alt="">
-            <span class="tag">FRONT</span><span class="hov">НАВЕДИ</span>
-          </div>
-          <div class="plate">
-            <img src="/files/r-back.jpg" alt="">
-            <img class="reveal" src="/files/r-artist-back.jpg" alt="">
-            <span class="tag">BACK</span><span class="hov">НАВЕДИ</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="dInfo">
-        <div class="dSpec">
-          <span>HEAVYWEIGHT COTTON</span><span>100% БАВОВНА</span>
-          <span>OVERSIZE · ОДИН РОЗМІР</span>
-        </div>
-      </div>
-      <button class="dCta">Замовити — 2200&nbsp;₴</button>
-      <div class="dFoot">
-        <span>ДИМНА СУМІШ © 2026</span>
-        <span>НОВА ПОШТА · WAYFORPAY</span>
-      </div>
-
+    <div class="wrap lead">
+      <h1>Зібрав з твоїми фото</h1>
+      <p>
+        Усі 5 згенерованих кадрів — у макеті. Зліва мобільна версія (скрол
+        усередині телефону, слайдер сам крутиться), праворуч нижче — десктоп
+        (наведи на фото товару — зʼявиться Чемеров).
+      </p>
     </div>
-  </div>
 
-  <p class="modnote">Кнопка <b>«Замовити»</b> відкриває чекаут-модалку (чорна, виїзна — мобайл знизу,
-     десктоп збоку). Її покажу окремим макетом — як домовились, наступним кроком.</p>
-</div>
+    <!-- ===== MOBILE ===== -->
+    <div class="wrap">
+      <div class="sh">
+        <span class="n mono">01</span
+        ><span class="mono">МОБІЛЬНА — 90% ТРАФІКУ</span
+        ><span class="ln"></span>
+      </div>
 
-<div class="bar">
-  <div class="wrap">
-    <div class="q">Це головна з реальними фото. Дивись мобайл (скрол + слайдер) і десктоп (ховер).
-       Що відчуваєш — <b>залишаємо</b> чи що правимо?</div>
-    <div class="step">ФІНАЛ · ГОЛОВНА</div>
-  </div>
-</div>
+      <div class="phone">
+        <div class="pscreen">
+          <div class="pnotch"></div>
+          <div class="pscroll">
+            <div class="pHead">
+              <div class="siteLogo">
+                <span class="a">димна суміш</span
+                ><span class="b">САША ЧЄМЄРОВ</span>
+              </div>
+              <div class="drop">DROP 01<br />ONE SIZE</div>
+            </div>
 
-<script>
-  var caps=['ПЕРЕД','СПИНА','ЧЕМЕРОВ · ПЕРЕД','ЧЕМЕРОВ · СПИНА'];
-  var frs=document.querySelectorAll('.pStage .fr');
-  var mc=document.getElementById('mcap'), mn=document.getElementById('mnum');
-  var k=0;
-  setInterval(function(){
-    frs[k].classList.remove('on');
-    k=(k+1)%frs.length;
-    frs[k].classList.add('on');
-    mc.textContent=caps[k];
-    mn.textContent='0'+(k+1)+' / 04';
-  },2800);
-</script>
+            <div class="pHero">
+              <img src="/files/r-hero.webp" alt="" />
+              <div class="grad"></div>
+              <div class="cue">↓ АРТЕФАКТ</div>
+              <div class="ttl poster">
+                <div>TOO MUCH</div>
+                <div>ЯРОМ</div>
+                <div>TOO MUCH</div>
+                <div class="r">ДОЛИНОЮ</div>
+              </div>
+            </div>
 
-</body>
+            <div class="pGal">
+              <div class="pGlabel">
+                <span>АРТЕФАКТ — 01</span><span>АВТО-СЛАЙДЕР ●</span>
+              </div>
+              <div class="pStage">
+                <div class="fr on">
+                  <img src="/files/r-front.webp" alt="" />
+                </div>
+                <div class="fr"><img src="/files/r-back.webp" alt="" /></div>
+                <div class="fr">
+                  <img src="/files/r-artist-front.webp" alt="" />
+                </div>
+                <div class="fr">
+                  <img src="/files/r-artist-back.webp" alt="" />
+                </div>
+              </div>
+              <div class="pBar"><i></i></div>
+              <div class="pGcap">
+                <span id="mcap">ПЕРЕД</span><span id="mnum">01 / 04</span>
+              </div>
+            </div>
+
+            <div class="pInfo">
+              <div class="spec">
+                HEAVYWEIGHT COTTON · 100% БАВОВНА<br />
+                OVERSIZE · ОДИН РОЗМІР<br />
+                ДОСТАВКА — НОВА ПОШТА · ОПЛАТА — WAYFORPAY
+              </div>
+            </div>
+            <div class="pFoot">
+              ДИМНА СУМІШ © 2026 — TOO MUCH ЯРОМ TOO MUCH ДОЛИНОЮ
+            </div>
+            <div class="pSpacer"></div>
+          </div>
+
+          <div class="pCta">ЗАМОВИТИ <span class="px">— 2200&nbsp;₴</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DESKTOP ===== -->
+    <div class="wrap">
+      <div class="sh">
+        <span class="n mono">02</span><span class="mono">ДЕСКТОП</span
+        ><span class="ln"></span>
+      </div>
+
+      <div class="browser">
+        <div class="bbar"><i></i><i></i><i></i></div>
+        <div class="dsite">
+          <div class="dHead">
+            <div class="siteLogo">
+              <span class="a">димна суміш</span
+              ><span class="b">САША ЧЄМЄРОВ</span>
+            </div>
+            <div class="drop">DROP 01 // ONE SIZE (OVERSIZE)</div>
+          </div>
+
+          <div class="dHero">
+            <img src="/files/r-hero.webp" alt="" />
+            <div class="grad"></div>
+            <div class="ttl poster">
+              <div>TOO MUCH ЯРОМ</div>
+              <div>TOO MUCH <span class="r">ДОЛИНОЮ</span></div>
+            </div>
+            <div class="cue">↓ АРТЕФАКТ</div>
+          </div>
+
+          <div class="dGal">
+            <div class="dGtop">
+              <h2>Артефакт</h2>
+              <span class="hint">наведи на кадр → Чемеров у ній</span>
+            </div>
+            <div class="dip">
+              <div class="plate">
+                <img src="/files/r-front.webp" alt="" />
+                <img class="reveal" src="/files/r-artist-front.webp" alt="" />
+                <span class="tag">FRONT</span><span class="hov">НАВЕДИ</span>
+              </div>
+              <div class="plate">
+                <img src="/files/r-back.webp" alt="" />
+                <img class="reveal" src="/files/r-artist-back.webp" alt="" />
+                <span class="tag">BACK</span><span class="hov">НАВЕДИ</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dInfo">
+            <div class="dSpec">
+              <span>HEAVYWEIGHT COTTON</span><span>100% БАВОВНА</span>
+              <span>OVERSIZE · ОДИН РОЗМІР</span>
+            </div>
+          </div>
+          <button class="dCta">Замовити — 2200&nbsp;₴</button>
+          <div class="dFoot">
+            <span>ДИМНА СУМІШ © 2026</span>
+            <span>НОВА ПОШТА · WAYFORPAY</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="modnote">
+        Кнопка <b>«Замовити»</b> відкриває чекаут-модалку (чорна, виїзна —
+        мобайл знизу, десктоп збоку). Її покажу окремим макетом — як домовились,
+        наступним кроком.
+      </p>
+    </div>
+
+    <div class="bar">
+      <div class="wrap">
+        <div class="q">
+          Це головна з реальними фото. Дивись мобайл (скрол + слайдер) і десктоп
+          (ховер). Що відчуваєш — <b>залишаємо</b> чи що правимо?
+        </div>
+        <div class="step">ФІНАЛ · ГОЛОВНА</div>
+      </div>
+    </div>
+
+    <script>
+      var caps = ["ПЕРЕД", "СПИНА", "ЧЕМЕРОВ · ПЕРЕД", "ЧЕМЕРОВ · СПИНА"];
+      var frs = document.querySelectorAll(".pStage .fr");
+      var mc = document.getElementById("mcap"),
+        mn = document.getElementById("mnum");
+      var k = 0;
+      setInterval(function () {
+        frs[k].classList.remove("on");
+        k = (k + 1) % frs.length;
+        frs[k].classList.add("on");
+        mc.textContent = caps[k];
+        mn.textContent = "0" + (k + 1) + " / 04";
+      }, 2800);
+    </script>
+  </body>
 </html>

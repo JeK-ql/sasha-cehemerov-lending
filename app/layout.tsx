@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Montserrat, Oswald, Unbounded, IBM_Plex_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import Script from 'next/script';
 import './globals.css';
 
@@ -9,6 +10,11 @@ const oswald = Oswald({ subsets: ['latin', 'cyrillic'], weight: ['600', '700'], 
 const hero = Unbounded({ subsets: ['latin', 'cyrillic'], weight: ['700', '900'], variable: '--font-hero' });
 const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400', '500'], variable: '--font-mono' });
 
+const germanica = localFont({
+  src: '../public/fonts/Germanica.ttf',
+  variable: '--font-germanica',
+});
+
 export const metadata: Metadata = {
   title: 'too much яром too much долиною — Sasha Chemerov',
   description: 'Дроп 01 — оверсайз-футболка від Саші Чемерова та гурту «Димна Суміш».',
@@ -16,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'too much яром too much долиною — Sasha Chemerov',
     description: 'Дроп 01 — оверсайз-футболка.',
-    images: ['/hero.jpg'],
+    images: ['/hero.webp'],
   },
 };
 
@@ -27,7 +33,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${hero.variable} ${mono.variable}`}>
+    <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${hero.variable} ${mono.variable} ${germanica.variable}`}>
       <body>
         {children}
         <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="lazyOnload" />

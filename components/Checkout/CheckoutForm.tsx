@@ -46,7 +46,7 @@ export function CheckoutForm() {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.order}>
-        <Image src="/front.jpg" alt="" width={54} height={54} className={styles.thumb} />
+        <Image src="/front.webp" alt="" width={54} height={54} className={styles.thumb} />
         <div className={styles.orderInfo}>
           <div className={styles.orderName}>{PRODUCT.name}</div>
           <div className={`${styles.orderMeta} mono`}>OVERSIZE · ОДИН РОЗМІР · ×1</div>

@@ -2,7 +2,7 @@
 .heading { font-size: 30px; margin-bottom: 24px; }
 
 /* slider — лише мобільний */
-.slider { display: block; background: var(--bg); }
+.slider { display: block; }
 .diptych { display: none; }
 @media (min-width: 768px) {
   .slider { display: none; }
@@ -10,14 +10,13 @@
   .gallery { padding: 64px 40px; }
 }
 
-.stage { position: relative; width: 100%; aspect-ratio: 3/2; background: #000; overflow: hidden; }
+.stage { position: relative; width: 100%; aspect-ratio: 4.5/5; ; overflow: hidden; }
 
 /* Crossfade between frames. The outgoing/incoming frames overlap during the
    fade. Slow 2.8s transform produces a majestic "ken burns" cinematic drift. */
 .frame {
   position: absolute; inset: 0;
   opacity: 0;
-  background: var(--bg);
   transform: scale(1.08);
   filter: blur(8px);
   transition: opacity 600ms var(--ease-out),

@@ -14,9 +14,11 @@
   border: none; cursor: pointer;
   background: var(--red); color: #fff;
   font-size: 11px; padding: 9px 17px;
-  transition: background .2s ease;
+  transition: background .25s var(--ease-out), transform .2s var(--ease-out);
+  will-change: transform;
 }
-.buy:hover { background: var(--ink); }
+.buy:hover { background: var(--ink); transform: translateY(-1.5px) scale(1.03); }
+.buy:active { transform: translateY(1px) scale(0.97); }
 @media (min-width: 768px) {
   .header { padding: 18px 100px; }
   .logo { height: 50px; }

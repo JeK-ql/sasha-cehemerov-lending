@@ -1,303 +1,740 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sasha Chemerov — Чекаут-модалка</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;800;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
-<style>
-  :root{ --bg:#FAFAFA; --ink:#0D0D0D; --red:#F14933; --grey:#7A7A7A; }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#c9c9c6;color:#1c1c1c;font-family:'Inter',system-ui,sans-serif;
-       -webkit-font-smoothing:antialiased;line-height:1.5;padding-bottom:128px}
-  .wrap{max-width:1280px;margin:0 auto;padding:0 36px}
-  .mono{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sasha Chemerov — Чекаут-модалка</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;800;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Oswald:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #fafafa;
+        --ink: #0d0d0d;
+        --red: #f14933;
+        --grey: #7a7a7a;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #c9c9c6;
+        color: #1c1c1c;
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.5;
+        padding-bottom: 128px;
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 36px;
+      }
+      .mono {
+        font-family: "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
 
-  .pgtop{background:#0e0e0e;color:#eee;position:sticky;top:0;z-index:50}
-  .pgtop .wrap{display:flex;justify-content:space-between;align-items:center;padding:15px 36px;font-size:11px}
-  .pgtop .dot{color:var(--red)}
-  .lead{padding:34px 0 4px}
-  .lead h1{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:24px;color:#111}
-  .lead p{max-width:700px;margin-top:8px;font-size:13.5px;color:#444}
-  .sh{display:flex;gap:12px;align-items:center;margin:40px 0 20px;font-size:11px;color:#333}
-  .sh .n{color:var(--red);font-weight:700}.sh .ln{flex:1;height:2px;background:#0d0d0d}
-  .showrow{display:flex;gap:50px;flex-wrap:wrap;align-items:flex-start}
-  .cap{flex:1;min-width:240px}
-  .cap .ci{border-left:3px solid var(--red);padding-left:14px;margin-bottom:18px}
-  .cap .ci h4{font-size:11px;letter-spacing:.06em}
-  .cap .ci p{font-size:12.5px;color:#444;margin-top:4px;line-height:1.55}
+      .pgtop {
+        background: #0e0e0e;
+        color: #eee;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .pgtop .wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 36px;
+        font-size: 11px;
+      }
+      .pgtop .dot {
+        color: var(--red);
+      }
+      .lead {
+        padding: 34px 0 4px;
+      }
+      .lead h1 {
+        font-family: "Archivo";
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 24px;
+        color: #111;
+      }
+      .lead p {
+        max-width: 700px;
+        margin-top: 8px;
+        font-size: 13.5px;
+        color: #444;
+      }
+      .sh {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin: 40px 0 20px;
+        font-size: 11px;
+        color: #333;
+      }
+      .sh .n {
+        color: var(--red);
+        font-weight: 700;
+      }
+      .sh .ln {
+        flex: 1;
+        height: 2px;
+        background: #0d0d0d;
+      }
+      .showrow {
+        display: flex;
+        gap: 50px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .cap {
+        flex: 1;
+        min-width: 240px;
+      }
+      .cap .ci {
+        border-left: 3px solid var(--red);
+        padding-left: 14px;
+        margin-bottom: 18px;
+      }
+      .cap .ci h4 {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+      }
+      .cap .ci p {
+        font-size: 12.5px;
+        color: #444;
+        margin-top: 4px;
+        line-height: 1.55;
+      }
 
-  /* ===== shared MODAL content (black, inverted) ===== */
-  .m-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-  .m-head .ttl{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:17px;color:#fff}
-  .m-x{width:30px;height:30px;border:1.5px solid #444;color:#9a9a9a;display:flex;align-items:center;
-    justify-content:center;font-size:14px;cursor:pointer}
-  .m-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:var(--grey);
-    margin-bottom:18px}
+      /* ===== shared MODAL content (black, inverted) ===== */
+      .m-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+      .m-head .ttl {
+        font-family: "Archivo";
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 17px;
+        color: #fff;
+      }
+      .m-x {
+        width: 30px;
+        height: 30px;
+        border: 1.5px solid #444;
+        color: #9a9a9a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .m-sub {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.14em;
+        color: var(--grey);
+        margin-bottom: 18px;
+      }
 
-  .m-order{display:flex;gap:13px;align-items:center;padding:14px 0;
-    border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a}
-  .m-order .th{width:54px;height:54px;background:#000;flex:none;overflow:hidden}
-  .m-order .th img{width:100%;height:100%;object-fit:cover}
-  .m-order .oi{flex:1;min-width:0}
-  .m-order .on{font-size:12px;color:#fff;font-weight:600;line-height:1.3}
-  .m-order .om{font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:var(--grey);
-    letter-spacing:.08em;margin-top:4px}
-  .m-order .op{font-family:'Oswald',sans-serif;font-weight:700;font-size:22px;color:#fff}
+      .m-order {
+        display: flex;
+        gap: 13px;
+        align-items: center;
+        padding: 14px 0;
+        border-top: 1px solid #2a2a2a;
+        border-bottom: 1px solid #2a2a2a;
+      }
+      .m-order .th {
+        width: 54px;
+        height: 54px;
+        background: #000;
+        flex: none;
+        overflow: hidden;
+      }
+      .m-order .th img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .m-order .oi {
+        flex: 1;
+        min-width: 0;
+      }
+      .m-order .on {
+        font-size: 12px;
+        color: #fff;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .m-order .om {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8.5px;
+        color: var(--grey);
+        letter-spacing: 0.08em;
+        margin-top: 4px;
+      }
+      .m-order .op {
+        font-family: "Oswald", sans-serif;
+        font-weight: 700;
+        font-size: 22px;
+        color: #fff;
+      }
 
-  .m-block{margin-top:24px}
-  .m-blabel{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;color:#fff;
-    margin-bottom:16px;display:flex;gap:9px}
-  .m-blabel b{color:var(--red);font-weight:500}
+      .m-block {
+        margin-top: 24px;
+      }
+      .m-blabel {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: #fff;
+        margin-bottom: 16px;
+        display: flex;
+        gap: 9px;
+      }
+      .m-blabel b {
+        color: var(--red);
+        font-weight: 500;
+      }
 
-  .fld{margin-bottom:20px;position:relative}
-  .fld .fl{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.13em;color:var(--grey);
-    display:block;margin-bottom:9px}
-  .fld .fi{border-bottom:1.5px solid #5a5a5a;padding-bottom:9px;font-size:15px;color:#fff;
-    display:flex;align-items:baseline;gap:3px}
-  .fld .fi .ph{color:#5c5c5c}
-  .fld.filled .fi{border-color:#fff}
-  .fld.focus .fi{border-color:var(--red)}
-  .fld.focus .caret{width:2px;height:17px;background:var(--red);display:inline-block;
-    animation:bl 1s steps(1) infinite}
-  @keyframes bl{50%{opacity:0}}
-  .fld .pre{color:var(--grey)}
-  .fld .fh{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.08em;
-    color:#6a6a6a;margin-top:8px;display:flex;gap:6px;align-items:center}
-  .fld .fh::before{content:"";width:5px;height:5px;background:var(--red);flex:none}
+      .fld {
+        margin-bottom: 20px;
+        position: relative;
+      }
+      .fld .fl {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.13em;
+        color: var(--grey);
+        display: block;
+        margin-bottom: 9px;
+      }
+      .fld .fi {
+        border-bottom: 1.5px solid #5a5a5a;
+        padding-bottom: 9px;
+        font-size: 15px;
+        color: #fff;
+        display: flex;
+        align-items: baseline;
+        gap: 3px;
+      }
+      .fld .fi .ph {
+        color: #5c5c5c;
+      }
+      .fld.filled .fi {
+        border-color: #fff;
+      }
+      .fld.focus .fi {
+        border-color: var(--red);
+      }
+      .fld.focus .caret {
+        width: 2px;
+        height: 17px;
+        background: var(--red);
+        display: inline-block;
+        animation: bl 1s steps(1) infinite;
+      }
+      @keyframes bl {
+        50% {
+          opacity: 0;
+        }
+      }
+      .fld .pre {
+        color: var(--grey);
+      }
+      .fld .fh {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8px;
+        letter-spacing: 0.08em;
+        color: #6a6a6a;
+        margin-top: 8px;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .fld .fh::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        background: var(--red);
+        flex: none;
+      }
 
-  .ac{position:absolute;left:0;right:0;top:100%;margin-top:2px;background:#161616;
-    border:1px solid #303030;z-index:5}
-  .ac .ai{padding:10px 12px;font-size:13px;color:#cfcfcf;border-bottom:1px solid #242424;
-    display:flex;justify-content:space-between}
-  .ac .ai:last-child{border-bottom:none}
-  .ac .ai.hot{background:#1f1f1f;color:#fff}
-  .ac .ai .t{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--grey)}
+      .ac {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100%;
+        margin-top: 2px;
+        background: #161616;
+        border: 1px solid #303030;
+        z-index: 5;
+      }
+      .ac .ai {
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #cfcfcf;
+        border-bottom: 1px solid #242424;
+        display: flex;
+        justify-content: space-between;
+      }
+      .ac .ai:last-child {
+        border-bottom: none;
+      }
+      .ac .ai.hot {
+        background: #1f1f1f;
+        color: #fff;
+      }
+      .ac .ai .t {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        color: var(--grey);
+      }
 
-  .m-pay{width:100%;background:#fff;color:var(--ink);border:none;cursor:pointer;
-    font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
-    font-size:20px;padding:19px;margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:2px}
-  .m-pay .wp{font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:9px;letter-spacing:.12em;color:#555}
-  .m-secure{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:var(--grey);
-    letter-spacing:.09em;margin-top:13px}
+      .m-pay {
+        width: 100%;
+        background: #fff;
+        color: var(--ink);
+        border: none;
+        cursor: pointer;
+        font-family: "Oswald", sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-size: 20px;
+        padding: 19px;
+        margin-top: 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .m-pay .wp {
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 400;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        color: #555;
+      }
+      .m-secure {
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8.5px;
+        color: var(--grey);
+        letter-spacing: 0.09em;
+        margin-top: 13px;
+      }
 
-  /* ===== MOBILE phone ===== */
-  .phone{width:366px;height:752px;background:#000;border-radius:46px;padding:11px;flex:none;
-    box-shadow:0 32px 64px rgba(0,0,0,.4)}
-  .pscreen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#000}
-  .dimSite{position:absolute;inset:0}
-  .dimSite img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;filter:brightness(.34)}
-  .dimSite::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.55)}
-  .sheet{position:absolute;left:0;right:0;bottom:0;top:40px;background:var(--ink);
-    border-radius:24px 24px 0 0;box-shadow:0 -20px 50px rgba(0,0,0,.6);
-    display:flex;flex-direction:column}
-  .grab{width:38px;height:4px;background:#3a3a3a;border-radius:3px;margin:9px auto 2px}
-  .sheetScroll{flex:1;overflow-y:auto;padding:8px 22px 26px}
-  .sheetScroll::-webkit-scrollbar{width:0}
+      /* ===== MOBILE phone ===== */
+      .phone {
+        width: 366px;
+        height: 752px;
+        background: #000;
+        border-radius: 46px;
+        padding: 11px;
+        flex: none;
+        box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+      }
+      .pscreen {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 36px;
+        overflow: hidden;
+        background: #000;
+      }
+      .dimSite {
+        position: absolute;
+        inset: 0;
+      }
+      .dimSite img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 30%;
+        filter: brightness(0.34);
+      }
+      .dimSite::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+      }
+      .sheet {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 40px;
+        background: var(--ink);
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: column;
+      }
+      .grab {
+        width: 38px;
+        height: 4px;
+        background: #3a3a3a;
+        border-radius: 3px;
+        margin: 9px auto 2px;
+      }
+      .sheetScroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 22px 26px;
+      }
+      .sheetScroll::-webkit-scrollbar {
+        width: 0;
+      }
 
-  /* ===== DESKTOP browser ===== */
-  .browser{width:100%;background:#0e0e0e;border-radius:14px;padding:10px;box-shadow:0 32px 64px rgba(0,0,0,.36)}
-  .bbar{display:flex;gap:6px;padding:3px 6px 10px}
-  .bbar i{width:11px;height:11px;border-radius:50%;background:#3a3a3a}
-  .dsite{position:relative;height:660px;overflow:hidden;background:#000}
-  .dsite .dimSite img{filter:brightness(.4)}
-  .dsite .dimSite::after{background:rgba(0,0,0,.45)}
-  .panel{position:absolute;top:0;right:0;bottom:0;width:432px;background:var(--ink);
-    box-shadow:-30px 0 70px rgba(0,0,0,.6);display:flex;flex-direction:column}
-  .panelScroll{flex:1;overflow-y:auto;padding:30px 34px 34px}
-  .panelScroll::-webkit-scrollbar{width:0}
-  .slidehint{position:absolute;top:50%;right:432px;transform:translateY(-50%);
-    font-family:'IBM Plex Mono',monospace;font-size:9px;color:#fff;background:var(--red);
-    padding:6px 10px;letter-spacing:.1em}
+      /* ===== DESKTOP browser ===== */
+      .browser {
+        width: 100%;
+        background: #0e0e0e;
+        border-radius: 14px;
+        padding: 10px;
+        box-shadow: 0 32px 64px rgba(0, 0, 0, 0.36);
+      }
+      .bbar {
+        display: flex;
+        gap: 6px;
+        padding: 3px 6px 10px;
+      }
+      .bbar i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #3a3a3a;
+      }
+      .dsite {
+        position: relative;
+        height: 660px;
+        overflow: hidden;
+        background: #000;
+      }
+      .dsite .dimSite img {
+        filter: brightness(0.4);
+      }
+      .dsite .dimSite::after {
+        background: rgba(0, 0, 0, 0.45);
+      }
+      .panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 432px;
+        background: var(--ink);
+        box-shadow: -30px 0 70px rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: column;
+      }
+      .panelScroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 30px 34px 34px;
+      }
+      .panelScroll::-webkit-scrollbar {
+        width: 0;
+      }
+      .slidehint {
+        position: absolute;
+        top: 50%;
+        right: 432px;
+        transform: translateY(-50%);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        color: #fff;
+        background: var(--red);
+        padding: 6px 10px;
+        letter-spacing: 0.1em;
+      }
 
-  .bar{position:fixed;left:0;right:0;bottom:0;background:#000;border-top:4px solid var(--red);z-index:60}
-  .bar .wrap{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px 36px}
-  .bar .q{font-size:12.5px;color:#ddd;line-height:1.5}.bar .q b{color:var(--red)}
-  .bar .step{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:#777;white-space:nowrap}
-</style>
-</head>
-<body>
+      .bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #000;
+        border-top: 4px solid var(--red);
+        z-index: 60;
+      }
+      .bar .wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 36px;
+      }
+      .bar .q {
+        font-size: 12.5px;
+        color: #ddd;
+        line-height: 1.5;
+      }
+      .bar .q b {
+        color: var(--red);
+      }
+      .bar .step {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: #777;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pgtop">
+      <div class="wrap">
+        <span class="mono">SASHA CHEMEROV · ЧЕКАУТ</span>
+        <span class="mono"
+          ><span class="dot">●</span>&nbsp; ВИЇЗНА МОДАЛКА — ОПЛАТА</span
+        >
+      </div>
+    </div>
 
-<div class="pgtop">
-  <div class="wrap">
-    <span class="mono">SASHA CHEMEROV · ЧЕКАУТ</span>
-    <span class="mono"><span class="dot">●</span>&nbsp; ВИЇЗНА МОДАЛКА — ОПЛАТА</span>
-  </div>
-</div>
+    <div class="wrap lead">
+      <h1>Чекаут-модалка</h1>
+      <p>
+        Кнопка «Замовити» не веде на нову сторінку — миттєво виїжджає чорна
+        модалка. Інверсія: сайт білий, оплата — чорна. Поля без рамок, лише
+        тонкі лінії. Сама форма коротка: хто ти + куди везти + оплата.
+      </p>
+    </div>
 
-<div class="wrap lead">
-  <h1>Чекаут-модалка</h1>
-  <p>Кнопка «Замовити» не веде на нову сторінку — миттєво виїжджає чорна модалка.
-     Інверсія: сайт білий, оплата — чорна. Поля без рамок, лише тонкі лінії. Сама форма коротка:
-     хто ти + куди везти + оплата.</p>
-</div>
+    <!-- MOBILE -->
+    <div class="wrap">
+      <div class="sh">
+        <span class="n mono">01</span
+        ><span class="mono">МОБІЛЬНА — ШТОРКА ЗНИЗУ</span
+        ><span class="ln"></span>
+      </div>
+      <div class="showrow">
+        <div class="phone">
+          <div class="pscreen">
+            <div class="dimSite"><img src="/files/r-hero.webp" alt="" /></div>
+            <div class="sheet">
+              <div class="grab"></div>
+              <div class="sheetScroll">
+                <div class="m-head">
+                  <span class="ttl">Оформлення</span>
+                  <span class="m-x">✕</span>
+                </div>
+                <div class="m-sub">DROP 01 — ЗАЛИШИЛОСЬ 2 КРОКИ</div>
 
-<!-- MOBILE -->
-<div class="wrap">
-  <div class="sh"><span class="n mono">01</span><span class="mono">МОБІЛЬНА — ШТОРКА ЗНИЗУ</span><span class="ln"></span></div>
-  <div class="showrow">
+                <div class="m-order">
+                  <div class="th"><img src="/files/r-front.webp" alt="" /></div>
+                  <div class="oi">
+                    <div class="on">too much яром too much долиною</div>
+                    <div class="om">OVERSIZE · ОДИН РОЗМІР · ×1</div>
+                  </div>
+                  <div class="op">2200&nbsp;₴</div>
+                </div>
 
-    <div class="phone">
-      <div class="pscreen">
-        <div class="dimSite"><img src="/files/r-hero.jpg" alt=""></div>
-        <div class="sheet">
-          <div class="grab"></div>
-          <div class="sheetScroll">
+                <div class="m-block">
+                  <div class="m-blabel"><b>01</b> ХТО ТИ</div>
+                  <div class="fld filled">
+                    <span class="fl">Прізвище та ім'я</span>
+                    <div class="fi">Чемеров Олександр</div>
+                  </div>
+                  <div class="fld focus">
+                    <span class="fl">Телефон</span>
+                    <div class="fi">
+                      <span class="pre">+380</span>&nbsp;<span class="ph"
+                        >__ ___ __ __</span
+                      ><span class="caret"></span>
+                    </div>
+                  </div>
+                  <div class="fld">
+                    <span class="fl">E-mail</span>
+                    <div class="fi"><span class="ph">name@mail.com</span></div>
+                    <div class="fh">
+                      сюди прийде чек і підтвердження замовлення
+                    </div>
+                  </div>
+                </div>
 
-            <div class="m-head">
-              <span class="ttl">Оформлення</span>
-              <span class="m-x">✕</span>
+                <div class="m-block">
+                  <div class="m-blabel"><b>02</b> КУДИ ВЕЗТИ</div>
+                  <div class="fld">
+                    <span class="fl">Місто</span>
+                    <div class="fi"><span class="ph">Почни вводити…</span></div>
+                  </div>
+                  <div class="fld">
+                    <span class="fl">Відділення / поштомат Нової Пошти</span>
+                    <div class="fi">
+                      <span class="ph">Оберіть зі списку</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="m-pay">
+                  ОПЛАТИТИ КАРТОЮ
+                  <span class="wp">WAYFORPAY · APPLE PAY · GOOGLE PAY</span>
+                </button>
+                <div class="m-secure">
+                  🔒 ЗАХИЩЕНА ОПЛАТА · ВІДДІЛЕННЯ БЕЗ ІНДЕКСІВ
+                </div>
+              </div>
             </div>
-            <div class="m-sub">DROP 01 — ЗАЛИШИЛОСЬ 2 КРОКИ</div>
+          </div>
+        </div>
 
-            <div class="m-order">
-              <div class="th"><img src="/files/r-front.jpg" alt=""></div>
-              <div class="oi">
-                <div class="on">too much яром too much долиною</div>
-                <div class="om">OVERSIZE · ОДИН РОЗМІР · ×1</div>
-              </div>
-              <div class="op">2200&nbsp;₴</div>
-            </div>
-
-            <div class="m-block">
-              <div class="m-blabel"><b>01</b> ХТО ТИ</div>
-              <div class="fld filled">
-                <span class="fl">Прізвище та ім'я</span>
-                <div class="fi">Чемеров Олександр</div>
-              </div>
-              <div class="fld focus">
-                <span class="fl">Телефон</span>
-                <div class="fi"><span class="pre">+380</span>&nbsp;<span class="ph">__ ___ __ __</span><span class="caret"></span></div>
-              </div>
-              <div class="fld">
-                <span class="fl">E-mail</span>
-                <div class="fi"><span class="ph">name@mail.com</span></div>
-                <div class="fh">сюди прийде чек і підтвердження замовлення</div>
-              </div>
-            </div>
-
-            <div class="m-block">
-              <div class="m-blabel"><b>02</b> КУДИ ВЕЗТИ</div>
-              <div class="fld">
-                <span class="fl">Місто</span>
-                <div class="fi"><span class="ph">Почни вводити…</span></div>
-              </div>
-              <div class="fld">
-                <span class="fl">Відділення / поштомат Нової Пошти</span>
-                <div class="fi"><span class="ph">Оберіть зі списку</span></div>
-              </div>
-            </div>
-
-            <button class="m-pay">
-              ОПЛАТИТИ КАРТОЮ
-              <span class="wp">WAYFORPAY · APPLE PAY · GOOGLE PAY</span>
-            </button>
-            <div class="m-secure">🔒 ЗАХИЩЕНА ОПЛАТА · ВІДДІЛЕННЯ БЕЗ ІНДЕКСІВ</div>
-
+        <div class="cap">
+          <div class="ci">
+            <h4 class="mono">Виїзд знизу</h4>
+            <p>
+              Шторка виїжджає вгору як картка Apple Wallet, закриває ~95%
+              екрана. Зверху видно затемнений сайт.
+            </p>
+          </div>
+          <div class="ci">
+            <h4 class="mono">Поля під палець</h4>
+            <p>
+              Великі, без рамок — тонка лінія. Активна лінія підсвічується
+              червоним. Тап по «Телефон» → цифрова клавіатура.
+            </p>
+          </div>
+          <div class="ci">
+            <h4 class="mono">Нова Пошта</h4>
+            <p>
+              Місто — автопідказка при введенні. Відділення — список. Жодних
+              індексів і домашніх адрес.
+            </p>
+          </div>
+          <div class="ci">
+            <h4 class="mono">Оплата в шторці</h4>
+            <p>
+              Після «Оплатити» прямо тут відкривається віджет WayForPay —
+              Apple/Google Pay в один клік.
+            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="cap">
-      <div class="ci"><h4 class="mono">Виїзд знизу</h4>
-        <p>Шторка виїжджає вгору як картка Apple Wallet, закриває ~95% екрана. Зверху видно затемнений сайт.</p></div>
-      <div class="ci"><h4 class="mono">Поля під палець</h4>
-        <p>Великі, без рамок — тонка лінія. Активна лінія підсвічується червоним. Тап по «Телефон» → цифрова клавіатура.</p></div>
-      <div class="ci"><h4 class="mono">Нова Пошта</h4>
-        <p>Місто — автопідказка при введенні. Відділення — список. Жодних індексів і домашніх адрес.</p></div>
-      <div class="ci"><h4 class="mono">Оплата в шторці</h4>
-        <p>Після «Оплатити» прямо тут відкривається віджет WayForPay — Apple/Google Pay в один клік.</p></div>
-    </div>
+    <!-- DESKTOP -->
+    <div class="wrap">
+      <div class="sh">
+        <span class="n mono">02</span
+        ><span class="mono">ДЕСКТОП — БІЧНА ПАНЕЛЬ СПРАВА</span
+        ><span class="ln"></span>
+      </div>
 
-  </div>
-</div>
+      <div class="browser">
+        <div class="bbar"><i></i><i></i><i></i></div>
+        <div class="dsite">
+          <div class="dimSite"><img src="/files/r-hero.webp" alt="" /></div>
+          <div class="slidehint">◀ виїжджає справа · сайт затемнений</div>
+          <div class="panel">
+            <div class="panelScroll">
+              <div class="m-head">
+                <span class="ttl">Оформлення</span>
+                <span class="m-x">✕</span>
+              </div>
+              <div class="m-sub">DROP 01 — ЗАЛИШИЛОСЬ 2 КРОКИ</div>
 
-<!-- DESKTOP -->
-<div class="wrap">
-  <div class="sh"><span class="n mono">02</span><span class="mono">ДЕСКТОП — БІЧНА ПАНЕЛЬ СПРАВА</span><span class="ln"></span></div>
+              <div class="m-order">
+                <div class="th"><img src="/files/r-front.webp" alt="" /></div>
+                <div class="oi">
+                  <div class="on">too much яром too much долиною</div>
+                  <div class="om">OVERSIZE · ОДИН РОЗМІР · ×1</div>
+                </div>
+                <div class="op">2200&nbsp;₴</div>
+              </div>
 
-  <div class="browser">
-    <div class="bbar"><i></i><i></i><i></i></div>
-    <div class="dsite">
-      <div class="dimSite"><img src="/files/r-hero.jpg" alt=""></div>
-      <div class="slidehint">◀ виїжджає справа · сайт затемнений</div>
-      <div class="panel">
-        <div class="panelScroll">
+              <div class="m-block">
+                <div class="m-blabel"><b>01</b> ХТО ТИ</div>
+                <div class="fld filled">
+                  <span class="fl">Прізвище та ім'я</span>
+                  <div class="fi">Чемеров Олександр</div>
+                </div>
+                <div class="fld filled">
+                  <span class="fl">Телефон</span>
+                  <div class="fi">
+                    <span class="pre">+380</span>&nbsp;67 123 45 67
+                  </div>
+                </div>
+                <div class="fld filled">
+                  <span class="fl">E-mail</span>
+                  <div class="fi">sasha@dymnasumish.ua</div>
+                  <div class="fh">
+                    сюди прийде чек і підтвердження замовлення
+                  </div>
+                </div>
+              </div>
 
-          <div class="m-head">
-            <span class="ttl">Оформлення</span>
-            <span class="m-x">✕</span>
-          </div>
-          <div class="m-sub">DROP 01 — ЗАЛИШИЛОСЬ 2 КРОКИ</div>
+              <div class="m-block">
+                <div class="m-blabel"><b>02</b> КУДИ ВЕЗТИ</div>
+                <div class="fld focus">
+                  <span class="fl">Місто</span>
+                  <div class="fi">Льв<span class="caret"></span></div>
+                  <div class="ac">
+                    <div class="ai hot">
+                      Львів <span class="t">ЛЬВІВСЬКА ОБЛ.</span>
+                    </div>
+                    <div class="ai">
+                      Львове <span class="t">ДНІПРОПЕТРОВСЬКА</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="fld">
+                  <span class="fl">Відділення / поштомат Нової Пошти</span>
+                  <div class="fi">
+                    <span class="ph">Оберіть зі списку</span>
+                  </div>
+                </div>
+              </div>
 
-          <div class="m-order">
-            <div class="th"><img src="/files/r-front.jpg" alt=""></div>
-            <div class="oi">
-              <div class="on">too much яром too much долиною</div>
-              <div class="om">OVERSIZE · ОДИН РОЗМІР · ×1</div>
-            </div>
-            <div class="op">2200&nbsp;₴</div>
-          </div>
-
-          <div class="m-block">
-            <div class="m-blabel"><b>01</b> ХТО ТИ</div>
-            <div class="fld filled">
-              <span class="fl">Прізвище та ім'я</span>
-              <div class="fi">Чемеров Олександр</div>
-            </div>
-            <div class="fld filled">
-              <span class="fl">Телефон</span>
-              <div class="fi"><span class="pre">+380</span>&nbsp;67 123 45 67</div>
-            </div>
-            <div class="fld filled">
-              <span class="fl">E-mail</span>
-              <div class="fi">sasha@dymnasumish.ua</div>
-              <div class="fh">сюди прийде чек і підтвердження замовлення</div>
-            </div>
-          </div>
-
-          <div class="m-block">
-            <div class="m-blabel"><b>02</b> КУДИ ВЕЗТИ</div>
-            <div class="fld focus">
-              <span class="fl">Місто</span>
-              <div class="fi">Льв<span class="caret"></span></div>
-              <div class="ac">
-                <div class="ai hot">Львів <span class="t">ЛЬВІВСЬКА ОБЛ.</span></div>
-                <div class="ai">Львове <span class="t">ДНІПРОПЕТРОВСЬКА</span></div>
+              <button class="m-pay">
+                ОПЛАТИТИ КАРТОЮ
+                <span class="wp">WAYFORPAY · APPLE PAY · GOOGLE PAY</span>
+              </button>
+              <div class="m-secure">
+                🔒 ЗАХИЩЕНА ОПЛАТА · ВІДДІЛЕННЯ БЕЗ ІНДЕКСІВ
               </div>
             </div>
-            <div class="fld">
-              <span class="fl">Відділення / поштомат Нової Пошти</span>
-              <div class="fi"><span class="ph">Оберіть зі списку</span></div>
-            </div>
           </div>
-
-          <button class="m-pay">
-            ОПЛАТИТИ КАРТОЮ
-            <span class="wp">WAYFORPAY · APPLE PAY · GOOGLE PAY</span>
-          </button>
-          <div class="m-secure">🔒 ЗАХИЩЕНА ОПЛАТА · ВІДДІЛЕННЯ БЕЗ ІНДЕКСІВ</div>
-
         </div>
       </div>
+      <p
+        style="
+          margin-top: 14px;
+          font-size: 12.5px;
+          color: #444;
+          border-left: 3px solid var(--red);
+          padding-left: 14px;
+        "
+      >
+        Панель ~⅓ ширини виїжджає з правого краю, решта сайту з фото товару
+        затемнюється. Оплата відкриває захищене вікно WayForPay поверх
+        інтерфейсу. Поле «Місто» показано з відкритою автопідказкою Нової Пошти.
+      </p>
     </div>
-  </div>
-  <p style="margin-top:14px;font-size:12.5px;color:#444;border-left:3px solid var(--red);padding-left:14px">
-    Панель ~⅓ ширини виїжджає з правого краю, решта сайту з фото товару затемнюється.
-    Оплата відкриває захищене вікно WayForPay поверх інтерфейсу. Поле «Місто» показано
-    з відкритою автопідказкою Нової Пошти.</p>
-</div>
 
-<div class="bar">
-  <div class="wrap">
-    <div class="q">Чекаут-модалка: мобайл — шторка знизу, десктоп — панель справа. Ок?
-       Якщо так — <b>пишу повну специфікацію дизайну</b> і завершуємо.</div>
-    <div class="step">ФІНАЛ · ЧЕКАУТ</div>
-  </div>
-</div>
-
-</body>
+    <div class="bar">
+      <div class="wrap">
+        <div class="q">
+          Чекаут-модалка: мобайл — шторка знизу, десктоп — панель справа. Ок?
+          Якщо так — <b>пишу повну специфікацію дизайну</b> і завершуємо.
+        </div>
+        <div class="step">ФІНАЛ · ЧЕКАУТ</div>
+      </div>
+    </div>
+  </body>
 </html>
