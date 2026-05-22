@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sasha Chemerov — Герой, напрямки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;800;900&family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAFA; --ink:#0D0D0D; --red:#F14933; --grey:#7A7A7A;
+    --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0e0e0e;color:#eee;font-family:'Inter',system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased;line-height:1.5;padding-bottom:128px}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 36px}
+  .mono{font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em}
+  .poster{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;line-height:.82;letter-spacing:.005em}
+
+  /* page chrome */
+  .pgtop{border-bottom:1px solid #262626;position:sticky;top:0;background:#0e0e0e;z-index:30}
+  .pgtop .wrap{display:flex;justify-content:space-between;align-items:center;padding:16px 36px;font-size:11px;color:#888}
+  .pgtop .dot{color:var(--red)}
+  .lead{padding:40px 0 6px}
+  .lead h1{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:30px;letter-spacing:-.01em;color:#fff}
+  .lead p{max-width:660px;margin-top:12px;font-size:14px;color:#9a9a9a}
+
+  /* option block */
+  .opt{margin-top:46px;cursor:pointer}
+  .opt-h{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+  .opt-h .key{font-family:'Archivo';font-weight:900;font-size:22px;color:#fff}
+  .opt-h .nm{font-size:13px;letter-spacing:.14em;color:#fff}
+  .opt-h .rec{font-size:9px;background:var(--red);color:#fff;padding:4px 8px;letter-spacing:.12em}
+  .opt-h .desc{font-size:13px;color:#888;margin-left:auto;text-align:right;max-width:440px;line-height:1.45}
+  .framewrap{border:1px solid #262626;transition:border-color .15s,transform .12s}
+  .opt:hover .framewrap{border-color:#555}
+  .opt.selected .framewrap{border-color:var(--red);box-shadow:0 0 0 3px rgba(241,73,51,.25)}
+
+  /* shared treated-photo placeholder */
+  .art{position:relative;overflow:hidden;background:#161616}
+  .art .bgimg{position:absolute;inset:0;
+    background:radial-gradient(130% 100% at 72% 8%, #565656 0%, #1d1d1d 46%, #060606 100%);}
+  .art .grain{position:absolute;inset:0;background-image:var(--grain);background-size:220px;
+    mix-blend-mode:overlay;opacity:.55}
+  .art .vig{position:absolute;inset:0;box-shadow:inset 0 0 220px 60px rgba(0,0,0,.85)}
+  .art .ph{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;color:#5a5a5a;text-align:center}
+
+  /* ===== HERO A — overlay ===== */
+  .heroA{position:relative;height:618px;overflow:hidden}
+  .heroA .wm{position:absolute;top:22px;left:26px;z-index:3;line-height:1.1}
+  .heroA .wm .b{font-size:9px;letter-spacing:.2em;color:#cfcfcf;font-family:'IBM Plex Mono',monospace}
+  .heroA .wm .n{font-family:'Archivo';font-weight:900;font-size:17px;color:#fff;letter-spacing:.01em}
+  .heroA .drop{position:absolute;top:24px;right:26px;z-index:3;font-size:9px;color:#bdbdbd;
+    font-family:'IBM Plex Mono',monospace;letter-spacing:.16em}
+  .heroA .fade{position:absolute;left:0;right:0;bottom:0;height:62%;z-index:2;
+    background:linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,0))}
+  .heroA .title{position:absolute;left:24px;bottom:-26px;z-index:3}
+  .heroA .title div{font-size:122px}
+  .heroA .l-out{color:transparent;-webkit-text-stroke:1.6px #fff}
+  .heroA .l-w{color:#fff}
+  .heroA .l-r{color:var(--red)}
+  .heroA .cue{position:absolute;right:26px;bottom:30px;z-index:3;font-size:9px;color:#cfcfcf;
+    font-family:'IBM Plex Mono',monospace;letter-spacing:.16em}
+
+  /* ===== HERO B — knockout ===== */
+  .heroB{position:relative;height:618px;background:var(--bg);overflow:hidden;
+    display:flex;align-items:center;justify-content:center}
+  .heroB .meta{position:absolute;font-family:'IBM Plex Mono',monospace;font-size:9px;
+    letter-spacing:.18em;color:var(--grey)}
+  .heroB .m1{top:26px;left:28px} .heroB .m2{top:26px;right:28px}
+  .heroB .m3{bottom:26px;left:28px;color:var(--ink)}
+  .heroB .m3 b{color:var(--red)}
+  .heroB .m4{bottom:26px;right:28px}
+  .heroB .knock{font-size:118px;text-align:center;
+    background:radial-gradient(130% 110% at 60% 20%, #6a6a6a 0%, #232323 48%, #050505 100%), var(--grain);
+    background-size:auto, 220px;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+  .heroB .sq{position:absolute;width:18px;height:18px;background:var(--red);
+    top:calc(50% - 150px);left:calc(50% + 250px)}
+
+  /* ===== HERO C — split ===== */
+  .heroC{position:relative;height:618px;display:flex;flex-direction:column;background:var(--bg)}
+  .heroC .top{position:relative;flex:1.32;overflow:hidden}
+  .heroC .wmc{position:absolute;top:20px;left:24px;z-index:3;font-family:'Archivo';font-weight:900;
+    font-size:16px;color:#fff}
+  .heroC .dropc{position:absolute;top:22px;right:24px;z-index:3;font-size:9px;color:#ccc;
+    font-family:'IBM Plex Mono',monospace;letter-spacing:.16em}
+  .heroC .bot{flex:1;background:var(--bg);display:flex;align-items:center;padding:0 30px;position:relative}
+  .heroC .bot .seam{position:absolute;top:0;left:30px;width:64px;height:5px;background:var(--red)}
+  .heroC .titlec{font-size:74px;color:var(--ink)}
+  .heroC .titlec .r{color:var(--red)}
+  .heroC .ord{position:absolute;right:30px;bottom:26px;font-size:10px;color:var(--grey);
+    font-family:'IBM Plex Mono',monospace;letter-spacing:.14em}
+
+  /* ===== phone ===== */
+  .section{margin-top:64px;border-top:1px solid #262626;padding-top:42px}
+  .section .stt{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:18px;color:#fff}
+  .section .sds{font-size:13px;color:#8c8c8c;margin-top:6px;max-width:680px}
+  .showrow{display:flex;gap:46px;flex-wrap:wrap;align-items:flex-start;margin-top:26px}
+
+  .phone{width:312px;height:660px;background:#000;border-radius:40px;padding:9px;flex:none;
+    box-shadow:0 26px 50px rgba(0,0,0,.55)}
+  .pscreen{position:relative;width:100%;height:100%;border-radius:31px;overflow:hidden;background:var(--bg)}
+  .pnotch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:86px;height:18px;
+    background:#000;border-radius:12px;z-index:9}
+  .phead{position:absolute;top:0;left:0;right:0;height:46px;display:flex;justify-content:space-between;
+    align-items:center;padding:0 14px;z-index:7;color:#fff}
+  .phead .pl{font-family:'Archivo';font-weight:900;font-size:11px}
+  .phead .pr{font-size:7px;color:#cfcfcf;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em}
+  .pHero{position:relative;height:404px;overflow:hidden}
+  .pHero .pfade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9),rgba(0,0,0,0) 60%)}
+  .pHero .ptitle{position:absolute;left:14px;bottom:14px;z-index:3}
+  .pHero .ptitle div{font-size:39px}
+  .pGal{height:210px;background:var(--bg);position:relative;border-top:1.5px solid var(--ink)}
+  .pGstage{position:absolute;inset:0;bottom:34px;background:#000;overflow:hidden}
+  .pGstage .gfr{position:absolute;inset:0;opacity:0;transition:opacity .6s ease,transform .6s ease;transform:scale(1.06)}
+  .pGstage .gfr.on{opacity:1;transform:scale(1)}
+  .pGstage .gfr img{width:100%;height:100%;object-fit:cover}
+  .pGbar{position:absolute;left:0;right:0;bottom:34px;height:2px;background:#ddd;z-index:4}
+  .pGbar i{display:block;height:100%;width:0;background:var(--red);animation:fill 2.6s linear infinite}
+  @keyframes fill{from{width:0}to{width:100%}}
+  .pGcap{position:absolute;left:0;right:0;bottom:0;height:34px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 12px;font-family:'IBM Plex Mono',monospace;
+    font-size:8px;letter-spacing:.12em;color:var(--grey)}
+  .pcta{position:absolute;bottom:0;left:0;right:0;height:50px;background:var(--red);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.12em;z-index:8}
+
+  /* desktop diptych demo */
+  .dip{display:flex;gap:18px;flex:1;min-width:300px}
+  .plate{position:relative;flex:1;aspect-ratio:1/1;background:#000;overflow:hidden;cursor:crosshair}
+  .plate img{width:100%;height:100%;object-fit:cover;transition:opacity .4s ease}
+  .plate .pa{position:absolute;inset:0;background:#0d0d0d;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:8px;opacity:0;transition:opacity .4s ease}
+  .plate:hover img{opacity:0}
+  .plate:hover .pa{opacity:1}
+  .plate .tag{position:absolute;top:10px;left:10px;font-family:'IBM Plex Mono',monospace;
+    font-size:8px;color:#fff;background:rgba(0,0,0,.5);padding:4px 7px;letter-spacing:.1em}
+  .plate .hh{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:8px;color:#fff;background:var(--red);padding:4px 8px}
+
+  /* assets ask */
+  .ask{margin-top:60px;border:1px solid var(--red);padding:26px 28px;background:#160a08}
+  .ask h3{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:16px;color:#fff}
+  .ask p{font-size:13px;color:#c9a59e;margin-top:8px;line-height:1.6}
+  .ask ul{margin:12px 0 0 0;list-style:none;font-size:13px;color:#e7d6d2}
+  .ask li{padding:6px 0;border-top:1px solid #3a201c}
+  .ask li b{color:#fff}
+  .ask code{font-family:'IBM Plex Mono',monospace;background:#2a1410;color:#ff9b8b;padding:2px 6px;font-size:12px}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#000;border-top:4px solid var(--red);z-index:40}
+  .bar .wrap{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px 36px}
+  .bar .q{font-size:12.5px;color:#ddd;line-height:1.5}
+  .bar .q b{color:var(--red)}
+  .bar .step{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:#777;white-space:nowrap}
+
+  @media(max-width:920px){
+    .heroA .title div,.heroB .knock{font-size:74px}
+    .heroC .titlec{font-size:46px}
+    .opt-h .desc{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="pgtop">
+  <div class="wrap">
+    <span class="mono">SASHA CHEMEROV · ГЕРОЙ</span>
+    <span class="mono"><span class="dot">●</span>&nbsp; 3 НАПРЯМКИ — ОБЕРИ ОДИН</span>
+  </div>
+</div>
+
+<div class="wrap lead">
+  <h1>Перебудовуємо герой</h1>
+  <p>Минулий макет був млявий — забули головне: це сторінка артиста, а не магазин.
+     Герой має бити фотографією Чемерова й величезним заголовком. Ось три композиції —
+     усі з реальним кадром артиста на фоні. Обери напрямок, далі доводимо до фіналу.</p>
+</div>
+
+<!-- OPTION A -->
+<div class="opt" data-choice="hero-a" onclick="toggleSelect(this)">
+  <div class="opt-h">
+    <span class="key">A</span><span class="nm mono">АФІША</span>
+    <span class="rec mono">РАДЖУ</span>
+    <span class="desc">Фото Чемерова на весь екран, заголовок — гігантський, поверх кадру,
+      зрізаний краєм. Енергія гіг-постера. Точно те, що ти описав.</span>
+  </div>
+  <div class="framewrap">
+    <div class="heroA art">
+      <div class="bgimg"></div><div class="grain"></div><div class="vig"></div>
+      <div class="ph">[ ФОТО ЧЕМЕРОВА — НА ВЕСЬ КАДР ]</div>
+      <div class="wm"><div class="b">ДИМНА СУМІШ</div><div class="n">САША ЧЄМЄРОВ</div></div>
+      <div class="drop">DROP 01 — OVERSIZE</div>
+      <div class="fade"></div>
+      <div class="title poster">
+        <div class="l-out">TOO MUCH</div>
+        <div class="l-w">ЯРОМ</div>
+        <div class="l-out">TOO MUCH</div>
+        <div class="l-r">ДОЛИНОЮ</div>
+      </div>
+      <div class="cue">↓ КОЛЕКЦІЯ</div>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION B -->
+<div class="opt" data-choice="hero-b" onclick="toggleSelect(this)">
+  <div class="opt-h">
+    <span class="key">B</span><span class="nm mono">ВИРІЗ</span>
+    <span class="desc">Біле поле, заголовок-вікно: фото Чемерова видно лише крізь літери.
+      Максимально «галерея». Стильно, але потребує контрастного кадру.</span>
+  </div>
+  <div class="framewrap">
+    <div class="heroB">
+      <span class="meta m1">SASHA CHEMEROV</span>
+      <span class="meta m2">ДИМНА СУМІШ</span>
+      <span class="meta m3">DROP 01 — <b>ONE SIZE OVERSIZE</b></span>
+      <span class="meta m4">↓ КОЛЕКЦІЯ</span>
+      <div class="knock poster">TOO MUCH ЯРОМ<br>TOO MUCH ДОЛИНОЮ</div>
+      <span class="sq"></span>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION C -->
+<div class="opt" data-choice="hero-c" onclick="toggleSelect(this)">
+  <div class="opt-h">
+    <span class="key">C</span><span class="nm mono">РОЗВОРОТ</span>
+    <span class="desc">Кінокадр: фото Чемерова зверху на всю ширину, заголовок —
+      чорним по білому знизу. Спокійніше, журнально-обкладинкове.</span>
+  </div>
+  <div class="framewrap">
+    <div class="heroC">
+      <div class="top art">
+        <div class="bgimg"></div><div class="grain"></div><div class="vig"></div>
+        <div class="ph">[ ФОТО ЧЕМЕРОВА ]</div>
+        <div class="wmc">САША ЧЄМЄРОВ</div>
+        <div class="dropc">ДИМНА СУМІШ · DROP 01</div>
+      </div>
+      <div class="bot">
+        <div class="seam"></div>
+        <div class="titlec poster">TOO MUCH ЯРОМ<br>TOO MUCH <span class="r">ДОЛИНОЮ</span></div>
+        <div class="ord">ОВЕРСАЙЗ · ОДИН РОЗМІР</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE + GALLERY -->
+<div class="wrap section">
+  <div class="stt">Як це працює нижче — телефон</div>
+  <div class="sds">Герой (напрямок A) + галерея товару. Галерея — <b>авто-слайдер, сам міняється</b>
+     кожні 2,6 c з плавним кросфейдом і зумом. Жодного свайпу. Червона кнопка прибита донизу.</div>
+
+  <div class="showrow">
+    <div class="phone">
+      <div class="pscreen">
+        <div class="pnotch"></div>
+        <div class="phead">
+          <span class="pl">САША ЧЄМЄРОВ</span>
+          <span class="pr">DROP 01</span>
+        </div>
+        <div class="pHero art">
+          <div class="bgimg"></div><div class="grain"></div><div class="vig"></div>
+          <div class="ph" style="font-size:8px">[ ФОТО ЧЕМЕРОВА ]</div>
+          <div class="pfade"></div>
+          <div class="ptitle poster">
+            <div class="l-out" style="color:transparent;-webkit-text-stroke:1px #fff">TOO MUCH</div>
+            <div style="color:#fff">ЯРОМ</div>
+            <div class="l-out" style="color:transparent;-webkit-text-stroke:1px #fff">TOO MUCH</div>
+            <div style="color:var(--red)">ДОЛИНОЮ</div>
+          </div>
+        </div>
+        <div class="pGal">
+          <div class="pGstage">
+            <div class="gfr on"><img src="/files/front.png" alt=""></div>
+            <div class="gfr"><img src="/files/back.png" alt=""></div>
+            <div class="gfr"><img src="/files/front.png" alt="" style="transform:scale(2.3);object-position:center 38%"></div>
+          </div>
+          <div class="pGbar"><i></i></div>
+          <div class="pGcap"><span id="gcap">01 / FRONT</span><span>АВТО ●</span></div>
+        </div>
+        <div class="pcta">ЗАМОВИТИ — 2200 UAH</div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:320px">
+      <div class="stt" style="font-size:15px">Десктоп — галерея товару</div>
+      <div class="sds" style="margin-bottom:18px">2 фото поруч (front + back). При наведенні
+        кадр змінюється на Чемерова в цій футболці — як ти й хотів.</div>
+      <div class="dip">
+        <div class="plate">
+          <img src="/files/front.png" alt="">
+          <div class="pa"><span style="font-size:28px;color:#fff">◍</span>
+            <span class="mono" style="font-size:9px;color:#fff">ЧЕМЕРОВ — FRONT</span></div>
+          <div class="tag">FRONT</div><div class="hh">НАВЕДИ</div>
+        </div>
+        <div class="plate">
+          <img src="/files/back.png" alt="">
+          <div class="pa"><span style="font-size:28px;color:#fff">◍</span>
+            <span class="mono" style="font-size:9px;color:#fff">ЧЕМЕРОВ — BACK</span></div>
+          <div class="tag">BACK</div><div class="hh">НАВЕДИ</div>
+        </div>
+      </div>
+      <div class="sds" style="margin-top:14px">▶ Наведи курсор на фото вище — побачиш ефект.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ASSETS -->
+<div class="wrap">
+  <div class="ask">
+    <h3>Що мені потрібно від тебе — фото</h3>
+    <p>Герой тримається на кадрі Чемерова. Зараз там заглушка з зерном — обери напрямок,
+       а паралельно скинь фото у папку проєкту:</p>
+    <ul>
+      <li><b>Герой</b> — атмосферний кадр Чемерова (портрет/по пояс), бажано темний фон → <code>artist-hero.jpg</code></li>
+      <li><b>Десктоп-галерея</b> — Чемеров у футболці, спереду → <code>artist-front.jpg</code></li>
+      <li><b>Бажано</b> — Чемеров у футболці, ззаду → <code>artist-back.jpg</code></li>
+    </ul>
+    <p style="margin-top:12px">Також: фото товару <b>front/back</b> варто перезняти або вирізати тло
+       в суцільний чорний — щоб працював «чорний квадрат-постер».</p>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="q">Клікни герой <b>A / B / C</b> (раджу A). Галерею зробив як просив:
+       телефон — авто-слайдер, десктоп — 2 фото + ховер на Чемерова. Що правимо?</div>
+    <div class="step">ГЕРОЙ · НАПРЯМОК</div>
+  </div>
+</div>
+
+<script>
+  var caps = ['01 / FRONT','02 / BACK','03 / ДЕТАЛЬ ПРИНТУ'];
+  var frames = document.querySelectorAll('.pGstage .gfr');
+  var cap = document.getElementById('gcap');
+  var i = 0;
+  setInterval(function(){
+    frames[i].classList.remove('on');
+    i = (i + 1) % frames.length;
+    frames[i].classList.add('on');
+    cap.textContent = caps[i];
+  }, 2600);
+</script>
+
+</body>
+</html>
