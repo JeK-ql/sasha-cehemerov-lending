@@ -1,0 +1,19 @@
+# Superpowers brainstorm companion (local only)
+.superpowers/
+
+# Dependencies
+node_modules/
+
+# Next.js / Vercel
+.next/
+.vercel/
+out/
+
+# Env & secrets
+.env
+.env.local
+.env*.local
+
+# OS
+Thumbs.db
+.DS_Store
