@@ -1,0 +1,90 @@
+.showcase {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(14px, 3.2vh, 36px) clamp(18px, 6vw, 90px);
+  overflow: hidden;
+}
+
+/* технічний маркер дропу */
+.drop {
+  font-size: clamp(8px, 1.7vw, 11px);
+  color: var(--grey);
+  margin-bottom: clamp(6px, 1.6vh, 18px);
+}
+
+/* заголовок-колізія */
+.title {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  line-height: 0.84;
+  pointer-events: none;
+}
+.small {
+  font-size: clamp(11px, 2.5vw, 18px);
+  letter-spacing: 0.2em;
+  color: var(--ink);
+}
+.big {
+  font-size: clamp(56px, 17vw, 150px);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.right { align-self: flex-end; }
+.outline {
+  align-self: flex-end;
+  color: transparent;
+  -webkit-text-stroke: clamp(1.5px, 0.4vw, 3px) var(--ink);
+}
+
+/* футболки внахлест із заголовком */
+.tees {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: clamp(-96px, -15vw, -44px);
+  margin-bottom: clamp(18px, 3vh, 34px);
+  pointer-events: none;
+}
+.tee { position: relative; margin: 0; }
+.front {
+  width: clamp(160px, 46vw, 330px);
+  aspect-ratio: 1 / 1.16;
+  z-index: 2;
+}
+.back {
+  width: clamp(132px, 38vw, 280px);
+  aspect-ratio: 1 / 1.16;
+  margin-top: clamp(-58px, -8vw, -28px);
+  margin-left: clamp(-46px, -6vw, -22px);
+  z-index: 1;
+}
+.teeImg { object-fit: contain; }
+.cap {
+  position: absolute;
+  left: 0;
+  bottom: clamp(-18px, -3vw, -12px);
+  font-size: clamp(7px, 1.5vw, 10px);
+  color: var(--grey);
+}
+
+.spec {
+  position: relative;
+  z-index: 4;
+  font-size: clamp(8px, 1.8vw, 11px);
+  color: var(--grey);
+  text-align: center;
+}
+
+/* десктоп — ширша композиція, футболки крупніші поруч */
+@media (min-width: 768px) {
+  .showcase { padding-inline: clamp(40px, 8vw, 120px); }
+  .tees { margin-top: clamp(-150px, -9vw, -90px); }
+  .back { margin-left: clamp(-70px, -5vw, -40px); }
+}
