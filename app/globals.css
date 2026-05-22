@@ -21,7 +21,10 @@ html {
   text-size-adjust: 100%;
 }
 
-html, body { background: var(--bg); color: var(--ink); }
+/* Only html carries the base colour. body stays transparent so the fixed
+   thorns watermark (body::before, z-index:-1) is not painted over by the
+   body box's own background. */
+html { background: var(--bg); color: var(--ink); }
 
 body {
   font-family: var(--font-inter), system-ui, sans-serif;
@@ -44,8 +47,8 @@ body::before {
   background-image: url('/bg-phone.webp');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain;
-  opacity: 0.1;
+  background-size: cover;
+  opacity: 0.16;
 }
 @media (min-width: 768px) {
   body::before { background-image: url('/bg-web.webp'); }
@@ -91,7 +94,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 
 .gothic {
-  font-family: 'Germanica', serif;
+  font-family: var(--font-germanica), serif;
   text-transform: lowercase;
   font-weight: normal;
 }
