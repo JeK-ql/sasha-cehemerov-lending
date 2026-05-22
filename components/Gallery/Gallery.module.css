@@ -1,0 +1,28 @@
+.gallery { background: var(--bg); padding: 56px 24px; }
+.heading { font-size: 30px; margin-bottom: 24px; }
+
+/* slider — лише мобільний */
+.slider { display: block; }
+.diptych { display: none; }
+@media (min-width: 768px) {
+  .slider { display: none; }
+  .diptych { display: flex; gap: 24px; }
+  .gallery { padding: 64px 40px; }
+}
+
+.stage { position: relative; width: 100%; aspect-ratio: 3/2; background: #000; overflow: hidden; }
+.frame { position: absolute; inset: 0; opacity: 0; transform: scale(1.05);
+  transition: opacity .7s ease, transform .7s ease; }
+.frame.on { opacity: 1; transform: scale(1); }
+.frameImg { object-fit: cover; }
+.bar { height: 2px; background: #e2e2e2; }
+.bar span { display: block; height: 100%; background: var(--red); transition: width .7s ease; }
+.cap { display: flex; justify-content: space-between; padding-top: 9px; font-size: 9px; color: var(--grey); }
+
+.plate { position: relative; flex: 1; aspect-ratio: 3/2; background: #000; overflow: hidden; cursor: crosshair; }
+.plateImg, .plateReveal { object-fit: cover; transition: opacity .45s ease; }
+.plateReveal { opacity: 0; }
+.plate:hover .plateImg { opacity: 0; }
+.plate:hover .plateReveal { opacity: 1; }
+.tag { position: absolute; top: 13px; left: 13px; z-index: 3; font-size: 9px; color: #fff;
+  background: rgba(0,0,0,.5); padding: 5px 9px; }
