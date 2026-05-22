@@ -92,15 +92,3 @@ button { -webkit-tap-highlight-color: transparent; }
   text-transform: uppercase;
   letter-spacing: -0.01em;
 }
-
-.gothic {
-  font-family: var(--font-germanica), serif;
-  text-transform: lowercase;
-  font-weight: normal;
-}
-
-@media (max-width: 767px) {
-  body {
-    padding-bottom: calc(75px + env(safe-area-inset-bottom));
-  }
-}
