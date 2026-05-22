@@ -1,4 +1,4 @@
-# Sasha Chemerov Merch
+# Sasha Chemerov Merch2
 
 Односторінковий лендинг продажу футболки Sasha Chemerov. Стек: Next.js + Vercel.
 
