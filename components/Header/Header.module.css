@@ -8,9 +8,18 @@
 /* logo.png recoloured to monochrome. brightness(0) = black (visible on the
    light header). Add invert(1) only on a dark surface to make it white. */
 .logo { height: 40px; width: auto; display: block; filter: brightness(0); }
-.drop { font-size: 9px; color: var(--grey); text-align: right; }
+.right { display: flex; align-items: center; gap: 14px; }
+.drop { font-size: 9px; color: var(--grey); text-align: right; display: none; }
+.buy {
+  border: none; cursor: pointer;
+  background: var(--red); color: #fff;
+  font-size: 11px; padding: 9px 17px;
+  transition: background .2s ease;
+}
+.buy:hover { background: var(--ink); }
 @media (min-width: 768px) {
   .header { padding: 18px 100px; }
   .logo { height: 50px; }
-  .drop { font-size: 10px; }
+  .drop { font-size: 10px; display: block; }
+  .buy { font-size: 12px; padding: 11px 22px; }
 }

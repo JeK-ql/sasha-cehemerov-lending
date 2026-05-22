@@ -21,7 +21,7 @@ export function Gallery() {
 
   return (
     <section className={styles.gallery}>
-      <h2 className={`${styles.heading} display`}>Артефакт</h2>
+      <h2 className={`${styles.heading} display`}>ексклюзий дрілл мерч</h2>
 
       {/* Мобільний авто-слайдер */}
       <div className={styles.slider} aria-hidden={false}>

@@ -9,7 +9,6 @@ export function Footer() {
         <Link href="/offer" className="mono">Публічна оферта</Link>
         <Link href="/returns" className="mono">Умови повернення</Link>
       </nav>
-      <span className="mono">НОВА ПОШТА · WAYFORPAY</span>
     </footer>
   );
 }

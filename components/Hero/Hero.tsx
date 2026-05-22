@@ -10,7 +10,7 @@ export function Hero() {
         <span>TOO MUCH ЯРОМ</span>
         <span>TOO MUCH <span className={styles.red}>ДОЛИНОЮ</span></span>
       </h1>
-      <span className={`${styles.cue} mono`}>↓ АРТЕФАКТ</span>
+      <span className={`${styles.cue} mono`}>↓ мерч</span>
     </section>
   );
 }
