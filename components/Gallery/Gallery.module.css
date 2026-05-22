@@ -11,18 +11,45 @@
 }
 
 .stage { position: relative; width: 100%; aspect-ratio: 3/2; background: #000; overflow: hidden; }
-.frame { position: absolute; inset: 0; opacity: 0; transform: scale(1.05);
-  transition: opacity .7s ease, transform .7s ease; }
-.frame.on { opacity: 1; transform: scale(1); }
+
+/* Crossfade between frames. The outgoing/incoming frames overlap during the
+   fade — a brief blur blends them so the eye reads one transformation, not
+   two stacked photos. Slight scale adds a calm "ken burns" drift. */
+.frame {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transform: scale(1.06);
+  filter: blur(12px);
+  transition: opacity 620ms var(--ease-out),
+              transform 760ms var(--ease-out),
+              filter 620ms var(--ease-out);
+}
+.frame.on { opacity: 1; transform: scale(1); filter: blur(0); }
 .frameImg { object-fit: cover; }
+
 .bar { height: 2px; background: #e2e2e2; }
-.bar span { display: block; height: 100%; background: var(--red); transition: width .7s ease; }
+.bar span { display: block; height: 100%; background: var(--red); transition: width 620ms linear; }
 .cap { display: flex; justify-content: space-between; padding-top: 9px; font-size: 9px; color: var(--grey); }
 
+/* Desktop diptych — hover crossfades the product photo to the artist wearing
+   it, with a soft counter-zoom so the swap feels alive. */
 .plate { position: relative; flex: 1; aspect-ratio: 3/2; background: #000; overflow: hidden; cursor: crosshair; }
-.plateImg, .plateReveal { object-fit: cover; transition: opacity .45s ease; }
-.plateReveal { opacity: 0; }
-.plate:hover .plateImg { opacity: 0; }
-.plate:hover .plateReveal { opacity: 1; }
+.plateImg, .plateReveal {
+  object-fit: cover;
+  transition: opacity 300ms var(--ease-out), transform 620ms var(--ease-out);
+}
+.plateReveal { opacity: 0; transform: scale(1.05); }
+@media (hover: hover) and (pointer: fine) {
+  .plate:hover .plateImg { opacity: 0; transform: scale(1.04); }
+  .plate:hover .plateReveal { opacity: 1; transform: scale(1); }
+}
 .tag { position: absolute; top: 13px; left: 13px; z-index: 3; font-size: 9px; color: #fff;
-  background: rgba(0,0,0,.5); padding: 5px 9px; }
+  background: rgba(0, 0, 0, 0.5); padding: 5px 9px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .frame { transform: none; filter: none; transition: opacity 320ms ease; }
+  .frame.on { transform: none; filter: none; }
+  .plateImg, .plateReveal { transform: none; transition: opacity 220ms ease; }
+  .plateReveal { transform: none; }
+  .plate:hover .plateImg, .plate:hover .plateReveal { transform: none; }
+}

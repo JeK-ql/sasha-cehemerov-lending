@@ -4,6 +4,10 @@
   --red: #F14933;
   --grey: #7A7A7A;
   --maxw: 1280px;
+
+  /* Easing — strong custom curves (built-in CSS easings are too weak) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

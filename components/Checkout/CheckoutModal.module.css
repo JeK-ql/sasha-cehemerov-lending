@@ -1,23 +1,51 @@
-.overlay { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.55); }
-.panel {
-  position: fixed; background: var(--ink); color: #fff;
-  display: flex; flex-direction: column;
+/* Overlay — fades the scrim in/out. */
+.overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0, 0, 0, 0);
+  transition: background 320ms ease;
 }
-/* мобайл — шторка знизу */
-.panel { left: 0; right: 0; bottom: 0; top: 40px; border-radius: 24px 24px 0 0; }
+.overlay[data-shown='true'] { background: rgba(0, 0, 0, 0.55); }
+
+/* Panel — mobile: bottom sheet sliding up. Default rule = closed/off-screen
+   state, so it also governs the (faster) exit transition. */
+.panel {
+  position: fixed; left: 0; right: 0; bottom: 0; top: 40px;
+  background: var(--ink); color: #fff;
+  display: flex; flex-direction: column;
+  border-radius: 24px 24px 0 0;
+  transform: translateY(100%);
+  transition: transform 300ms var(--ease-out);
+  will-change: transform;
+}
+.panel[data-shown='true'] {
+  transform: translateY(0);
+  transition: transform 440ms var(--ease-drawer); /* enter — slower, iOS-like */
+}
 .grab { width: 38px; height: 4px; background: #3a3a3a; border-radius: 3px; margin: 9px auto 2px; }
 .scroll { flex: 1; overflow-y: auto; padding: 8px 22px 26px; }
-/* десктоп — бічна панель справа */
+
+/* Desktop — side panel sliding in from the right. */
 @media (min-width: 768px) {
-  .panel { top: 0; left: auto; width: 432px; border-radius: 0; }
+  .panel {
+    top: 0; left: auto; width: 432px; border-radius: 0;
+    transform: translateX(100%);
+  }
+  .panel[data-shown='true'] { transform: translateX(0); }
   .grab { display: none; }
   .scroll { padding: 30px 34px 34px; }
 }
+
 .head { display: flex; justify-content: space-between; align-items: center; }
 .title { font-size: 17px; }
-.x { width: 30px; height: 30px; background: none; border: 1.5px solid #444;
-  color: #9a9a9a; cursor: pointer; }
+.x {
+  width: 30px; height: 30px; background: none; border: 1.5px solid #444;
+  color: #9a9a9a; cursor: pointer;
+  transition: transform 140ms var(--ease-out), border-color 140ms ease, color 140ms ease;
+}
+.x:hover { border-color: #777; color: #fff; }
+.x:active { transform: scale(0.9); }
 
+/* ——— form ——— */
 .form { margin-top: 6px; }
 .order { display: flex; gap: 13px; align-items: center; padding: 14px 0;
   border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; }
@@ -31,19 +59,39 @@
 .field { display: block; margin-bottom: 20px; position: relative; }
 .fieldLabel { font-size: 9px; color: var(--grey); display: block; margin-bottom: 9px; }
 .input { width: 100%; background: none; border: none; border-bottom: 1.5px solid #5a5a5a;
-  padding-bottom: 9px; font-size: 15px; color: #fff; font-family: inherit; }
+  padding-bottom: 9px; font-size: 15px; color: #fff; font-family: inherit;
+  transition: border-color 160ms ease; }
 .input:focus { outline: none; border-color: var(--red); }
 .fieldHint { font-size: 8px; color: #6a6a6a; margin-top: 8px; display: block; }
 .pay { width: 100%; background: #fff; color: var(--ink); border: none; cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700; text-transform: uppercase;
   font-size: 20px; padding: 19px; margin-top: 28px;
-  display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  transition: transform 150ms var(--ease-out), opacity 150ms ease; }
 .pay:disabled { opacity: .45; cursor: not-allowed; }
+.pay:not(:disabled):active { transform: scale(0.985); }
 .payWp { font-weight: 400; font-size: 9px; color: #555; }
 
 .ac { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
   background: #161616; border: 1px solid #303030; z-index: 5; list-style: none;
   max-height: 180px; overflow-y: auto; }
 .acItem { padding: 10px 12px; font-size: 13px; color: #cfcfcf; cursor: pointer;
-  border-bottom: 1px solid #242424; }
+  border-bottom: 1px solid #242424; transition: background 120ms ease, color 120ms ease; }
 .acItem:hover { background: #1f1f1f; color: #fff; }
+
+/* Staggered entrance — form sections rise in just after the panel arrives. */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.order, .block, .pay { animation: riseIn 440ms var(--ease-out) backwards; }
+.order { animation-delay: 150ms; }
+.block:nth-of-type(1) { animation-delay: 210ms; }
+.block:nth-of-type(2) { animation-delay: 270ms; }
+.pay { animation-delay: 330ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { transform: none; opacity: 0; transition: opacity 200ms ease; will-change: auto; }
+  .panel[data-shown='true'] { transform: none; opacity: 1; }
+  .order, .block, .pay { animation: none; }
+}
