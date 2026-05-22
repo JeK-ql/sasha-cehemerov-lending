@@ -1,6 +1,7 @@
 'use client';
 
 import { useCheckout } from './CheckoutProvider';
+import { CheckoutForm } from './CheckoutForm';
 import styles from './CheckoutModal.module.css';
 
 export function CheckoutModal() {
@@ -16,7 +17,7 @@ export function CheckoutModal() {
             <span className={`${styles.title} display`}>Оформлення</span>
             <button className={styles.x} onClick={close} aria-label="Закрити">✕</button>
           </div>
-          {/* checkout form added in a later task */}
+          <CheckoutForm />
         </div>
       </div>
     </div>

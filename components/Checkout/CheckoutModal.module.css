@@ -17,3 +17,26 @@
 .title { font-size: 17px; }
 .x { width: 30px; height: 30px; background: none; border: 1.5px solid #444;
   color: #9a9a9a; cursor: pointer; }
+
+.form { margin-top: 6px; }
+.order { display: flex; gap: 13px; align-items: center; padding: 14px 0;
+  border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; }
+.thumb { object-fit: cover; flex: none; }
+.orderInfo { flex: 1; min-width: 0; }
+.orderName { font-size: 12px; font-weight: 600; }
+.orderMeta { font-size: 8.5px; color: var(--grey); margin-top: 4px; }
+.orderPrice { font-size: 22px; }
+.block { border: none; margin-top: 24px; }
+.legend { font-size: 10px; color: #fff; margin-bottom: 16px; }
+.field { display: block; margin-bottom: 20px; position: relative; }
+.fieldLabel { font-size: 9px; color: var(--grey); display: block; margin-bottom: 9px; }
+.input { width: 100%; background: none; border: none; border-bottom: 1.5px solid #5a5a5a;
+  padding-bottom: 9px; font-size: 15px; color: #fff; font-family: inherit; }
+.input:focus { outline: none; border-color: var(--red); }
+.fieldHint { font-size: 8px; color: #6a6a6a; margin-top: 8px; display: block; }
+.pay { width: 100%; background: #fff; color: var(--ink); border: none; cursor: pointer;
+  font-family: var(--font-oswald); font-weight: 700; text-transform: uppercase;
+  font-size: 20px; padding: 19px; margin-top: 28px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.pay:disabled { opacity: .45; cursor: not-allowed; }
+.payWp { font-weight: 400; font-size: 9px; color: #555; }
