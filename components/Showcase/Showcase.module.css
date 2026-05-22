@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: clamp(10px, 1.8vh, 18px) clamp(8px, 2vw, 40px);
+  padding: clamp(10px, 1.8vh, 18px) clamp(6px, 1.5vw, 32px);
   overflow: hidden;
 }
 
@@ -35,33 +35,29 @@
 }
 .red { color: var(--red); }
 
-/* футболки — головний акцент: великі, ліва вгорі, права внизу, з нахлестом */
+/* футболки — головний акцент: обидві повністю видно, ліва вгорі, права внизу */
 .tees {
   flex: 1;
   min-height: 0;
   display: flex;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 28px);
   width: 100%;
-  max-width: min(74vh, 960px);
+  max-width: min(76vh, 1040px);
   margin: clamp(4px, 1vh, 12px) auto;
 }
 .tee {
   position: relative;
-  flex: 0 0 78%;
+  flex: 1 1 0;
+  min-width: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
 }
-/* ліва футболка — зверху, поверх правої */
-.tee:first-child {
-  align-self: flex-start;
-  margin-right: -56%;
-  z-index: 2;
-}
-/* права футболка — знизу, позаду */
-.tee:last-child {
-  align-self: flex-end;
-  z-index: 1;
-}
+/* ліва футболка — зі зсувом угору */
+.tee:first-child { align-self: flex-start; }
+/* права футболка — зі зсувом униз */
+.tee:last-child { align-self: flex-end; }
 .teeFrame {
   position: relative;
   width: 100%;

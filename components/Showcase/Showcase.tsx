@@ -35,6 +35,7 @@ export function Showcase() {
               src="/back-without-bg.png"
               alt="Футболка «too much яром too much долиною» — спина"
               fill
+              priority
               sizes="(min-width: 768px) 42vw, 48vw"
               className={styles.teeImg}
             />
