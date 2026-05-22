@@ -203,7 +203,7 @@ a { color: inherit; }
 }
 
 .display {
-  font-family: var(--font-archivo), sans-serif;
+  font-family: var(--font-display), sans-serif;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.01em;
@@ -215,11 +215,11 @@ a { color: inherit; }
 Повністю замінити файл:
 ```tsx
 import type { Metadata } from 'next';
-import { Inter, Archivo, Oswald, IBM_Plex_Mono } from 'next/font/google';
+import { Inter, Montserrat, Oswald, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
-const archivo = Archivo({ subsets: ['latin', 'cyrillic'], weight: ['400', '900'], variable: '--font-archivo' });
+const display = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['900'], variable: '--font-display' });
 const oswald = Oswald({ subsets: ['latin', 'cyrillic'], weight: ['600', '700'], variable: '--font-oswald' });
 const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400', '500'], variable: '--font-mono' });
 
@@ -236,7 +236,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uk" className={`${inter.variable} ${archivo.variable} ${oswald.variable} ${mono.variable}`}>
+    <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );
