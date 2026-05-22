@@ -74,7 +74,14 @@
 
 .ac { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
   background: #161616; border: 1px solid #303030; z-index: 5; list-style: none;
-  max-height: 180px; overflow-y: auto; }
+  max-height: 180px; overflow-y: auto;
+  animation: acIn 220ms var(--ease-out) both;
+  transform-origin: top;
+}
+@keyframes acIn {
+  from { opacity: 0; transform: scaleY(0.94); }
+  to { opacity: 1; transform: scaleY(1); }
+}
 .acItem { padding: 10px 12px; font-size: 13px; color: #cfcfcf; cursor: pointer;
   border-bottom: 1px solid #242424; transition: background 120ms ease, color 120ms ease; }
 .acItem:hover { background: #1f1f1f; color: #fff; }
@@ -90,11 +97,9 @@
 .block:nth-of-type(2) { animation-delay: 290ms; }
 .pay { animation-delay: 350ms; }
 
-/* Reduced motion — gentler, not zero: a soft opacity fade, no positional motion. */
+/* Reduced motion — the panel slide is kept intentionally: it conveys where
+   the sheet comes from and is an explicit product requirement. Only the
+   decorative content stagger is dropped. */
 @media (prefers-reduced-motion: reduce) {
-  .panel[data-state='open']    { animation: rmIn 260ms ease both; }
-  .panel[data-state='closing'] { animation: rmOut 200ms ease both; }
   .order, .block, .pay { animation: none; }
 }
-@keyframes rmIn  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes rmOut { from { opacity: 1; } to { opacity: 0; } }
