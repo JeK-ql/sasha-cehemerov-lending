@@ -1,90 +1,76 @@
 .showcase {
   position: relative;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: clamp(14px, 3.2vh, 36px) clamp(18px, 6vw, 90px);
+  align-items: center;
+  padding: clamp(12px, 2.4vh, 26px) clamp(14px, 4vw, 64px);
   overflow: hidden;
 }
 
-/* технічний маркер дропу */
-.drop {
-  font-size: clamp(8px, 1.7vw, 11px);
-  color: var(--grey);
-  margin-bottom: clamp(6px, 1.6vh, 18px);
-}
-
-/* заголовок-колізія */
+/* заголовок — компактний, над футболками, без накладання */
 .title {
-  position: relative;
-  z-index: 2;
+  flex: none;
   display: flex;
   flex-direction: column;
-  line-height: 0.84;
-  pointer-events: none;
+  align-items: center;
+  text-align: center;
+  line-height: 0.98;
+}
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.42em;
 }
 .small {
-  font-size: clamp(11px, 2.5vw, 18px);
-  letter-spacing: 0.2em;
-  color: var(--ink);
+  font-size: clamp(9px, 1.8vw, 13px);
+  letter-spacing: 0.18em;
+  color: var(--grey);
 }
 .big {
-  font-size: clamp(56px, 17vw, 150px);
-  letter-spacing: -0.03em;
+  font-size: clamp(28px, 6.6vw, 58px);
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
-.right { align-self: flex-end; }
-.outline {
-  align-self: flex-end;
-  color: transparent;
-  -webkit-text-stroke: clamp(1.5px, 0.4vw, 3px) var(--ink);
-}
+.red { color: var(--red); }
 
-/* футболки внахлест із заголовком */
+/* футболки — акцент: заповнюють усю вільну висоту екрана */
 .tees {
-  position: relative;
-  z-index: 3;
+  flex: 1;
+  min-height: 0;
+  align-self: stretch;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  margin-top: clamp(-96px, -15vw, -44px);
-  margin-bottom: clamp(18px, 3vh, 34px);
-  pointer-events: none;
+  align-items: stretch;
+  gap: clamp(8px, 3vw, 40px);
+  margin: clamp(10px, 2vh, 22px) 0;
 }
-.tee { position: relative; margin: 0; }
-.front {
-  width: clamp(160px, 46vw, 330px);
-  aspect-ratio: 1 / 1.16;
-  z-index: 2;
+.tee {
+  flex: 1;
+  min-width: 0;
+  max-width: 460px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
 }
-.back {
-  width: clamp(132px, 38vw, 280px);
-  aspect-ratio: 1 / 1.16;
-  margin-top: clamp(-58px, -8vw, -28px);
-  margin-left: clamp(-46px, -6vw, -22px);
-  z-index: 1;
+.teeFrame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
 }
 .teeImg { object-fit: contain; }
 .cap {
-  position: absolute;
-  left: 0;
-  bottom: clamp(-18px, -3vw, -12px);
-  font-size: clamp(7px, 1.5vw, 10px);
+  flex: none;
+  text-align: center;
+  padding-top: 6px;
+  font-size: clamp(7px, 1.4vw, 9px);
   color: var(--grey);
 }
 
 .spec {
-  position: relative;
-  z-index: 4;
-  font-size: clamp(8px, 1.8vw, 11px);
+  flex: none;
+  font-size: clamp(8px, 1.7vw, 10px);
   color: var(--grey);
   text-align: center;
-}
-
-/* десктоп — ширша композиція, футболки крупніші поруч */
-@media (min-width: 768px) {
-  .showcase { padding-inline: clamp(40px, 8vw, 120px); }
-  .tees { margin-top: clamp(-150px, -9vw, -90px); }
-  .back { margin-left: clamp(-70px, -5vw, -40px); }
 }
