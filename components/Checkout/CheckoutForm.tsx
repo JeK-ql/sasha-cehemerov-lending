@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { PRODUCT } from '@/lib/config';
 import type { CheckoutInput } from '@/lib/types';
 import styles from './CheckoutModal.module.css';
+import { NovaPoshtaPicker } from './NovaPoshtaPicker';
 
 const EMPTY: CheckoutInput = { fullName: '', phone: '', email: '', city: '', cityRef: '', warehouse: '' };
 
@@ -41,8 +42,9 @@ export function CheckoutForm() {
 
       <fieldset className={styles.block}>
         <legend className={`${styles.legend} mono`}>02 — Куди везти</legend>
-        <Field label="Місто" value={data.city} onChange={set('city')} />
-        <Field label="Відділення / поштомат Нової Пошти" value={data.warehouse} onChange={set('warehouse')} />
+        <NovaPoshtaPicker
+          onSelect={(city, cityRef, warehouse) => setData((d) => ({ ...d, city, cityRef, warehouse }))}
+        />
       </fieldset>
 
       <button type="submit" className={styles.pay} disabled={!valid}>

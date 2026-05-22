@@ -40,3 +40,10 @@
   display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .pay:disabled { opacity: .45; cursor: not-allowed; }
 .payWp { font-weight: 400; font-size: 9px; color: #555; }
+
+.ac { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
+  background: #161616; border: 1px solid #303030; z-index: 5; list-style: none;
+  max-height: 180px; overflow-y: auto; }
+.acItem { padding: 10px 12px; font-size: 13px; color: #cfcfcf; cursor: pointer;
+  border-bottom: 1px solid #242424; }
+.acItem:hover { background: #1f1f1f; color: #fff; }
