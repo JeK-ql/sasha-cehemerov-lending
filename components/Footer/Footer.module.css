@@ -1,0 +1,10 @@
+.footer {
+  display: flex; flex-wrap: wrap; gap: 12px 24px;
+  justify-content: space-between; align-items: center;
+  padding: 22px 24px; background: var(--bg);
+  border-top: 1.5px solid var(--ink);
+  font-size: 9px; color: var(--grey);
+}
+.links { display: flex; gap: 20px; }
+.links a:hover { color: var(--red); }
+@media (min-width: 768px) { .footer { padding: 22px 40px; } }
