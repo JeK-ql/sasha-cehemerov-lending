@@ -15,7 +15,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 html, body { background: var(--bg); color: var(--ink); }
 
@@ -26,6 +30,39 @@ body {
   /* clip (not hidden) — guards against horizontal scroll on mobile
      without breaking the sticky header */
   overflow-x: clip;
+}
+
+/* Parallax thorns watermark — a fixed layer behind the transparent white
+   sections. Phones fetch only bg-phone, desktops only bg-web (the browser
+   never downloads a background-image whose media query does not match). */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url('/bg-phone.webp');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.1;
+}
+@media (min-width: 768px) {
+  body::before { background-image: url('/bg-web.webp'); }
+}
+@keyframes bgDrift {
+  from { transform: translateY(-2.5%) scale(1.08); }
+  to   { transform: translateY(2.6%) scale(1.08); }
+}
+/* Scroll-driven drift — the watermark glides as the page scrolls.
+   Falls back to a plain fixed layer where scroll timelines are unsupported. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    body::before {
+      animation: bgDrift linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
 }
 
 a { color: inherit; }
@@ -53,4 +90,14 @@ button { -webkit-tap-highlight-color: transparent; }
   letter-spacing: -0.01em;
 }
 
-@media (max-width: 767px) { body { padding-bottom: 60px; } }
+.gothic {
+  font-family: 'Germanica', serif;
+  text-transform: lowercase;
+  font-weight: normal;
+}
+
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(75px + env(safe-area-inset-bottom));
+  }
+}

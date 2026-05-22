@@ -1,16 +1,25 @@
-.wrap { background: var(--bg); }
+.wrap { background: transparent; }
 .spec { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
   padding: 14px 20px 32px; font-size: 11px; color: var(--grey); }
 .cta {
   display: block; width: 100%; border: none; cursor: pointer;
   background: var(--red); color: #fff;
   font-size: clamp(28px, 5vw, 48px); padding: 30px 20px;
-  transition: background .25s;
+  transition: background .25s var(--ease-out), transform .18s var(--ease-out);
+  will-change: transform;
 }
 .cta:hover { background: var(--ink); }
+.cta:active { transform: scale(0.995); }
 /* На мобільному CTA закріплена донизу */
 @media (max-width: 767px) {
-  .cta { position: fixed; bottom: 0; left: 0; right: 0; z-index: 35;
-    font-size: 17px; padding: 20px; }
+  .cta {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 35;
+    font-size: 17px;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    transition: background 0.3s var(--ease-out), transform 0.15s var(--ease-out);
+  }
+  .cta:active {
+    transform: scale(0.98);
+  }
   .spec { padding-bottom: 24px; }
 }
