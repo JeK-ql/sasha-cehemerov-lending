@@ -30,7 +30,7 @@
   .panel[data-state='open']    { animation-name: panelIn; }
   .panel[data-state='closing'] { animation-name: panelOut; }
   .grab { display: none; }
-  .scroll { padding: 30px 34px 34px; }
+  .scroll { padding: 25px 29px 29px; }
 }
 @keyframes panelIn  { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes panelOut { from { transform: translateX(0); }    to { transform: translateX(100%); } }

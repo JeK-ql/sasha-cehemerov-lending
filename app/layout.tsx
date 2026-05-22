@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'too much яром too much долиною — Sasha Chemerov',
     description: 'Дроп 01 — оверсайз-футболка.',
-    images: ['/front-back-without-bg.png'],
+    images: ['/front-without-bg-2.png'],
   },
 };
 

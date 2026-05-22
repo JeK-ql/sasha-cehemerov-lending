@@ -2,10 +2,10 @@
   flex: none;
   display: flex; flex-wrap: wrap; gap: 10px 24px;
   justify-content: space-between; align-items: center;
-  padding: 14px 24px; background: transparent;
+  padding: 10px 24px; background: transparent;
   border-top: 1.5px solid var(--ink);
   font-size: 9px; color: var(--grey);
 }
 .links { display: flex; gap: 20px; }
 .links a:hover { color: var(--red); }
-@media (min-width: 768px) { .footer { padding: 16px 40px; } }
+@media (min-width: 768px) { .footer { padding: 0px 40px; } }

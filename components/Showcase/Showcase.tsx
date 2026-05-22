@@ -5,11 +5,11 @@ export function Showcase() {
   return (
     <section className={styles.showcase}>
       <h1 className={styles.title}>
-        <span className={styles.line}>
+        <span className={`${styles.line} ${styles.lineLeft}`}>
           <span className={`${styles.small} mono`}>too much</span>
           <span className={`${styles.big} display`}>яром</span>
         </span>
-        <span className={styles.line}>
+        <span className={`${styles.line} ${styles.lineRight}`}>
           <span className={`${styles.small} mono`}>too much</span>
           <span className={`${styles.big} ${styles.red} display`}>долиною</span>
         </span>

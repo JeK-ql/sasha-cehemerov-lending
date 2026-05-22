@@ -95,7 +95,6 @@ export function CheckoutForm() {
         <Field
           label="Прізвище та імʼя"
           placeholder="Чемеров Олександр"
-          hint="так підпишемо посилку"
           value={data.fullName}
           onChange={setField('fullName')}
           error={errors.fullName}
@@ -103,7 +102,6 @@ export function CheckoutForm() {
         <Field
           label="Телефон"
           placeholder="+380 67 123 45 67"
-          hint="зателефонуємо, якщо щось не так із замовленням"
           value={data.phone}
           onChange={setField('phone')}
           type="tel"
@@ -113,7 +111,6 @@ export function CheckoutForm() {
         <Field
           label="E-mail"
           placeholder="you@example.com"
-          hint="сюди WayForPay надішле фіскальний чек"
           value={data.email}
           onChange={setField('email')}
           type="email"

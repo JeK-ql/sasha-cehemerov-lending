@@ -155,7 +155,6 @@ export function NovaPoshtaPicker({
           <span className={`${styles.fieldError} mono`}>{errors.city}</span>
         ) : (
           <span className={`${styles.fieldHint} mono`}>
-            оберіть зі списку популярних або почніть вводити назву
           </span>
         )}
       </label>
