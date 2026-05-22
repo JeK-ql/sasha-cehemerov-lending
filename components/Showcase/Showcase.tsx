@@ -3,8 +3,8 @@ import styles from './Showcase.module.css';
 
 export function Showcase() {
   return (
-    <section className={styles.showcase}>
-      <h1 className={styles.title}>
+    <>
+     {/* <h1 className={styles.title}>
         <span className={`${styles.line} ${styles.lineLeft}`}>
           <span className={`${styles.small} mono`}>too much</span>
           <span className={`${styles.big} display`}>яром</span>
@@ -13,7 +13,9 @@ export function Showcase() {
           <span className={`${styles.small} mono`}>too much</span>
           <span className={`${styles.big} ${styles.red} display`}>долиною</span>
         </span>
-      </h1>
+      </h1> */}
+    <section className={styles.showcase}>
+     
 
       <div className={styles.tees}>
         <figure className={styles.tee}>
@@ -42,7 +44,7 @@ export function Showcase() {
         </figure>
       </div>
 
-      <p className={`${styles.spec} mono`}>Oversize · 100% Бавовна · Heavyweight</p>
-    </section>
+      <p className={`${styles.spec} mono`}>Oversize · ексклюзий дрілл мерч </p>
+    </section></>
   );
 }

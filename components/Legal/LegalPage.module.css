@@ -5,3 +5,8 @@
 .body { font-size: 15px; line-height: 1.7; }
 .body h2 { font-size: 18px; margin: 28px 0 10px; }
 .body p { margin-bottom: 12px; }
+.body ul { margin: 0 0 12px; padding-left: 22px; }
+.body li { margin-bottom: 6px; }
+.body strong { font-weight: 600; }
+.body a { color: var(--red); }
+.body address { font-style: normal; }
