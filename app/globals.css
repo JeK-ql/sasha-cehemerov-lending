@@ -8,6 +8,9 @@
   /* Easing — strong custom curves (built-in CSS easings are too weak) */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Gentle ease-out — motion stays visible across the whole duration
+     (the "drawer" curve front-loads too hard and reads as a pop) */
+  --ease-glide: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

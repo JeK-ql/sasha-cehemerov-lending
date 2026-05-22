@@ -1,39 +1,39 @@
-/* Overlay — fades the scrim in/out. */
+/* ---------- Overlay scrim ---------- */
 .overlay {
   position: fixed; inset: 0; z-index: 60;
-  background: rgba(0, 0, 0, 0);
-  transition: background 320ms ease;
+  background-color: rgba(0, 0, 0, 0.55);
 }
-.overlay[data-shown='true'] { background: rgba(0, 0, 0, 0.55); }
+.overlay[data-state='open']    { animation: ovlIn 400ms ease both; }
+.overlay[data-state='closing'] { animation: ovlOut 320ms ease both; }
+@keyframes ovlIn  { from { background-color: rgba(0, 0, 0, 0); } }
+@keyframes ovlOut { to   { background-color: rgba(0, 0, 0, 0); } }
 
-/* Panel — mobile: bottom sheet sliding up. Default rule = closed/off-screen
-   state, so it also governs the (faster) exit transition. */
+/* ---------- Panel — mobile: bottom sheet ---------- */
 .panel {
   position: fixed; left: 0; right: 0; bottom: 0; top: 40px;
   background: var(--ink); color: #fff;
   display: flex; flex-direction: column;
   border-radius: 24px 24px 0 0;
-  transform: translateY(100%);
-  transition: transform 300ms var(--ease-out);
   will-change: transform;
 }
-.panel[data-shown='true'] {
-  transform: translateY(0);
-  transition: transform 440ms var(--ease-drawer); /* enter — slower, iOS-like */
-}
+.panel[data-state='open']    { animation: sheetIn 480ms var(--ease-glide) both; }
+.panel[data-state='closing'] { animation: sheetOut 380ms var(--ease-glide) both; }
+@keyframes sheetIn  { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sheetOut { from { transform: translateY(0); }    to { transform: translateY(100%); } }
+
 .grab { width: 38px; height: 4px; background: #3a3a3a; border-radius: 3px; margin: 9px auto 2px; }
 .scroll { flex: 1; overflow-y: auto; padding: 8px 22px 26px; }
 
-/* Desktop — side panel sliding in from the right. */
+/* ---------- Panel — desktop: side panel from the right ---------- */
 @media (min-width: 768px) {
-  .panel {
-    top: 0; left: auto; width: 432px; border-radius: 0;
-    transform: translateX(100%);
-  }
-  .panel[data-shown='true'] { transform: translateX(0); }
+  .panel { top: 0; left: auto; width: 432px; border-radius: 0; }
+  .panel[data-state='open']    { animation-name: panelIn; }
+  .panel[data-state='closing'] { animation-name: panelOut; }
   .grab { display: none; }
   .scroll { padding: 30px 34px 34px; }
 }
+@keyframes panelIn  { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes panelOut { from { transform: translateX(0); }    to { transform: translateX(100%); } }
 
 .head { display: flex; justify-content: space-between; align-items: center; }
 .title { font-size: 17px; }
@@ -45,7 +45,7 @@
 .x:hover { border-color: #777; color: #fff; }
 .x:active { transform: scale(0.9); }
 
-/* ——— form ——— */
+/* ---------- form ---------- */
 .form { margin-top: 6px; }
 .order { display: flex; gap: 13px; align-items: center; padding: 14px 0;
   border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; }
@@ -79,19 +79,22 @@
   border-bottom: 1px solid #242424; transition: background 120ms ease, color 120ms ease; }
 .acItem:hover { background: #1f1f1f; color: #fff; }
 
-/* Staggered entrance — form sections rise in just after the panel arrives. */
+/* ---------- staggered content entrance ---------- */
 @keyframes riseIn {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .order, .block, .pay { animation: riseIn 440ms var(--ease-out) backwards; }
-.order { animation-delay: 150ms; }
-.block:nth-of-type(1) { animation-delay: 210ms; }
-.block:nth-of-type(2) { animation-delay: 270ms; }
-.pay { animation-delay: 330ms; }
+.order { animation-delay: 170ms; }
+.block:nth-of-type(1) { animation-delay: 230ms; }
+.block:nth-of-type(2) { animation-delay: 290ms; }
+.pay { animation-delay: 350ms; }
 
+/* Reduced motion — gentler, not zero: a soft opacity fade, no positional motion. */
 @media (prefers-reduced-motion: reduce) {
-  .panel { transform: none; opacity: 0; transition: opacity 200ms ease; will-change: auto; }
-  .panel[data-shown='true'] { transform: none; opacity: 1; }
+  .panel[data-state='open']    { animation: rmIn 260ms ease both; }
+  .panel[data-state='closing'] { animation: rmOut 200ms ease both; }
   .order, .block, .pay { animation: none; }
 }
+@keyframes rmIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rmOut { from { opacity: 1; } to { opacity: 0; } }

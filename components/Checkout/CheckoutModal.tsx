@@ -5,33 +5,23 @@ import { useCheckout } from './CheckoutProvider';
 import { CheckoutForm } from './CheckoutForm';
 import styles from './CheckoutModal.module.css';
 
+const EXIT_MS = 420;
+
 export function CheckoutModal() {
   const { isOpen, close } = useCheckout();
-  const [mounted, setMounted] = useState(false); // present in the DOM?
-  const [shown, setShown] = useState(false); // animated-in state
+  const [mounted, setMounted] = useState(false);
 
-  // Mount on open; keep the element mounted through the exit transition.
+  // Mount on open; keep mounted through the exit animation, then unmount.
   useEffect(() => {
     if (isOpen) {
       setMounted(true);
       return;
     }
-    const t = setTimeout(() => setMounted(false), 360);
-    return () => clearTimeout(t);
-  }, [isOpen]);
-
-  // Flip the visible state AFTER the closed state has been painted.
-  // This effect runs post-paint (passive effect), so the panel is already
-  // on-screen in its closed position — one frame later we flip to `shown`
-  // and the CSS transition runs. Doing this in the same effect as the mount
-  // is unreliable: the closed frame may never be painted.
-  useEffect(() => {
-    if (mounted && isOpen) {
-      const id = requestAnimationFrame(() => setShown(true));
-      return () => cancelAnimationFrame(id);
+    if (mounted) {
+      const t = setTimeout(() => setMounted(false), EXIT_MS);
+      return () => clearTimeout(t);
     }
-    setShown(false);
-  }, [mounted, isOpen]);
+  }, [isOpen, mounted]);
 
   // Lock body scroll + close on Escape while open.
   useEffect(() => {
@@ -50,11 +40,15 @@ export function CheckoutModal() {
 
   if (!mounted) return null;
 
+  // The element mounts directly with data-state="open" — the keyframe
+  // animation runs the moment it renders, no frame-timing trickery needed.
+  const state = isOpen ? 'open' : 'closing';
+
   return (
-    <div className={styles.overlay} data-shown={shown} onClick={close}>
+    <div className={styles.overlay} data-state={state} onClick={close}>
       <div
         className={styles.panel}
-        data-shown={shown}
+        data-state={state}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
