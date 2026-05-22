@@ -160,119 +160,96 @@ export function NovaPoshtaPicker({
         )}
       </label>
 
-      {/* ---- режим доставки + точка (після вибору міста) ---- */}
+      {/* ---- точка видачі (після вибору міста) ---- */}
       {citySelected && (
-        <>
-          <div className={styles.modes}>
-            <button
-              type="button"
-              className={styles.modeBtn}
-              data-active={value.deliveryType === 'warehouse'}
-              onClick={() =>
-                onChange({ deliveryType: 'warehouse', street: '', building: '', flat: '' })
-              }
-            >
-              Відділення / поштомат
-            </button>
-            <button
-              type="button"
-              className={styles.modeBtn}
-              data-active={value.deliveryType === 'courier'}
-              onClick={() => onChange({ deliveryType: 'courier', warehouse: '' })}
-            >
-              Курʼєр
-            </button>
-          </div>
-
-          {value.deliveryType === 'warehouse' ? (
-            <label className={styles.field}>
-              <span className={`${styles.fieldLabel} mono`}>Відділення або поштомат</span>
-              <input
-                className={styles.input}
-                data-invalid={errors.warehouse ? 'true' : undefined}
-                placeholder="Номер або адреса"
-                value={value.warehouse || whQuery}
-                onChange={(e) => {
-                  setWhQuery(e.target.value);
-                  if (value.warehouse) onChange({ warehouse: '' });
-                }}
-                onFocus={() => setWhOpen(true)}
-                onBlur={() => setTimeout(() => setWhOpen(false), 150)}
-              />
-              {whOpen && !value.warehouse && filteredWh.length > 0 && (
-                <ul className={styles.ac}>
-                  {filteredWh.slice(0, 60).map((w) => (
-                    <li
-                      key={w.ref}
-                      className={`${styles.acItem} ${styles.acRow}`}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => {
-                        onChange({ warehouse: w.label });
-                        setWhQuery('');
-                        setWhOpen(false);
-                      }}
-                    >
-                      <span>{w.label}</span>
-                      <span className={`${styles.acTag} mono`}>
-                        {w.type === 'postbox' ? 'Поштомат' : 'Відділення'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {errors.warehouse ? (
-                <span className={`${styles.fieldError} mono`}>{errors.warehouse}</span>
-              ) : (
-                <span className={`${styles.fieldHint} mono`}>
-                  {warehouses.length ? 'оберіть точку видачі Нової Пошти' : 'завантаження точок…'}
-                </span>
-              )}
-            </label>
-          ) : (
-            <>
-              <label className={styles.field}>
-                <span className={`${styles.fieldLabel} mono`}>Вулиця</span>
-                <input
-                  className={styles.input}
-                  data-invalid={errors.street ? 'true' : undefined}
-                  placeholder="вул. Шевченка"
-                  value={value.street}
-                  onChange={(e) => onChange({ street: e.target.value })}
-                />
-                {errors.street ? (
-                  <span className={`${styles.fieldError} mono`}>{errors.street}</span>
-                ) : (
-                  <span className={`${styles.fieldHint} mono`}>назва вулиці у вибраному місті</span>
-                )}
-              </label>
-              <div className={styles.fieldRow}>
-                <label className={styles.field}>
-                  <span className={`${styles.fieldLabel} mono`}>Будинок</span>
-                  <input
-                    className={styles.input}
-                    data-invalid={errors.building ? 'true' : undefined}
-                    placeholder="12А"
-                    value={value.building}
-                    onChange={(e) => onChange({ building: e.target.value })}
-                  />
-                  {errors.building && (
-                    <span className={`${styles.fieldError} mono`}>{errors.building}</span>
-                  )}
-                </label>
-                <label className={styles.field}>
-                  <span className={`${styles.fieldLabel} mono`}>Квартира</span>
-                  <input
-                    className={styles.input}
-                    placeholder="45"
-                    value={value.flat}
-                    onChange={(e) => onChange({ flat: e.target.value })}
-                  />
-                </label>
-              </div>
-            </>
+        <label className={styles.field}>
+          <span className={`${styles.fieldLabel} mono`}>Відділення або поштомат</span>
+          <input
+            className={styles.input}
+            data-invalid={errors.warehouse ? 'true' : undefined}
+            placeholder="Номер або адреса"
+            value={value.warehouse || whQuery}
+            onChange={(e) => {
+              setWhQuery(e.target.value);
+              if (value.warehouse) onChange({ warehouse: '' });
+            }}
+            onFocus={() => setWhOpen(true)}
+            onBlur={() => setTimeout(() => setWhOpen(false), 150)}
+          />
+          {whOpen && !value.warehouse && filteredWh.length > 0 && (
+            <ul className={styles.ac}>
+              {filteredWh.slice(0, 60).map((w) => (
+                <li
+                  key={w.ref}
+                  className={`${styles.acItem} ${styles.acRow}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    onChange({ warehouse: w.label });
+                    setWhQuery('');
+                    setWhOpen(false);
+                  }}
+                >
+                  <span>{w.label}</span>
+                  <span className={`${styles.acTag} mono`}>
+                    {w.type === 'postbox' ? 'Поштомат' : 'Відділення'}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
-        </>
+          {errors.warehouse ? (
+            <span className={`${styles.fieldError} mono`}>{errors.warehouse}</span>
+          ) : (
+            <span className={`${styles.fieldHint} mono`}>
+              {warehouses.length ? 'оберіть точку видачі Нової Пошти' : 'завантаження точок…'}
+            </span>
+          )}
+        </label>
       )}
+
+      {/*
+        Кур'єр-режим тимчасово вимкнено на прохання клієнта — лишається тільки
+        вибір відділення/поштомата. Щоб повернути: обгорнути точку видачі вище
+        в ternary по value.deliveryType і відновити перемикач та гілку кур'єра:
+
+        <div className={styles.modes}>
+          <button type="button" className={styles.modeBtn}
+            data-active={value.deliveryType === 'warehouse'}
+            onClick={() => onChange({ deliveryType: 'warehouse', street: '', building: '', flat: '' })}>
+            Відділення / поштомат
+          </button>
+          <button type="button" className={styles.modeBtn}
+            data-active={value.deliveryType === 'courier'}
+            onClick={() => onChange({ deliveryType: 'courier', warehouse: '' })}>
+            Курʼєр
+          </button>
+        </div>
+
+        Гілка кур'єра (else у ternary):
+        <label className={styles.field}>
+          <span className={`${styles.fieldLabel} mono`}>Вулиця</span>
+          <input className={styles.input} data-invalid={errors.street ? 'true' : undefined}
+            placeholder="вул. Шевченка" value={value.street}
+            onChange={(e) => onChange({ street: e.target.value })} />
+          {errors.street
+            ? <span className={`${styles.fieldError} mono`}>{errors.street}</span>
+            : <span className={`${styles.fieldHint} mono`}>назва вулиці у вибраному місті</span>}
+        </label>
+        <div className={styles.fieldRow}>
+          <label className={styles.field}>
+            <span className={`${styles.fieldLabel} mono`}>Будинок</span>
+            <input className={styles.input} data-invalid={errors.building ? 'true' : undefined}
+              placeholder="12А" value={value.building}
+              onChange={(e) => onChange({ building: e.target.value })} />
+            {errors.building && <span className={`${styles.fieldError} mono`}>{errors.building}</span>}
+          </label>
+          <label className={styles.field}>
+            <span className={`${styles.fieldLabel} mono`}>Квартира</span>
+            <input className={styles.input} placeholder="45" value={value.flat}
+              onChange={(e) => onChange({ flat: e.target.value })} />
+          </label>
+        </div>
+      */}
     </>
   );
 }
