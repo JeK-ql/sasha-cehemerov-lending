@@ -38,3 +38,5 @@ a { color: inherit; }
   text-transform: uppercase;
   letter-spacing: -0.01em;
 }
+
+@media (max-width: 767px) { body { padding-bottom: 60px; } }

@@ -1,0 +1,16 @@
+.wrap { background: var(--bg); }
+.spec { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+  padding: 14px 20px 32px; font-size: 11px; color: var(--grey); }
+.cta {
+  display: block; width: 100%; border: none; cursor: pointer;
+  background: var(--red); color: #fff;
+  font-size: clamp(28px, 5vw, 48px); padding: 30px 20px;
+  transition: background .25s;
+}
+.cta:hover { background: var(--ink); }
+/* На мобільному CTA закріплена донизу */
+@media (max-width: 767px) {
+  .cta { position: fixed; bottom: 0; left: 0; right: 0; z-index: 35;
+    font-size: 17px; padding: 20px; }
+  .spec { padding-bottom: 24px; }
+}

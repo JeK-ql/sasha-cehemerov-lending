@@ -1,13 +1,18 @@
+import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
 import { Header } from '@/components/Header/Header';
 import { Hero } from '@/components/Hero/Hero';
 import { Gallery } from '@/components/Gallery/Gallery';
+import { OrderBar } from '@/components/OrderBar/OrderBar';
 
 export default function Home() {
   return (
-    <main>
-      <Header />
-      <Hero />
-      <Gallery />
-    </main>
+    <CheckoutProvider>
+      <main>
+        <Header />
+        <Hero />
+        <Gallery />
+        <OrderBar />
+      </main>
+    </CheckoutProvider>
   );
 }
