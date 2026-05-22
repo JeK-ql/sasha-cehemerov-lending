@@ -19,28 +19,26 @@ export function Showcase() {
         <figure className={styles.tee}>
           <div className={styles.teeFrame}>
             <Image
-              src="/front-back-without-bg.png"
+              src="/front-without-bg-2.png"
               alt="Футболка «too much яром too much долиною» — перед"
               fill
               priority
-              sizes="(min-width: 768px) 42vw, 48vw"
+              sizes="(min-width: 1024px) 24vw, (min-width: 768px) 34vw, 70vw"
               className={styles.teeImg}
             />
           </div>
-          <figcaption className={`${styles.cap} mono`}>01 — Перед</figcaption>
         </figure>
         <figure className={styles.tee}>
           <div className={styles.teeFrame}>
             <Image
-              src="/back-without-bg.png"
+              src="/back-without-bg-2.png"
               alt="Футболка «too much яром too much долиною» — спина"
               fill
               priority
-              sizes="(min-width: 768px) 42vw, 48vw"
+              sizes="(min-width: 1024px) 24vw, (min-width: 768px) 34vw, 70vw"
               className={styles.teeImg}
             />
           </div>
-          <figcaption className={`${styles.cap} mono`}>02 — Спина</figcaption>
         </figure>
       </div>
 
