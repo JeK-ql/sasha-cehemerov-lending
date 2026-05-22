@@ -6,7 +6,7 @@ export function Hero() {
     <section className={styles.hero}>
       <Image src="/hero.jpg" alt="Саша Чемеров" fill priority className={styles.photo} sizes="100vw" />
       <div className={styles.grad} />
-      <h1 className={`${styles.title} poster`}>
+      <h1 className={styles.title}>
         <span>TOO MUCH ЯРОМ</span>
         <span>TOO MUCH <span className={styles.red}>ДОЛИНОЮ</span></span>
       </h1>

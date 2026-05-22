@@ -1,5 +1,5 @@
 .header {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+  position: sticky; top: 0; z-index: 40;
   display: flex; justify-content: space-between; align-items: center;
   padding: 16px 24px;
   background: var(--bg);
@@ -7,10 +7,10 @@
 }
 /* logo.png recoloured to monochrome. brightness(0) = black (visible on the
    light header). Add invert(1) only on a dark surface to make it white. */
-.logo { height: 20px; width: auto; display: block; filter: brightness(0); }
+.logo { height: 40px; width: auto; display: block; filter: brightness(0); }
 .drop { font-size: 9px; color: var(--grey); text-align: right; }
 @media (min-width: 768px) {
-  .header { padding: 18px 40px; }
+  .header { padding: 18px 100px; }
   .logo { height: 26px; }
   .drop { font-size: 10px; }
 }
