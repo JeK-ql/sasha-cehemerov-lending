@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     productName: [PRODUCT.name], productCount: [1], productPrice: [PRODUCT.price],
   };
 
-  const params: WayForPayParams & { serviceUrl: string; returnUrl: string } = {
+  const params: WayForPayParams & { serviceUrl: string; returnUrl: string; merchantTransactionSecureType: string } = {
     ...base,
     merchantSignature: purchaseSignature(secret, base),
     clientFirstName: firstParts.join(' ') || '-',
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     language: 'UA',
     serviceUrl: `${SITE_URL}/api/wayforpay-callback`,
     returnUrl: SITE_URL,
+    merchantTransactionSecureType: 'AUTO',
   };
 
   return NextResponse.json(params);

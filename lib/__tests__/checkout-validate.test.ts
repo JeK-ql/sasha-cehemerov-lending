@@ -16,6 +16,9 @@ describe('validateCheckout', () => {
   it('rejects short name', () => {
     expect(validateCheckout({ ...ok, fullName: 'X' }).ok).toBe(false);
   });
+  it('rejects single-word name', () => {
+    expect(validateCheckout({ ...ok, fullName: 'Іван' }).ok).toBe(false);
+  });
   it('rejects missing warehouse', () => {
     expect(validateCheckout({ ...ok, warehouse: '' }).ok).toBe(false);
   });

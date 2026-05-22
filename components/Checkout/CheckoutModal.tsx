@@ -1,11 +1,25 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useCheckout } from './CheckoutProvider';
 import { CheckoutForm } from './CheckoutForm';
 import styles from './CheckoutModal.module.css';
 
 export function CheckoutModal() {
   const { isOpen, close } = useCheckout();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [isOpen, close]);
+
   if (!isOpen) return null;
 
   return (

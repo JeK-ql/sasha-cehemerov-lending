@@ -19,9 +19,13 @@ export function NovaPoshtaPicker({
   useEffect(() => {
     if (city || cityQuery.trim().length < 2) { setCities([]); return; }
     const id = setTimeout(async () => {
-      const res = await fetch(`/api/novaposhta?type=cities&q=${encodeURIComponent(cityQuery)}`);
-      const json = await res.json();
-      setCities(json.items ?? []);
+      try {
+        const res = await fetch(`/api/novaposhta?type=cities&q=${encodeURIComponent(cityQuery)}`);
+        const json = await res.json();
+        setCities(json.items ?? []);
+      } catch {
+        setCities([]);
+      }
     }, 250);
     return () => clearTimeout(id);
   }, [cityQuery, city]);
@@ -30,7 +34,8 @@ export function NovaPoshtaPicker({
     if (!city) return;
     fetch(`/api/novaposhta?type=warehouses&ref=${encodeURIComponent(city.ref)}`)
       .then((r) => r.json())
-      .then((j) => setWarehouses(j.items ?? []));
+      .then((j) => setWarehouses(j.items ?? []))
+      .catch(() => setWarehouses([]));
   }, [city]);
 
   return (

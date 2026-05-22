@@ -16,7 +16,7 @@ export function CheckoutForm() {
     setData((d) => ({ ...d, [k]: e.target.value }));
 
   const valid =
-    data.fullName.trim().length > 2 &&
+    data.fullName.trim().split(/\s+/).filter(Boolean).length >= 2 &&
     /^\+?\d{9,15}$/.test(data.phone.replace(/\s/g, '')) &&
     /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email) &&
     data.city.trim().length > 0 &&
