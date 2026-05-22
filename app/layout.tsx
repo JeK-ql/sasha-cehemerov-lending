@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Montserrat, Oswald, Unbounded, IBM_Plex_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
@@ -20,12 +20,17 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: '#FAFAFA',
+  colorScheme: 'light',
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${hero.variable} ${mono.variable}`}>
       <body>
         {children}
-        <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="afterInteractive" />
+        <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="lazyOnload" />
       </body>
     </html>
   );
