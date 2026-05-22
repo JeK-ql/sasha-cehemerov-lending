@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter, Montserrat, Oswald, Unbounded, IBM_Plex_Mono } from 'next/font/google';
+import { Inter, Montserrat, Oswald, Metal_Mania, IBM_Plex_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 const display = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['900'], variable: '--font-display' });
 const oswald = Oswald({ subsets: ['latin', 'cyrillic'], weight: ['600', '700'], variable: '--font-oswald' });
-const hero = Unbounded({ subsets: ['latin', 'cyrillic'], weight: ['700', '900'], variable: '--font-hero' });
+const hero = Metal_Mania({ subsets: ['latin'], weight: '400', variable: '--font-hero' });
 const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400', '500'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
