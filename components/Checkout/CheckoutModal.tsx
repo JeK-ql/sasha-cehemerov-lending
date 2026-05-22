@@ -10,25 +10,28 @@ export function CheckoutModal() {
   const [mounted, setMounted] = useState(false); // present in the DOM?
   const [shown, setShown] = useState(false); // animated-in state
 
-  // Mount immediately on open; on close, play the exit transition, then unmount.
+  // Mount on open; keep the element mounted through the exit transition.
   useEffect(() => {
     if (isOpen) {
       setMounted(true);
-      // Two frames so the browser paints the closed state before we flip to
-      // shown — otherwise the enter transition is skipped.
-      let raf2 = 0;
-      const raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(() => setShown(true));
-      });
-      return () => {
-        cancelAnimationFrame(raf1);
-        cancelAnimationFrame(raf2);
-      };
+      return;
     }
-    setShown(false);
-    const t = setTimeout(() => setMounted(false), 340);
+    const t = setTimeout(() => setMounted(false), 360);
     return () => clearTimeout(t);
   }, [isOpen]);
+
+  // Flip the visible state AFTER the closed state has been painted.
+  // This effect runs post-paint (passive effect), so the panel is already
+  // on-screen in its closed position — one frame later we flip to `shown`
+  // and the CSS transition runs. Doing this in the same effect as the mount
+  // is unreliable: the closed frame may never be painted.
+  useEffect(() => {
+    if (mounted && isOpen) {
+      const id = requestAnimationFrame(() => setShown(true));
+      return () => cancelAnimationFrame(id);
+    }
+    setShown(false);
+  }, [mounted, isOpen]);
 
   // Lock body scroll + close on Escape while open.
   useEffect(() => {
