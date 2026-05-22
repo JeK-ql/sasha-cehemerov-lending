@@ -5,12 +5,12 @@
   background: var(--bg);
   border-bottom: 1.5px solid var(--ink);
 }
-.logo { display: flex; flex-direction: column; line-height: 1; }
-.sub { font-size: 8px; color: var(--ink); }
-.name { font-size: 14px; margin-top: 3px; }
+/* logo.png recoloured to monochrome. brightness(0) = black (visible on the
+   light header). Add invert(1) only on a dark surface to make it white. */
+.logo { height: 20px; width: auto; display: block; filter: brightness(0); }
 .drop { font-size: 9px; color: var(--grey); text-align: right; }
 @media (min-width: 768px) {
   .header { padding: 18px 40px; }
-  .name { font-size: 18px; }
+  .logo { height: 26px; }
   .drop { font-size: 10px; }
 }
