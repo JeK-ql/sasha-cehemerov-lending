@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Montserrat, Oswald, IBM_Plex_Mono } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
@@ -21,7 +22,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${mono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="afterInteractive" />
+      </body>
     </html>
   );
 }

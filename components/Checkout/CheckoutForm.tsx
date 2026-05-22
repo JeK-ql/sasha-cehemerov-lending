@@ -11,6 +11,7 @@ const EMPTY: CheckoutInput = { fullName: '', phone: '', email: '', city: '', cit
 
 export function CheckoutForm() {
   const [data, setData] = useState<CheckoutInput>(EMPTY);
+  const [submitting, setSubmitting] = useState(false);
   const set = (k: keyof CheckoutInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [k]: e.target.value }));
 
@@ -21,8 +22,29 @@ export function CheckoutForm() {
     data.city.trim().length > 0 &&
     data.warehouse.trim().length > 0;
 
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!valid || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('checkout failed');
+      const params = await res.json();
+      if (!window.Wayforpay) throw new Error('widget not loaded');
+      new window.Wayforpay().run(params);
+    } catch {
+      alert('Не вдалося почати оплату. Спробуйте ще раз.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
-    <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+    <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.order}>
         <Image src="/front.jpg" alt="" width={54} height={54} className={styles.thumb} />
         <div className={styles.orderInfo}>
@@ -47,8 +69,8 @@ export function CheckoutForm() {
         />
       </fieldset>
 
-      <button type="submit" className={styles.pay} disabled={!valid}>
-        ОПЛАТИТИ КАРТОЮ
+      <button type="submit" className={styles.pay} disabled={!valid || submitting}>
+        {submitting ? 'ЗАЧЕКАЙТЕ…' : 'ОПЛАТИТИ КАРТОЮ'}
         <span className={`${styles.payWp} mono`}>WAYFORPAY · APPLE PAY · GOOGLE PAY</span>
       </button>
     </form>
