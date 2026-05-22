@@ -1,0 +1,15 @@
+.hero { position: relative; height: 88vh; min-height: 520px; overflow: hidden; background: #000; }
+.photo { object-fit: cover; object-position: 50% 30%; }
+.grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.92) 2%, rgba(0,0,0,0) 46%),
+              linear-gradient(to right, rgba(0,0,0,.55), rgba(0,0,0,0) 55%);
+}
+.title {
+  position: absolute; left: 24px; bottom: 28px; z-index: 3; color: #fff;
+  display: flex; flex-direction: column;
+  font-size: clamp(46px, 9vw, 118px);
+}
+.red { color: var(--red); }
+.cue { position: absolute; right: 24px; bottom: 32px; z-index: 3; font-size: 9px; color: #d6d6d6; }
+@media (min-width: 768px) { .title { left: 38px; bottom: 34px; } }
