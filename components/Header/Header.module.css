@@ -1,27 +1,13 @@
 .header {
-  position: sticky; top: 0; z-index: 40;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 24px;
+  flex: none;
+  display: flex; justify-content: center; align-items: center;
+  padding: 14px 24px;
   background: var(--bg);
   border-bottom: 1.5px solid var(--ink);
 }
-/* logo.png recoloured to monochrome. brightness(0) = black (visible on the
-   light header). Add invert(1) only on a dark surface to make it white. */
-.logo { height: 40px; width: auto; display: block; filter: brightness(0); }
-.right { display: flex; align-items: center; gap: 14px; }
-.drop { font-size: 9px; color: var(--grey); text-align: right; display: none; }
-.buy {
-  border: none; cursor: pointer;
-  background: var(--red); color: #fff;
-  font-size: 11px; padding: 9px 17px;
-  transition: background .25s var(--ease-out), transform .2s var(--ease-out);
-  will-change: transform;
-}
-.buy:hover { background: var(--ink); transform: translateY(-1.5px) scale(1.03); }
-.buy:active { transform: translateY(1px) scale(0.97); }
+/* logo.png перефарбовано в монохром: brightness(0) = чорний на світлому хедері */
+.logo { height: 38px; width: auto; display: block; filter: brightness(0); }
 @media (min-width: 768px) {
-  .header { padding: 18px 100px; }
-  .logo { height: 50px; }
-  .drop { font-size: 10px; display: block; }
-  .buy { font-size: 12px; padding: 11px 22px; }
+  .header { padding: 16px 40px; }
+  .logo { height: 46px; }
 }
