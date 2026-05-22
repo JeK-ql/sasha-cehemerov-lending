@@ -28,7 +28,7 @@ export function CheckoutModal() {
         <div className={styles.grab} />
         <div className={styles.scroll}>
           <div className={styles.head}>
-            <span className={`${styles.title} display`}>Оформлення</span>
+            <span className={`${styles.title} display`}>ЗАМОВЛЕННЯ</span>
             <button className={styles.x} onClick={close} aria-label="Закрити">✕</button>
           </div>
           <CheckoutForm />

@@ -6,14 +6,9 @@
               linear-gradient(to right, rgba(0,0,0,.55), rgba(0,0,0,0) 55%);
 }
 .title {
-  position: absolute; left: 24px; bottom: 28px; z-index: 3; color: #fff;
+ position: absolute; left: 24px; bottom: 28px; z-index: 3; color: #fff;
   display: flex; flex-direction: column;
-  font-family: var(--font-hero), sans-serif;
-  font-weight: 900;
-  text-transform: uppercase;
-  line-height: 0.9;
-  letter-spacing: -0.01em;
-  font-size: clamp(40px, 7.5vw, 96px);
+  font-size: clamp(46px, 9vw, 118px);
 }
 .red { color: var(--red); }
 .cue { position: absolute; right: 24px; bottom: 32px; z-index: 3; font-size: 9px; color: #d6d6d6; }
