@@ -129,7 +129,7 @@ export function CheckoutForm() {
 
       <button type="submit" className={styles.pay} disabled={submitting}>
         {submitting ? 'ЗАЧЕКАЙТЕ…' : 'ЗАМОВИТИ'}
-        <span className={`${styles.payWp} mono`}>ОПЛАТА КАРТКОЮ · WAYFORPAY · APPLE PAY · GOOGLE PAY</span>
+        <span className={`${styles.payWp} mono`}>Оплатити</span>
       </button>
     </form>
   );

@@ -2,7 +2,6 @@
   flex: none;
   display: flex; justify-content: center; align-items: center;
   padding: 14px 24px;
-  background: var(--bg);
   border-bottom: 1.5px solid var(--ink);
 }
 /* logo.png перефарбовано в монохром: brightness(0) = чорний на світлому хедері */
