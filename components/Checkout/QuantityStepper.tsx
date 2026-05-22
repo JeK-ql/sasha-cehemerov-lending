@@ -2,7 +2,7 @@
 
 import styles from './CheckoutModal.module.css';
 
-/** Степер кількості: мінімум 1, верхньої межи немає. */
+/** Степер кількості: мінімум 1, верхньої межі немає. */
 export function QuantityStepper({
   value,
   onChange,
