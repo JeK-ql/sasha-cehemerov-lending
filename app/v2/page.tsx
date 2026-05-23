@@ -1,6 +1,7 @@
 import { CheckoutProvider } from '@/components/v2/Checkout/CheckoutProvider';
 import { Header } from '@/components/v2/Header/Header';
 import { BuyOverlay } from '@/components/v2/BuyOverlay/BuyOverlay';
+import { Footer } from '@/components/v2/Footer/Footer';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -27,6 +28,7 @@ export default function HomeV2() {
           aria-hidden="true"
         />
         <BuyOverlay />
+        <Footer />
       </main>
     </CheckoutProvider>
   );
