@@ -81,8 +81,7 @@
    width up to 600px, kept square via aspect-ratio:1. position:relative
    provides the containing block for the <Image fill> inside. */
 .thumbBtn { display: block; padding: 0; border: none; background: none;
-  cursor: zoom-in; line-height: 0;
-  width: 100%; max-width: 600px; aspect-ratio: 1;
+  width: 100%; max-width: 450px; aspect-ratio: 1;
   position: relative; overflow: hidden; }
 .orderInfo { width: 100%; text-align: center; }
 .orderName { font-size: 12px; font-weight: 600; text-transform: uppercase; }

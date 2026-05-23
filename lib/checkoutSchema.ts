@@ -7,7 +7,7 @@ export const checkoutSchema = z
       .string()
       .refine(
         (v) => v.trim().split(/\s+/).filter(Boolean).length >= 2,
-        "Вкажіть прізвище та ім'я",
+        "Вкажіть ім'я та прізвище",
       ),
     phone: z
       .string()
