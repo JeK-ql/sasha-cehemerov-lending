@@ -130,6 +130,17 @@
 .qtyBtn:not(:disabled):active { transform: scale(0.95); }
 .qtyBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
+/* Stepper "soft-disabled" — aria-disabled, not actual disabled, so the click
+   handler still fires and reveals form errors. Mirrors :disabled visuals. */
+.qtyBtn[aria-disabled='true'] { opacity: 0.35; cursor: not-allowed; }
+.qtyBtn[aria-disabled='true']:hover { background: #fff; color: var(--ink);
+  outline: none; }
+.qtyBtn[aria-disabled='true']:active { transform: none; }
+
+/* Same treatment for the pay button. */
+.pay[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
+.pay[aria-disabled='true']:active { transform: none; }
+
 /* Wraps the price text on the pay button so it can be a transform target
    for the pulse animation (transforms don't apply to pure-inline boxes). */
 .payAmount { display: inline-block; transform-origin: center; }
