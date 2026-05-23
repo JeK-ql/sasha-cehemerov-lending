@@ -1,5 +1,12 @@
 export interface NpOption { label: string; ref: string; }
 
+export interface NpWarehouse {
+  label: string;
+  ref: string;
+  type: 'branch' | 'postbox';
+  number: string;
+}
+
 const NP_ENDPOINT = 'https://api.novaposhta.ua/v2.0/json/';
 
 export function mapCities(raw: unknown): NpOption[] {
@@ -10,12 +17,31 @@ export function mapCities(raw: unknown): NpOption[] {
   }));
 }
 
-export function mapWarehouses(raw: unknown): NpOption[] {
+export function mapWarehouses(raw: unknown): NpWarehouse[] {
   if (!Array.isArray(raw)) return [];
-  return raw.map((w: { Description: string; Ref: string }) => ({
-    label: w.Description,
-    ref: w.Ref,
-  }));
+  const items: NpWarehouse[] = raw.map(
+    (w: {
+      Description?: string;
+      Ref: string;
+      Number?: string;
+      CategoryOfWarehouse?: string;
+    }) => {
+      const description = w.Description ?? '';
+      const isPostbox = w.CategoryOfWarehouse
+        ? w.CategoryOfWarehouse === 'Postomat'
+        : /поштомат/i.test(description);
+      return {
+        label: description,
+        ref: w.Ref,
+        type: (isPostbox ? 'postbox' : 'branch') as NpWarehouse['type'],
+        number: w.Number ?? '',
+      };
+    },
+  );
+  return items.sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'branch' ? -1 : 1;
+    return (parseInt(a.number, 10) || 0) - (parseInt(b.number, 10) || 0);
+  });
 }
 
 /** Пошук населених пунктів за частиною назви. */
@@ -34,7 +60,7 @@ export async function searchCities(apiKey: string, query: string): Promise<NpOpt
 }
 
 /** Список відділень/поштоматів для населеного пункту. */
-export async function listWarehouses(apiKey: string, settlementRef: string): Promise<NpOption[]> {
+export async function listWarehouses(apiKey: string, settlementRef: string): Promise<NpWarehouse[]> {
   const res = await fetch(NP_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

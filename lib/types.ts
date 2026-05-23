@@ -1,11 +1,4 @@
-export interface CheckoutInput {
-  fullName: string;
-  phone: string;
-  email: string;
-  city: string;
-  cityRef: string;
-  warehouse: string;
-}
+export type { CheckoutInput, DeliveryType } from './checkoutSchema';
 
 export interface WayForPayParams {
   merchantAccount: string;
