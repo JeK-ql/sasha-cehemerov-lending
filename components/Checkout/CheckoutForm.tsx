@@ -219,10 +219,6 @@ export function CheckoutForm() {
       </fieldset>
 
       <fieldset className={styles.block}>
-        {/* Picker is controlled — reads city/cityRef/deliveryType/warehouse/
-            street/building/flat from `data` and patches via `onChange`.
-            Passing empty errors for now; once we wire Zod-based field-level
-            error display, swap to a `collectErrors(data)` map. */}
         <NovaPoshtaPicker
           value={data}
           onChange={patch}
