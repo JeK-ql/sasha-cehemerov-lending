@@ -21,10 +21,12 @@ interface DeliveryErrors {
 export function NovaPoshtaPicker({
   value,
   onChange,
+  onBlur,
   errors,
 }: {
   value: DeliveryValue;
   onChange: (patch: Partial<CheckoutInput>) => void;
+  onBlur?: (field: 'city' | 'warehouse') => void;
   errors: DeliveryErrors;
 }) {
   const [cityQuery, setCityQuery] = useState('');
@@ -117,10 +119,11 @@ export function NovaPoshtaPicker({
           className={styles.input}
           data-invalid={errors.city ? 'true' : undefined}
           placeholder="Почніть вводити назву"
+          autoComplete="address-level2"
           value={citySelected ? value.city : cityQuery}
           onChange={(e) => editCity(e.target.value)}
           onFocus={() => setCityOpen(true)}
-          onBlur={() => setTimeout(() => setCityOpen(false), 150)}
+          onBlur={() => setTimeout(() => { setCityOpen(false); onBlur?.('city'); }, 150)}
         />
         {showPopular && (
           <ul className={styles.ac}>
@@ -167,13 +170,14 @@ export function NovaPoshtaPicker({
             className={styles.input}
             data-invalid={errors.warehouse ? 'true' : undefined}
             placeholder="Номер або адреса"
+            autoComplete="off"
             value={value.warehouse || whQuery}
             onChange={(e) => {
               setWhQuery(e.target.value);
               if (value.warehouse) onChange({ warehouse: '' });
             }}
             onFocus={() => setWhOpen(true)}
-            onBlur={() => setTimeout(() => setWhOpen(false), 150)}
+            onBlur={() => setTimeout(() => { setWhOpen(false); onBlur?.('warehouse'); }, 150)}
           />
           {whOpen && !value.warehouse && filteredWh.length > 0 && (
             <ul className={styles.ac}>
