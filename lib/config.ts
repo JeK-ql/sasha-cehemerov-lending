@@ -1,6 +1,6 @@
 export const PRODUCT = {
   name: 'too much яром too much долиною',
-  price: 2200,
+  price: 2600,
   currency: 'UAH',
   sku: 'DROP01-OVERSIZE',
 } as const;

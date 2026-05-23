@@ -22,7 +22,7 @@
 /* ---------- Panel — mobile: bottom sheet ---------- */
 .panel {
   position: fixed; inset: 0;
-  background: var(--ink); color: #fff;
+  background: var(--ink); color: #c1baac;
   display: flex; flex-direction: column;
   border-radius: 0;
   will-change: transform;
@@ -67,28 +67,26 @@
   color: #9a9a9a; cursor: pointer;
   transition: transform 140ms var(--ease-out), border-color 140ms ease, color 140ms ease;
 }
-.x:hover { border-color: #777; color: #fff; }
+.x:hover { border-color: #777; color: #c1baac; }
 .x:active { transform: scale(0.9); }
 
 /* ---------- form ---------- */
 .form { margin-top: 6px; }
-.order { display: flex; gap: 13px; align-items: center; padding: 14px 0;
+/* Photo on top filling the column, product name + meta centered below. */
+.order { display: flex; flex-direction: column; align-items: center; gap: 18px;
+  padding: 18px 0;
   border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; }
 .thumb { object-fit: cover; }
-/* Wraps each thumb so clicking opens the lightbox. The button itself grows
-   with the row (flex:1) and stays square via aspect-ratio:1; the 220px cap
-   keeps the order summary from dominating on wide desktops. position:relative
+/* Wraps the thumb so clicking opens the lightbox. Takes the full column
+   width up to 600px, kept square via aspect-ratio:1. position:relative
    provides the containing block for the <Image fill> inside. */
 .thumbBtn { display: block; padding: 0; border: none; background: none;
   cursor: zoom-in; line-height: 0;
-  flex: 1; aspect-ratio: 1; max-width: 220px;
+  width: 100%; max-width: 600px; aspect-ratio: 1;
   position: relative; overflow: hidden; }
-.orderInfo { flex: 1; min-width: 0; }
-/* Flex column → each <span> child renders on its own line, locking the
-   two-line layout regardless of available width. */
-.orderName { font-size: 12px; font-weight: 600; text-transform: uppercase;
-  display: flex; flex-direction: column; }
-.orderMeta { font-size: 9.5px; color: #fff; margin-top: 4px;
+.orderInfo { width: 100%; text-align: center; }
+.orderName { font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.orderMeta { font-size: 9.5px; color: #c1baac; margin-top: 4px;
   font-family: 'KyivTypeSans', system-ui, sans-serif; }
 .orderPrice { font-size: 22px; }
 .block { border: none; margin-top: 24px; }
@@ -96,17 +94,17 @@
    one continuous run of inputs (the .field margin-bottom keeps the field-
    to-field spacing consistent across the boundary). */
 .block + .block { margin-top: 0; }
-.legend { font-size: 10px; color: #fff; margin-bottom: 16px; }
+.legend { font-size: 10px; color: #c1baac; margin-bottom: 16px; }
 .field { display: block; margin-bottom: 20px; position: relative; }
-.fieldLabel { font-size: 9px; color: #fff; display: block; margin-bottom: 9px;
+.fieldLabel { font-size: 9px; color: #c1baac; display: block; margin-bottom: 9px;
   font-family: 'KyivTypeSans', system-ui, sans-serif; }
-.input { width: 100%; background: none; border: none; border-bottom: 1.5px solid #fff;
-  padding-bottom: 9px; font-size: 15px; color: #fff; font-family: inherit;
+.input { width: 100%; background: none; border: none; border-bottom: 1.5px solid #c1baac;
+  padding-bottom: 9px; font-size: 15px; color: #c1baac; font-family: inherit;
   transition: border-color 160ms ease; }
 .input:focus { outline: none; border-color: var(--red); }
-.fieldHint { font-size: 8px; color: #fff; margin-top: 8px; display: block;
+.fieldHint { font-size: 8px; color: #c1baac; margin-top: 8px; display: block;
   font-family: 'KyivTypeSans', system-ui, sans-serif; }
-.pay { background: #fff; color: var(--ink); border: none; cursor: pointer;
+.pay { background: #c1baac; color: var(--ink); border: none; cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700; text-transform: uppercase;
   font-size: 20px; padding: 19px;
   flex: 1; min-width: 0;
@@ -118,15 +116,15 @@
 /* Stepper row: [ − ] [ ── pay (flex:1) ── ] [ + ] */
 .payRow { display: flex; gap: 8px; margin-top: 28px; }
 .qtyBtn {
-  background: #fff; color: var(--ink); border: none; cursor: pointer;
+  background: #c1baac; color: var(--ink); border: none; cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700;
   font-size: 28px; line-height: 1; padding: 0;
   width: 64px; flex: none;
   transition: opacity 150ms ease, transform 150ms var(--ease-out),
               background 150ms ease, color 150ms ease;
 }
-.qtyBtn:hover:not(:disabled) { background: var(--ink); color: #fff;
-  outline: 1px solid #fff; outline-offset: -1px; }
+.qtyBtn:hover:not(:disabled) { background: var(--ink); color: #c1baac;
+  outline: 1px solid #c1baac; outline-offset: -1px; }
 .qtyBtn:not(:disabled):active { transform: scale(0.95); }
 .qtyBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
@@ -167,7 +165,7 @@
 }
 .acItem { padding: 10px 12px; font-size: 13px; color: #cfcfcf; cursor: pointer;
   border-bottom: 1px solid #242424; transition: background 120ms ease, color 120ms ease; }
-.acItem:hover { background: #1f1f1f; color: #fff; }
+.acItem:hover { background: #1f1f1f; color: #c1baac; }
 
 /* ---------- staggered content entrance ---------- */
 @keyframes riseIn {

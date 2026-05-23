@@ -28,8 +28,6 @@ const EMPTY: CheckoutInput = {
 // Upper bound for the stepper — keep in sync with the server-side clamp.
 const MAX_QUANTITY = 10;
 
-type ZoomTarget = 'front' | 'back' | null;
-
 /**
  * Normalises any user input into the Ukrainian "+380XXXXXXXXX" form.
  *
@@ -61,7 +59,7 @@ function formatUkrainianPhone(raw: string, prev: string): string {
 export function CheckoutForm() {
   const [data, setData] = useState<CheckoutInput>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
-  const [zoomed, setZoomed] = useState<ZoomTarget>(null);
+  const [zoomed, setZoomed] = useState(false);
   const priceRef = useRef<HTMLSpanElement>(null);
 
   // Single helper: partial-merge into data. Used by every input and by the
@@ -95,7 +93,7 @@ export function CheckoutForm() {
   useEffect(() => {
     if (!zoomed) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setZoomed(null);
+      if (e.key === 'Escape') setZoomed(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -141,24 +139,13 @@ export function CheckoutForm() {
         <button
           type="button"
           className={styles.thumbBtn}
-          onClick={() => setZoomed('front')}
-          aria-label="Збільшити фото — перед"
+          onClick={() => setZoomed(true)}
+          aria-label="Збільшити фото"
         >
-          <Image src="/front.webp" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
-        </button>
-        <button
-          type="button"
-          className={styles.thumbBtn}
-          onClick={() => setZoomed('back')}
-          aria-label="Збільшити фото — спина"
-        >
-          <Image src="/back.webp" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
+          <Image src="/t-shirt.jpg" alt="" fill sizes="(min-width: 768px) 220px, 50vw" className={styles.thumb} />
         </button>
         <div className={styles.orderInfo}>
-          <div className={styles.orderName}>
-            <span>too much яром</span>
-            <span>too much долиною</span>
-          </div>
+          <div className={styles.orderName}>too much яром too much долиною</div>
           <div className={`${styles.orderMeta} mono`}>OVERSIZE · ОДИН РОЗМІР · ×{data.quantity}</div>
         </div>
       </div>
@@ -225,13 +212,13 @@ export function CheckoutForm() {
       {zoomed && typeof document !== 'undefined' && createPortal(
         <div
           className={styles.zoomBackdrop}
-          onClick={() => setZoomed(null)}
+          onClick={() => setZoomed(false)}
           role="dialog"
           aria-label="Збільшене фото"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={zoomed === 'front' ? '/front.webp' : '/back.webp'}
+            src="/t-shirt.jpg"
             alt={PRODUCT.name}
             className={styles.zoomImage}
             onClick={(e) => e.stopPropagation()}
