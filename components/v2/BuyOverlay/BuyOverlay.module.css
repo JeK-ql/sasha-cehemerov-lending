@@ -1,0 +1,43 @@
+/* Font experiment slot — change the src URL to try a different weight.
+   Current: KyivTypeSans Light (4/7 in the fonts-new family). */
+@font-face {
+  font-family: 'KyivTypeSans';
+  src: url('/fonts-new/KyivTypeSans-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Overlay above the video. The wrapper is absolutely-positioned across the
+   full width at the 75%-from-top mark; translateY(-50%) lands the wrapper's
+   center on that mark, and the flex-centred button sits at that exact point.
+   pointer-events:none on the wrapper keeps the empty area click-through-able. */
+.overlay {
+  position: absolute;
+  top: 75%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+.buy {
+  pointer-events: auto;
+  border: none; cursor: pointer;
+  background: var(--red); color: #fff;
+  font-family: 'KyivTypeSans', system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 28px; padding: 22px 52px;
+  transition: background .25s var(--ease-out), color .25s var(--ease-out),
+              transform .2s var(--ease-out);
+  will-change: transform;
+}
+.buy:hover { background: var(--bg); color: var(--ink); transform: translateY(-1.5px) scale(1.03); }
+.buy:active { transform: translateY(1px) scale(0.97); }
+
+@media (min-width: 768px) {
+  .buy { font-size: 36px; padding: 28px 68px; }
+}

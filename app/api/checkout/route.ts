@@ -5,12 +5,16 @@ import { PRODUCT, SITE_URL, requireEnv } from '@/lib/config';
 import type { CheckoutInput, WayForPayParams } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
-  const input = (await req.json()) as Partial<CheckoutInput>;
+  const input = (await req.json()) as Partial<CheckoutInput> & { quantity?: number };
 
   const check = validateCheckout(input);
   if (!check.ok) {
     return NextResponse.json({ error: `invalid:${check.reason}` }, { status: 400 });
   }
+
+  // Quantity arrives from v2's stepper. Clamp server-side — never trust the
+  // client. Backward-compatible: legacy "/" submits no field and gets 1.
+  const quantity = Math.max(1, Math.min(10, Math.floor(input.quantity ?? 1)));
 
   const merchantAccount = requireEnv('WAYFORPAY_MERCHANT_ACCOUNT');
   const merchantDomainName = requireEnv('WAYFORPAY_MERCHANT_DOMAIN');
@@ -22,8 +26,8 @@ export async function POST(req: NextRequest) {
 
   const base = {
     merchantAccount, merchantDomainName, orderReference, orderDate,
-    amount: PRODUCT.price, currency: PRODUCT.currency,
-    productName: [PRODUCT.name], productCount: [1], productPrice: [PRODUCT.price],
+    amount: PRODUCT.price * quantity, currency: PRODUCT.currency,
+    productName: [PRODUCT.name], productCount: [quantity], productPrice: [PRODUCT.price],
   };
 
   const params: WayForPayParams & { serviceUrl: string; returnUrl: string; merchantTransactionSecureType: string } = {
