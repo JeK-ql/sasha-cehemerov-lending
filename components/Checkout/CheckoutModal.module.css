@@ -164,6 +164,31 @@
   color: #9a9a9a; border: 1px solid #3a3a3a; padding: 2px 5px; flex: none;
 }
 
+/* City-search loading spinner. Wraps just the input so the spinner sits
+   absolute-right inside it; right-padding on the wrapped input keeps typed
+   text from running under the spinner. currentColor inherits the input's
+   text color so the spinner matches the modal's palette automatically. */
+.inputWrap { position: relative; }
+.inputWrap .input { padding-right: 22px; }
+.spinner {
+  position: absolute;
+  right: 0;
+  top: calc(50% - 7px);
+  width: 14px; height: 14px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: spinnerSpin 720ms linear infinite;
+  pointer-events: none;
+}
+@keyframes spinnerSpin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
+}
+
 .ac { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
   background: #161616; border: 1px solid #303030; z-index: 5; list-style: none;
   max-height: 180px; overflow-y: auto;
