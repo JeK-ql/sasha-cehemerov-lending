@@ -1,6 +1,6 @@
 'use client';
 
-import { useCheckout } from '@/components/v2/Checkout/CheckoutProvider';
+import { useCheckout } from '@/components/Checkout/CheckoutProvider';
 import styles from './BuyOverlay.module.css';
 
 export function BuyOverlay() {

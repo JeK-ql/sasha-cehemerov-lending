@@ -1,20 +1,29 @@
 import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
 import { Header } from '@/components/Header/Header';
-import { Showcase } from '@/components/Showcase/Showcase';
-import { OrderBar } from '@/components/OrderBar/OrderBar';
+import { BuyOverlay } from '@/components/BuyOverlay/BuyOverlay';
 import { Footer } from '@/components/Footer/Footer';
 import styles from './page.module.css';
 
 export default function Home() {
   return (
     <CheckoutProvider>
-      <main className={styles.shell}>
+      <main className={styles.page}>
         <h1 className={styles.srOnly}>
           too much яром too much долиною — оверсайз-футболка Sasha Chemerov × Димна Суміш, Drop 01
         </h1>
         <Header />
-        <Showcase />
-        <OrderBar />
+        <video
+          className={styles.fill}
+          src="/example-v2.mp4"
+          poster="/video.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        />
+        <BuyOverlay />
         <Footer />
       </main>
     </CheckoutProvider>

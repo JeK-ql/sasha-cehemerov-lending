@@ -1,3 +1,14 @@
+/* Real bold (900) for the title. BuyOverlay declares the Light (300) face;
+   adding Black (900) under the same family lets the browser pick per
+   font-weight — Light for the button, Black for the title. */
+@font-face {
+  font-family: 'KyivTypeSans';
+  src: url('/fonts-new/KyivTypeSans-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ---------- Overlay scrim ---------- */
 .overlay {
   position: fixed; inset: 0; z-index: 60;
@@ -10,11 +21,15 @@
 
 /* ---------- Panel — mobile: bottom sheet ---------- */
 .panel {
-  position: fixed; left: 0; right: 0; bottom: 0; top: 40px;
+  position: fixed; inset: 0;
   background: var(--ink); color: #fff;
   display: flex; flex-direction: column;
-  border-radius: 24px 24px 0 0;
+  border-radius: 0;
   will-change: transform;
+  /* The modal text follows the v2 button's font. The @font-face for
+     'KyivTypeSans' lives in BuyOverlay.module.css and is already loaded by
+     the time the modal opens — declaring it here would just duplicate. */
+  font-family: 'KyivTypeSans', system-ui, sans-serif;
 }
 .panel[data-state='open']    { animation: sheetIn 480ms var(--ease-glide) both; }
 .panel[data-state='closing'] { animation: sheetOut 380ms var(--ease-glide) both; }
@@ -26,18 +41,28 @@
 
 /* ---------- Panel — desktop: side panel from the right ---------- */
 @media (min-width: 768px) {
-  .panel { top: 0; left: auto; width: 432px; border-radius: 0; }
+  /* Panel sizing comes from the base rule (inset: 0) — fullscreen on both
+     mobile and desktop. Only the desktop-specific tweaks remain here. */
   .panel[data-state='open']    { animation-name: panelIn; }
   .panel[data-state='closing'] { animation-name: panelOut; }
   .grab { display: none; }
-  .scroll { padding: 25px 29px 29px; }
+  .scroll { padding: 30px 34px 34px; }
+  /* Larger order-summary text on desktop, proportional to the bigger thumbs. */
+  .orderName { font-size: 18px; }
+  .orderMeta { font-size: 12px; }
 }
 @keyframes panelIn  { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes panelOut { from { transform: translateX(0); }    to { transform: translateX(100%); } }
 
-.head { display: flex; justify-content: space-between; align-items: center; }
-.title { font-size: 17px; }
+/* Grid 1fr | auto | 1fr — empty left track balances the X on the right,
+   so the title sits geometrically centred regardless of its width. */
+.head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+/* Overrides the `display` class (Montserrat + font-weight 900) coming from
+   globals.css. Light weight matches the rest of the modal and the button. */
+.title { font-size: 17px; font-family: 'KyivTypeSans', system-ui, sans-serif; grid-column: 2;
+  font-weight: 300; }
 .x {
+  grid-column: 3; justify-self: end;
   width: 30px; height: 30px; background: none; border: 1.5px solid #444;
   color: #9a9a9a; cursor: pointer;
   transition: transform 140ms var(--ease-out), border-color 140ms ease, color 140ms ease;
@@ -49,28 +74,86 @@
 .form { margin-top: 6px; }
 .order { display: flex; gap: 13px; align-items: center; padding: 14px 0;
   border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; }
-.thumb { object-fit: cover; flex: none; }
+.thumb { object-fit: cover; }
+/* Wraps each thumb so clicking opens the lightbox. The button itself grows
+   with the row (flex:1) and stays square via aspect-ratio:1; the 220px cap
+   keeps the order summary from dominating on wide desktops. position:relative
+   provides the containing block for the <Image fill> inside. */
+.thumbBtn { display: block; padding: 0; border: none; background: none;
+  cursor: zoom-in; line-height: 0;
+  flex: 1; aspect-ratio: 1; max-width: 220px;
+  position: relative; overflow: hidden; }
 .orderInfo { flex: 1; min-width: 0; }
-.orderName { font-size: 12px; font-weight: 600; }
-.orderMeta { font-size: 8.5px; color: var(--grey); margin-top: 4px; }
+/* Flex column → each <span> child renders on its own line, locking the
+   two-line layout regardless of available width. */
+.orderName { font-size: 12px; font-weight: 600; text-transform: uppercase;
+  display: flex; flex-direction: column; }
+.orderMeta { font-size: 9.5px; color: #fff; margin-top: 4px;
+  font-family: 'KyivTypeSans', system-ui, sans-serif; }
 .orderPrice { font-size: 22px; }
 .block { border: none; margin-top: 24px; }
+/* Drop the gap between adjacent fieldsets so the two .block groups read as
+   one continuous run of inputs (the .field margin-bottom keeps the field-
+   to-field spacing consistent across the boundary). */
+.block + .block { margin-top: 0; }
 .legend { font-size: 10px; color: #fff; margin-bottom: 16px; }
 .field { display: block; margin-bottom: 20px; position: relative; }
-.fieldLabel { font-size: 9px; color: var(--grey); display: block; margin-bottom: 9px; }
-.input { width: 100%; background: none; border: none; border-bottom: 1.5px solid #5a5a5a;
+.fieldLabel { font-size: 9px; color: #fff; display: block; margin-bottom: 9px;
+  font-family: 'KyivTypeSans', system-ui, sans-serif; }
+.input { width: 100%; background: none; border: none; border-bottom: 1.5px solid #fff;
   padding-bottom: 9px; font-size: 15px; color: #fff; font-family: inherit;
   transition: border-color 160ms ease; }
 .input:focus { outline: none; border-color: var(--red); }
-.fieldHint { font-size: 8px; color: #6a6a6a; margin-top: 8px; display: block; }
-.pay { width: 100%; background: #fff; color: var(--ink); border: none; cursor: pointer;
+.fieldHint { font-size: 8px; color: #fff; margin-top: 8px; display: block;
+  font-family: 'KyivTypeSans', system-ui, sans-serif; }
+.pay { background: #fff; color: var(--ink); border: none; cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700; text-transform: uppercase;
-  font-size: 20px; padding: 19px; margin-top: 28px;
+  font-size: 20px; padding: 19px;
+  flex: 1; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   transition: transform 150ms var(--ease-out), opacity 150ms ease; }
 .pay:disabled { opacity: .45; cursor: not-allowed; }
 .pay:not(:disabled):active { transform: scale(0.985); }
-.payWp { font-weight: 400; font-size: 9px; color: #555; }
+
+/* Stepper row: [ − ] [ ── pay (flex:1) ── ] [ + ] */
+.payRow { display: flex; gap: 8px; margin-top: 28px; }
+.qtyBtn {
+  background: #fff; color: var(--ink); border: none; cursor: pointer;
+  font-family: var(--font-oswald); font-weight: 700;
+  font-size: 28px; line-height: 1; padding: 0;
+  width: 64px; flex: none;
+  transition: opacity 150ms ease, transform 150ms var(--ease-out),
+              background 150ms ease, color 150ms ease;
+}
+.qtyBtn:hover:not(:disabled) { background: var(--ink); color: #fff;
+  outline: 1px solid #fff; outline-offset: -1px; }
+.qtyBtn:not(:disabled):active { transform: scale(0.95); }
+.qtyBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Wraps the price text on the pay button so it can be a transform target
+   for the pulse animation (transforms don't apply to pure-inline boxes). */
+.payAmount { display: inline-block; transform-origin: center; }
+
+/* ---------- NovaPoshtaPicker additions (ported from /) ---------- */
+/* Inline field error shown under invalid inputs (after first submit). */
+.fieldError {
+  font-size: 8px; color: var(--red); margin-top: 8px; display: block;
+  letter-spacing: .03em; text-transform: uppercase;
+}
+/* Red underline on inputs marked invalid via the data-invalid attribute. */
+.input[data-invalid='true'] { border-color: var(--red); }
+
+/* Header inside the city autocomplete ("Популярні міста"). */
+.acHead {
+  padding: 9px 12px 5px; font-size: 8px; letter-spacing: .08em;
+  text-transform: uppercase; color: #6a6a6a;
+}
+/* Warehouse autocomplete row: name on the left, Поштомат/Відділення pill right. */
+.acRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.acTag {
+  font-size: 7.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: #9a9a9a; border: 1px solid #3a3a3a; padding: 2px 5px; flex: none;
+}
 
 .ac { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
   background: #161616; border: 1px solid #303030; z-index: 5; list-style: none;
@@ -91,77 +174,39 @@
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.order, .block, .pay { animation: riseIn 440ms var(--ease-out) backwards; }
+.order, .block, .payRow { animation: riseIn 440ms var(--ease-out) backwards; }
 .order { animation-delay: 170ms; }
 .block:nth-of-type(1) { animation-delay: 230ms; }
 .block:nth-of-type(2) { animation-delay: 290ms; }
-.pay { animation-delay: 350ms; }
+.payRow { animation-delay: 350ms; }
 
 /* Reduced motion — the panel slide is kept intentionally: it conveys where
    the sheet comes from and is an explicit product requirement. Only the
    decorative content stagger is dropped. */
 @media (prefers-reduced-motion: reduce) {
-  .order, .block, .pay { animation: none; }
+  .order, .block, .payRow { animation: none; }
+  .zoomBackdrop, .zoomImage { animation: none; }
 }
 
-/* ---------- quantity stepper ---------- */
-.stepper { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-.stepBtn {
-  width: 24px; height: 24px; flex: none;
-  background: none; border: 1.5px solid #5a5a5a; color: #fff;
-  font-size: 15px; line-height: 1; cursor: pointer;
+/* ---------- photo lightbox (rendered in a body-level portal so it escapes
+   the modal panel's transform-induced containing block) ---------- */
+.zoomBackdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(13, 13, 13, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: flex; align-items: center; justify-content: center;
-  transition: border-color 140ms ease, transform 140ms var(--ease-out);
+  padding: 24px;
+  cursor: zoom-out;
+  animation: zoomFadeIn 220ms var(--ease-out) both;
 }
-.stepBtn:hover:not(:disabled) { border-color: #fff; }
-.stepBtn:active:not(:disabled) { transform: scale(0.88); }
-.stepBtn:disabled { opacity: .35; cursor: not-allowed; }
-.stepValue { font-size: 13px; min-width: 18px; text-align: center; }
-
-/* ---------- field error ---------- */
-.fieldError {
-  font-size: 8px; color: var(--red); margin-top: 8px; display: block;
-  letter-spacing: .03em; text-transform: uppercase;
+.zoomImage {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  display: block;
+  cursor: default;
+  animation: zoomScaleIn 280ms var(--ease-out) both;
 }
-.input[data-invalid='true'] { border-color: var(--red); }
-
-/* ---------- delivery mode switch ---------- */
-.modes { display: flex; margin-bottom: 20px; border: 1.5px solid #5a5a5a; }
-.modeBtn {
-  flex: 1; background: none; border: none; color: var(--grey); cursor: pointer;
-  font-family: inherit; font-size: 10px; letter-spacing: .04em; text-transform: uppercase;
-  padding: 11px 6px; transition: background 140ms ease, color 140ms ease;
-}
-.modeBtn[data-active='true'] { background: #fff; color: var(--ink); }
-
-/* ---------- two fields in a row ---------- */
-.fieldRow { display: flex; gap: 14px; }
-.fieldRow .field { flex: 1; }
-
-/* ---------- autocomplete header + warehouse tag ---------- */
-.acHead {
-  padding: 9px 12px 5px; font-size: 8px; letter-spacing: .08em;
-  text-transform: uppercase; color: #6a6a6a;
-}
-.acRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.acTag {
-  font-size: 7.5px; letter-spacing: .06em; text-transform: uppercase;
-  color: #9a9a9a; border: 1px solid #3a3a3a; padding: 2px 5px; flex: none;
-}
-
-/* ---------- order success screen ---------- */
-.success {
-  padding: 44px 4px 8px; text-align: center;
-  animation: riseIn 460ms var(--ease-out) both;
-}
-.successMark { font-size: 30px; color: var(--red); margin-bottom: 18px; }
-.successTitle { font-size: 26px; line-height: 1.05; }
-.successText { font-size: 12px; color: var(--grey); margin-top: 14px; }
-.successRef { font-size: 9px; color: #6a6a6a; margin-top: 18px; }
-.successClose {
-  width: 100%; background: #fff; color: var(--ink); border: none; cursor: pointer;
-  font-family: var(--font-oswald); font-weight: 700; text-transform: uppercase;
-  font-size: 18px; padding: 17px; margin-top: 30px;
-  transition: transform 150ms var(--ease-out);
-}
-.successClose:active { transform: scale(0.985); }
+@keyframes zoomFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zoomScaleIn { from { opacity: 0; transform: scale(0.94); }
+                         to   { opacity: 1; transform: scale(1); } }

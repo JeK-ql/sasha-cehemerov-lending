@@ -1,7 +1,32 @@
-.shell {
+/* /v2 — locked to a single viewport, no scroll on any device.
+   position:fixed pulls <main> out of flow, so the shared globals.css
+   body padding-bottom (mobile) can't reintroduce a scrollbar here. */
+.page {
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* Hero video filling the space between header and CTA. object-fit:cover
+   makes the portrait 9:16 clip fill the sector (cropped on wide screens).
+   var(--bg) shows for the brief moment before the first frame paints. */
+.fill {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  background: var(--bg);
+}
+/* Desktop: shift the visible band ~1/4 UP through the portrait clip — anchor
+   the visible portion toward the top of the source video. Mobile keeps the
+   default center positioning since portrait-on-portrait barely crops. */
+@media (min-width: 768px) {
+  .fill {
+    object-position: 50% 25%;
+  }
 }
 
 .srOnly {
@@ -14,11 +39,4 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-/* на мобільному резервуємо місце під закріплену знизу кнопку CTA,
-   щоб футер не ховався за нею і сторінка не скролилась */
-@media (max-width: 767px) {
-  .shell {
-    padding-bottom: calc(65px + env(safe-area-inset-bottom));
-  }
 }
