@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     orderDate,
     amount: PRODUCT.price * quantity,
     currency: PRODUCT.currency,
-    productName: [PRODUCT.name],
+    productName: [`Футболка - ${PRODUCT.name}`],
     productCount: [quantity],
     productPrice: [PRODUCT.price],
   };
