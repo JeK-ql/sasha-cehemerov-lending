@@ -155,8 +155,7 @@ export function CheckoutForm() {
 
         <div className={styles.orderInfo}>
           <div className={styles.orderName}>
-            <span>too much яром</span>
-            <span>too much долиною</span>
+            <span>TOO MUCH ЯРОМ TOO MUCH ДОЛИНОЮ</span>
           </div>
           <div className={`${styles.orderMeta} mono`}>OVERSIZE · ОДИН РОЗМІР · ×{data.quantity}</div>
         </div>
