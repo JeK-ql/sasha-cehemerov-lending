@@ -8,7 +8,22 @@ import type { CheckoutInput } from '@/lib/types';
 import styles from './CheckoutModal.module.css';
 import { NovaPoshtaPicker } from './NovaPoshtaPicker';
 
-const EMPTY: CheckoutInput = { fullName: '', phone: '', email: '', city: '', cityRef: '', warehouse: '' };
+// CheckoutInput is now z.infer<typeof checkoutSchema> — requires every field
+// the schema defines. Initialise them all (deliveryType locked to "warehouse"
+// since v2's picker UI doesn't show the courier branch).
+const EMPTY: CheckoutInput = {
+  fullName: '',
+  phone: '',
+  email: '',
+  quantity: 1,
+  city: '',
+  cityRef: '',
+  deliveryType: 'warehouse',
+  warehouse: '',
+  street: '',
+  building: '',
+  flat: '',
+};
 
 // Upper bound for the stepper — keep in sync with the server-side clamp.
 const MAX_QUANTITY = 10;
@@ -47,26 +62,34 @@ export function CheckoutForm() {
   const [data, setData] = useState<CheckoutInput>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [zoomed, setZoomed] = useState<ZoomTarget>(null);
-  const [quantity, setQuantity] = useState(1);
   const priceRef = useRef<HTMLSpanElement>(null);
-  const set = (k: keyof CheckoutInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setData((d) => ({ ...d, [k]: e.target.value }));
+
+  // Single helper: partial-merge into data. Used by every input and by the
+  // NovaPoshtaPicker's onChange contract.
+  const patch = (p: Partial<CheckoutInput>) => setData((d) => ({ ...d, ...p }));
+
+  const set = (k: 'fullName' | 'email') => (e: React.ChangeEvent<HTMLInputElement>) =>
+    patch({ [k]: e.target.value });
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData((d) => ({ ...d, phone: formatUkrainianPhone(e.target.value, d.phone) }));
   };
 
-  // Increment the quantity AND pulse the price number using the Web Animations
-  // API. WAAPI is explicit (no animation on mount, only on click) and
-  // automatically replaces an in-flight animation if the user mashes "+".
+  // Increment quantity AND pulse the price number via the Web Animations API.
+  // WAAPI is explicit (no animation on mount) and automatically replaces an
+  // in-flight animation if the user mashes "+".
   const handleIncrease = () => {
-    setQuantity((q) => Math.min(MAX_QUANTITY, q + 1));
+    setData((d) => ({ ...d, quantity: Math.min(MAX_QUANTITY, d.quantity + 1) }));
     if (typeof window === 'undefined') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     priceRef.current?.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(1.2)' }, { transform: 'scale(1)' }],
       { duration: 320, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
     );
+  };
+
+  const handleDecrease = () => {
+    setData((d) => ({ ...d, quantity: Math.max(1, d.quantity - 1) }));
   };
 
   useEffect(() => {
@@ -85,19 +108,21 @@ export function CheckoutForm() {
     data.city.trim().length > 0 &&
     data.warehouse.trim().length > 0;
 
-  // Total is computed for *display only*. The authoritative amount that gets
-  // signed by the WayForPay HMAC is recomputed on the server from `quantity`.
-  const total = PRODUCT.price * quantity;
+  // Display only — the authoritative amount that gets signed by the WayForPay
+  // HMAC is recomputed server-side from `data.quantity`.
+  const total = PRODUCT.price * data.quantity;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!valid || submitting) return;
     setSubmitting(true);
     try {
+      // `data` now satisfies the full Zod schema (all required fields present)
+      // so the server's safeParse will pass for warehouse-mode orders.
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, quantity }),
+        body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error('checkout failed');
       const params = await res.json();
@@ -134,7 +159,7 @@ export function CheckoutForm() {
             <span>too much яром</span>
             <span>too much долиною</span>
           </div>
-          <div className={`${styles.orderMeta} mono`}>OVERSIZE · ОДИН РОЗМІР · ×{quantity}</div>
+          <div className={`${styles.orderMeta} mono`}>OVERSIZE · ОДИН РОЗМІР · ×{data.quantity}</div>
         </div>
       </div>
 
@@ -162,9 +187,11 @@ export function CheckoutForm() {
       </fieldset>
 
       <fieldset className={styles.block}>
-        <NovaPoshtaPicker
-          onSelect={(city, cityRef, warehouse) => setData((d) => ({ ...d, city, cityRef, warehouse }))}
-        />
+        {/* Picker is controlled — reads city/cityRef/deliveryType/warehouse/
+            street/building/flat from `data` and patches via `onChange`.
+            Passing empty errors for now; once we wire Zod-based field-level
+            error display, swap to a `collectErrors(data)` map. */}
+        <NovaPoshtaPicker value={data} onChange={patch} errors={{}} />
       </fieldset>
 
       {/* Quantity stepper + pay button. type="button" on the steppers is
@@ -173,22 +200,22 @@ export function CheckoutForm() {
         <button
           type="button"
           className={styles.qtyBtn}
-          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-          disabled={submitting || quantity <= 1}
+          onClick={handleDecrease}
+          disabled={submitting || data.quantity <= 1}
           aria-label="Зменшити кількість"
         >
           −
         </button>
         <button type="submit" className={styles.pay} disabled={!valid || submitting}>
           {submitting ? 'ЗАЧЕКАЙТЕ…' : (
-            <span ref={priceRef} className={styles.payAmount}>{total} ₴ (×{quantity})</span>
+            <span ref={priceRef} className={styles.payAmount}>{total} ₴ (×{data.quantity})</span>
           )}
         </button>
         <button
           type="button"
           className={styles.qtyBtn}
           onClick={handleIncrease}
-          disabled={submitting || quantity >= MAX_QUANTITY}
+          disabled={submitting || data.quantity >= MAX_QUANTITY}
           aria-label="Збільшити кількість"
         >
           +

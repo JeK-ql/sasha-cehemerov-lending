@@ -134,6 +134,27 @@
    for the pulse animation (transforms don't apply to pure-inline boxes). */
 .payAmount { display: inline-block; transform-origin: center; }
 
+/* ---------- NovaPoshtaPicker additions (ported from /) ---------- */
+/* Inline field error shown under invalid inputs (after first submit). */
+.fieldError {
+  font-size: 8px; color: var(--red); margin-top: 8px; display: block;
+  letter-spacing: .03em; text-transform: uppercase;
+}
+/* Red underline on inputs marked invalid via the data-invalid attribute. */
+.input[data-invalid='true'] { border-color: var(--red); }
+
+/* Header inside the city autocomplete ("Популярні міста"). */
+.acHead {
+  padding: 9px 12px 5px; font-size: 8px; letter-spacing: .08em;
+  text-transform: uppercase; color: #6a6a6a;
+}
+/* Warehouse autocomplete row: name on the left, Поштомат/Відділення pill right. */
+.acRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.acTag {
+  font-size: 7.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: #9a9a9a; border: 1px solid #3a3a3a; padding: 2px 5px; flex: none;
+}
+
 .ac { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
   background: #161616; border: 1px solid #303030; z-index: 5; list-style: none;
   max-height: 180px; overflow-y: auto;
