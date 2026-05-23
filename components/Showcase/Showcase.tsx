@@ -4,7 +4,7 @@ import styles from './Showcase.module.css';
 export function Showcase() {
   return (
     <>
-     {/* <h1 className={styles.title}>
+      {/* <h1 className={styles.title}>
         <span className={`${styles.line} ${styles.lineLeft}`}>
           <span className={`${styles.small} mono`}>too much</span>
           <span className={`${styles.big} display`}>яром</span>
@@ -14,37 +14,37 @@ export function Showcase() {
           <span className={`${styles.big} ${styles.red} display`}>долиною</span>
         </span>
       </h1> */}
-    <section className={styles.showcase}>
-     
+      <section className={styles.showcase}>
 
-      <div className={styles.tees}>
-        <figure className={styles.tee}>
-          <div className={styles.teeFrame}>
-            <Image
-              src="/front-without-bg-2.png"
-              alt="Футболка «too much яром too much долиною» — перед"
-              fill
-              priority
-              sizes="(min-width: 1024px) 24vw, (min-width: 768px) 34vw, 70vw"
-              className={styles.teeImg}
-            />
-          </div>
-        </figure>
-        <figure className={styles.tee}>
-          <div className={styles.teeFrame}>
-            <Image
-              src="/back-without-bg-2.png"
-              alt="Футболка «too much яром too much долиною» — спина"
-              fill
-              priority
-              sizes="(min-width: 1024px) 24vw, (min-width: 768px) 34vw, 70vw"
-              className={styles.teeImg}
-            />
-          </div>
-        </figure>
-      </div>
 
-      <p className={`${styles.spec} mono`}>Oversize · ексклюзий дрілл мерч </p>
-    </section></>
+        <div className={styles.tees}>
+          <figure className={styles.tee}>
+            <div className={styles.teeFrame}>
+              <Image
+                src="/front-without-bg-3.webp"
+                alt="Футболка «too much яром too much долиною» — перед"
+                fill
+                priority
+                sizes="(min-width: 1024px) 24vw, (min-width: 768px) 34vw, 70vw"
+                className={styles.teeImg}
+              />
+            </div>
+          </figure>
+          <figure className={styles.tee}>
+            <div className={styles.teeFrame}>
+              <Image
+                src="/back-without-bg-3.webp"
+                alt="Футболка «too much яром too much долиною» — спина"
+                fill
+                priority
+                sizes="(min-width: 1024px) 24vw, (min-width: 768px) 34vw, 70vw"
+                className={styles.teeImg}
+              />
+            </div>
+          </figure>
+        </div>
+
+        <p className={`${styles.spec} mono`}>Oversize · ексклюзий дрілл мерч </p>
+      </section></>
   );
 }

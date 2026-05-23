@@ -9,6 +9,9 @@ export default function Home() {
   return (
     <CheckoutProvider>
       <main className={styles.shell}>
+        <h1 className={styles.srOnly}>
+          too much яром too much долиною — оверсайз-футболка Sasha Chemerov × Димна Суміш, Drop 01
+        </h1>
         <Header />
         <Showcase />
         <OrderBar />

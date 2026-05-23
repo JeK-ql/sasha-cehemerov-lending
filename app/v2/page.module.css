@@ -24,5 +24,19 @@
    the visible portion toward the top of the source video. Mobile keeps the
    default center positioning since portrait-on-portrait barely crops. */
 @media (min-width: 768px) {
-  .fill { object-position: 50% 25%; }
+  .fill {
+    object-position: 50% 25%;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
