@@ -146,22 +146,9 @@ export function CheckoutForm() {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.order}>
-        <button
-          type="button"
-          className={styles.thumbBtn}
-          onClick={() => setZoomed('front')}
-          aria-label="Збільшити фото — перед"
-        >
-          <Image src="/front.webp" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
-        </button>
-        <button
-          type="button"
-          className={styles.thumbBtn}
-          onClick={() => setZoomed('back')}
-          aria-label="Збільшити фото — спина"
-        >
-          <Image src="/back.webp" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
-        </button>
+       
+          <Image src="/too-much-яром-too-much-долиною.jpg" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
+     
         <div className={styles.orderInfo}>
           <div className={styles.orderName}>
             <span>too much яром</span>
