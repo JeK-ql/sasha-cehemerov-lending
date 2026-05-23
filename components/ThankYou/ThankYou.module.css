@@ -1,0 +1,97 @@
+/* Простий повноекранний шар у стилі /returns:
+   світлий фон + терновий вотермарк + типографіка по центру.
+   Жодних карток, рамок, перфорацій — лише текст.
+
+   Чому повноекранний "scrim" з watermark замість прозорого поверх відео:
+   щоб точно повторити вигляд legal-сторінок, як просив користувач. */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--bg);
+  /* Той самий вотермарк що й на /returns — body::before з globals.css */
+  background-image: url('/bg-phone.webp');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: fadeIn 0.32s var(--ease-glide) both;
+}
+
+@media (min-width: 768px) {
+  .scrim { background-image: url('/bg-web.webp'); }
+}
+
+/* Лагідне затемнення вотермарку щоб текст читався. Накладаємо var(--bg)
+   шар через ::before — простіше ніж намагатись керувати opacity самого
+   background-image. */
+.scrim::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: 0.84;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.close {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--grey);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 8px;
+  margin: -8px;
+  transition: color 0.22s var(--ease-out);
+  z-index: 2;
+}
+.close:hover { color: var(--red); }
+
+.content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  animation: rise 0.5s var(--ease-out) 0.08s both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.head {
+  font-size: clamp(48px, 9vw, 84px);
+  color: var(--ink);
+  margin: 0;
+  line-height: 0.95;
+}
+
+.sub {
+  font-family: var(--font-mono), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  color: var(--grey);
+  margin-top: 18px;
+}
+
+@media (min-width: 768px) {
+  .close { top: 32px; left: 40px; font-size: 11px; }
+  .sub { font-size: 13px; margin-top: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim, .content { animation: none; }
+}

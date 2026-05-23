@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     clientPhone: input.phone.replace(/\s/g, ''),
     language: 'UA',
     serviceUrl: `${SITE_URL}/api/wayforpay-callback`,
-    returnUrl: SITE_URL,
+    returnUrl: `${SITE_URL}/api/wayforpay-return`,
     merchantTransactionSecureType: 'AUTO',
   };
 

@@ -2,9 +2,15 @@ import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
 import { Header } from '@/components/Header/Header';
 import { BuyOverlay } from '@/components/BuyOverlay/BuyOverlay';
 import { Footer } from '@/components/Footer/Footer';
+import { ThankYou } from '@/components/ThankYou/ThankYou';
 import styles from './page.module.css';
 
-export default function Home() {
+type SearchParams = Promise<{ paid?: string }>;
+
+export default async function Home({ searchParams }: { searchParams: SearchParams }) {
+  const { paid } = await searchParams;
+  const thankState = paid === '1' ? 'ok' : paid === '0' ? 'fail' : null;
+
   return (
     <CheckoutProvider>
       <main className={styles.page}>
@@ -25,6 +31,7 @@ export default function Home() {
         />
         <BuyOverlay />
         <Footer />
+        {thankState && <ThankYou state={thankState} />}
       </main>
     </CheckoutProvider>
   );
