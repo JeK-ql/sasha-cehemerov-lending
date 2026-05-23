@@ -11,7 +11,8 @@ export const checkoutSchema = z
       ),
     phone: z
       .string()
-      .refine((v) => /^\+?\d{9,15}$/.test(v.replace(/\s/g, '')), 'Невірний номер телефону'),
+      .refine((v) => v.startsWith('+380'), 'Введіть номер у форматі +380…')
+      .refine((v) => /^\+380\d{9}$/.test(v.replace(/\s/g, '')), 'Введіть 9 цифр після +380'),
     email: z
       .string()
       .refine((v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), 'Невірний e-mail'),

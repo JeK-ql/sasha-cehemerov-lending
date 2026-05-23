@@ -58,4 +58,20 @@ describe('checkoutSchema', () => {
       expect(res.error.issues[0].message).toBe('Оберіть відділення або поштомат');
     }
   });
+  it('reports the prefix message when phone does not start with +380', () => {
+    const res = checkoutSchema.safeParse({ ...base, phone: '+1234567890' });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      const phoneIssue = res.error.issues.find((i) => i.path[0] === 'phone');
+      expect(phoneIssue?.message).toBe('Введіть номер у форматі +380…');
+    }
+  });
+  it('reports the length message when phone is +380 but too short', () => {
+    const res = checkoutSchema.safeParse({ ...base, phone: '+380124' });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      const phoneIssue = res.error.issues.find((i) => i.path[0] === 'phone');
+      expect(phoneIssue?.message).toBe('Введіть 9 цифр після +380');
+    }
+  });
 });
