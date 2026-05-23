@@ -53,7 +53,7 @@ const productLd = {
     '@type': 'Offer',
     url: 'https://isusneisus.com/',
     priceCurrency: 'UAH',
-    price: '2200',
+    price: '2600',
     availability: 'https://schema.org/InStock',
     itemCondition: 'https://schema.org/NewCondition',
     seller: { '@id': 'https://isusneisus.com/#organization' },
