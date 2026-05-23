@@ -26,7 +26,7 @@
 .buy {
   pointer-events: auto;
   border: none; cursor: pointer;
-  background: var(--red); color: #fff;
+  background: #dcc5a3; color: var(--ink);
   font-family: 'KyivTypeSans', system-ui, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -35,7 +35,7 @@
               transform .2s var(--ease-out);
   will-change: transform;
 }
-.buy:hover { background: var(--bg); color: var(--ink); transform: translateY(-1.5px) scale(1.03); }
+.buy:hover { background: var(--ink); color: #dcc5a3; transform: translateY(-1.5px) scale(1.03); }
 .buy:active { transform: translateY(1px) scale(0.97); }
 
 @media (min-width: 768px) {
