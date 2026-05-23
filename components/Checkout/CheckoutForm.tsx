@@ -5,8 +5,11 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { PRODUCT } from '@/lib/config';
 import type { CheckoutInput } from '@/lib/types';
+import { validateCheckout } from '@/lib/validateCheckout';
 import styles from './CheckoutModal.module.css';
 import { NovaPoshtaPicker } from './NovaPoshtaPicker';
+
+type FieldKey = keyof CheckoutInput;
 
 // CheckoutInput is now z.infer<typeof checkoutSchema> — requires every field
 // the schema defines. Initialise them all (deliveryType locked to "warehouse"
@@ -62,7 +65,12 @@ export function CheckoutForm() {
   const [data, setData] = useState<CheckoutInput>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [zoomed, setZoomed] = useState<ZoomTarget>(null);
+  const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const priceRef = useRef<HTMLSpanElement>(null);
+
+  const markTouched = (k: FieldKey) =>
+    setTouched((t) => (t[k] ? t : { ...t, [k]: true }));
 
   // Single helper: partial-merge into data. Used by every input and by the
   // NovaPoshtaPicker's onChange contract.
@@ -101,12 +109,10 @@ export function CheckoutForm() {
     return () => window.removeEventListener('keydown', onKey);
   }, [zoomed]);
 
-  const valid =
-    data.fullName.trim().split(/\s+/).filter(Boolean).length >= 2 &&
-    /^\+380\d{9}$/.test(data.phone) &&
-    /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email) &&
-    data.city.trim().length > 0 &&
-    data.warehouse.trim().length > 0;
+  const errors = validateCheckout(data);
+  const valid = Object.keys(errors).length === 0;
+  const visibleError = (k: FieldKey): string | undefined =>
+    errors[k] && (touched[k] || submitAttempted) ? errors[k] : undefined;
 
   // Display only — the authoritative amount that gets signed by the WayForPay
   // HMAC is recomputed server-side from `data.quantity`.
@@ -114,11 +120,13 @@ export function CheckoutForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid || submitting) return;
+    if (submitting) return;
+    if (!valid) {
+      setSubmitAttempted(true);
+      return;
+    }
     setSubmitting(true);
     try {
-      // `data` now satisfies the full Zod schema (all required fields present)
-      // so the server's safeParse will pass for warehouse-mode orders.
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,7 +172,15 @@ export function CheckoutForm() {
       </div>
 
       <fieldset className={styles.block}>
-        <Field label="ІМ'Я І ПРІЗВИЩЕ" value={data.fullName} onChange={set('fullName')} />
+        <Field
+          label="ІМ'Я І ПРІЗВИЩЕ"
+          value={data.fullName}
+          onChange={set('fullName')}
+          onBlur={() => markTouched('fullName')}
+          autoComplete="name"
+          autoCapitalize="words"
+          error={visibleError('fullName')}
+        />
 
         {/* Phone — inlined so we can attach the UA formatter, cap length,
             set autoComplete, and show the target placeholder. */}
@@ -172,18 +188,34 @@ export function CheckoutForm() {
           <span className={`${styles.fieldLabel} mono`}>Телефон</span>
           <input
             className={styles.input}
+            data-invalid={visibleError('phone') ? 'true' : undefined}
             type="tel"
             inputMode="tel"
             autoComplete="tel"
             value={data.phone}
             onChange={handlePhoneChange}
+            onBlur={() => markTouched('phone')}
             maxLength={13}
             placeholder="+380XXXXXXXXX"
           />
+          {visibleError('phone') && (
+            <span className={`${styles.fieldError} mono`}>{visibleError('phone')}</span>
+          )}
         </label>
 
-        <Field label="ЕМЕЙЛ" value={data.email} onChange={set('email')} type="email"
-          hint="ЧЕК СЮДИ" />
+        <Field
+          label="ЕМЕЙЛ"
+          value={data.email}
+          onChange={set('email')}
+          onBlur={() => markTouched('email')}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          error={visibleError('email')}
+          hint="ЧЕК СЮДИ"
+        />
       </fieldset>
 
       <fieldset className={styles.block}>
@@ -191,7 +223,12 @@ export function CheckoutForm() {
             street/building/flat from `data` and patches via `onChange`.
             Passing empty errors for now; once we wire Zod-based field-level
             error display, swap to a `collectErrors(data)` map. */}
-        <NovaPoshtaPicker value={data} onChange={patch} errors={{}} />
+        <NovaPoshtaPicker
+          value={data}
+          onChange={patch}
+          onBlur={markTouched}
+          errors={{ city: visibleError('city'), warehouse: visibleError('warehouse') }}
+        />
       </fieldset>
 
       {/* Quantity stepper + pay button. type="button" on the steppers is
@@ -200,13 +237,22 @@ export function CheckoutForm() {
         <button
           type="button"
           className={styles.qtyBtn}
-          onClick={handleDecrease}
-          disabled={submitting || data.quantity <= 1}
+          aria-disabled={!valid || submitting || data.quantity <= 1}
+          onClick={() => {
+            if (submitting) return;
+            if (!valid) { setSubmitAttempted(true); return; }
+            if (data.quantity <= 1) return;
+            handleDecrease();
+          }}
           aria-label="Зменшити кількість"
         >
           −
         </button>
-        <button type="submit" className={styles.pay} disabled={!valid || submitting}>
+        <button
+          type="submit"
+          className={styles.pay}
+          aria-disabled={!valid || submitting}
+        >
           {submitting ? 'ЗАЧЕКАЙТЕ…' : (
             <span ref={priceRef} className={styles.payAmount}>{total} ₴ (×{data.quantity})</span>
           )}
@@ -214,8 +260,13 @@ export function CheckoutForm() {
         <button
           type="button"
           className={styles.qtyBtn}
-          onClick={handleIncrease}
-          disabled={submitting || data.quantity >= MAX_QUANTITY}
+          aria-disabled={!valid || submitting || data.quantity >= MAX_QUANTITY}
+          onClick={() => {
+            if (submitting) return;
+            if (!valid) { setSubmitAttempted(true); return; }
+            if (data.quantity >= MAX_QUANTITY) return;
+            handleIncrease();
+          }}
           aria-label="Збільшити кількість"
         >
           +
@@ -244,20 +295,36 @@ export function CheckoutForm() {
 }
 
 function Field(props: {
-  label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  type?: string; inputMode?: 'tel' | 'email' | 'text'; hint?: string;
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: () => void;
+  type?: string;
+  inputMode?: 'tel' | 'email' | 'text';
+  autoComplete?: string;
+  autoCapitalize?: 'none' | 'words' | 'sentences';
+  spellCheck?: boolean;
+  error?: string;
+  hint?: string;
 }) {
   return (
     <label className={styles.field}>
       <span className={`${styles.fieldLabel} mono`}>{props.label}</span>
       <input
         className={styles.input}
+        data-invalid={props.error ? 'true' : undefined}
         type={props.type ?? 'text'}
         inputMode={props.inputMode}
+        autoComplete={props.autoComplete}
+        autoCapitalize={props.autoCapitalize}
+        spellCheck={props.spellCheck}
         value={props.value}
         onChange={props.onChange}
+        onBlur={props.onBlur}
       />
-      {props.hint && <span className={`${styles.fieldHint} mono`}>{props.hint}</span>}
+      {props.error
+        ? <span className={`${styles.fieldError} mono`}>{props.error}</span>
+        : props.hint && <span className={`${styles.fieldHint} mono`}>{props.hint}</span>}
     </label>
   );
 }
