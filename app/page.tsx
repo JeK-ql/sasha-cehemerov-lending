@@ -14,7 +14,7 @@ export default function Home() {
         <Header />
         <video
           className={styles.fill}
-          src="/example-v2.mp4"
+          src="/tshirt.mp4"
           poster="/video.jpg"
           autoPlay
           muted
