@@ -32,6 +32,7 @@ export function NovaPoshtaPicker({
   const [cityQuery, setCityQuery] = useState('');
   const [cities, setCities] = useState<NpOption[]>([]);
   const [cityOpen, setCityOpen] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
 
   const [warehouses, setWarehouses] = useState<NpWarehouse[]>([]);
   const [whQuery, setWhQuery] = useState('');
@@ -43,8 +44,13 @@ export function NovaPoshtaPicker({
   useEffect(() => {
     if (citySelected || cityQuery.trim().length < 2) {
       setCities([]);
+      setLoadingCities(false);
       return;
     }
+    // Show the spinner immediately on typing — covers the 250ms debounce
+    // AND the actual network round-trip, so the user sees "working" from
+    // the first keystroke until results arrive.
+    setLoadingCities(true);
     const id = setTimeout(async () => {
       try {
         const res = await fetch(
@@ -54,6 +60,8 @@ export function NovaPoshtaPicker({
         setCities(json.items ?? []);
       } catch {
         setCities([]);
+      } finally {
+        setLoadingCities(false);
       }
     }, 250);
     return () => clearTimeout(id);
@@ -115,16 +123,18 @@ export function NovaPoshtaPicker({
       {/* ---- місто ---- */}
       <label className={styles.field}>
         <span className={`${styles.fieldLabel} mono`}>Місто</span>
-        <input
-          className={styles.input}
-          data-invalid={errors.city ? 'true' : undefined}
-          placeholder="Почніть вводити назву"
-          autoComplete="address-level2"
-          value={citySelected ? value.city : cityQuery}
-          onChange={(e) => editCity(e.target.value)}
-          onFocus={() => setCityOpen(true)}
-          onBlur={() => setTimeout(() => { setCityOpen(false); onBlur?.('city'); }, 150)}
-        />
+        <div className={styles.inputWrap}>
+          <input
+            className={styles.input}
+            data-invalid={errors.city ? 'true' : undefined}
+            placeholder="Почніть вводити назву"
+            autoComplete="address-level2"value={citySelected ? value.city : cityQuery}
+            onChange={(e) => editCity(e.target.value)}
+            onFocus={() => setCityOpen(true)}
+            onBlur={() => setTimeout(() => { setCityOpen(false); onBlur?.('city'); }, 150)}
+          />
+          {loadingCities && <span className={styles.spinner} aria-hidden="true" />}
+        </div>
         {showPopular && (
           <ul className={styles.ac}>
             <li className={`${styles.acHead} mono`}>Популярні міста</li>
