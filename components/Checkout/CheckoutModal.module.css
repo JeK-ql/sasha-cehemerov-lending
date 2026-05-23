@@ -122,8 +122,8 @@
   transition: opacity 150ms ease, transform 150ms var(--ease-out),
               background 150ms ease, color 150ms ease;
 }
-.qtyBtn:hover:not(:disabled) { background: var(--ink); color: #c1baac;
-  outline: 1px solid #c1baac; outline-offset: -1px; }
+/* No hover color flip — stepper buttons keep their resting beige on every
+   interaction. The scale-press feedback stays for tactile confirmation. */
 .qtyBtn:not(:disabled):active { transform: scale(0.95); }
 .qtyBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
