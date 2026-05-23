@@ -12,10 +12,14 @@ export const metadata: Metadata = {
   title: 'too much яром too much долиною — Sasha Chemerov',
   description: 'Дроп 01 — оверсайз-футболка від Саші Чемерова та гурту «Димна Суміш».',
   metadataBase: new URL('https://isusneisus.com'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'too much яром too much долиною — Sasha Chemerov',
     description: 'Дроп 01 — оверсайз-футболка.',
-    images: ['/front-without-bg-3.webp'],
+    url: 'https://isusneisus.com/',
+    images: ['/too-much-яром-too-much-долиною.jpg'],
   },
 };
 
@@ -41,8 +45,7 @@ const productLd = {
   sku: 'DROP01-OVERSIZE',
   brand: { '@type': 'Brand', name: 'Sasha Chemerov × Димна Суміш' },
   image: [
-    'https://isusneisus.com/front-without-bg-3.webp',
-    'https://isusneisus.com/back-without-bg-3.webp',
+    'https://isusneisus.com/too-much-яром-too-much-долиною.jpg',
   ],
   description:
     'Оверсайз-футболка "too much яром too much долиною" — лімітований дроп Sasha Chemerov × Димна Суміш.',
@@ -80,13 +83,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${mono.variable}`}>
       <body>
         {children}
-        <Script
-          id="ld-organization"
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
         />
-        <Script
-          id="ld-product"
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd) }}
         />
