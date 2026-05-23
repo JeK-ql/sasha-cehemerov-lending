@@ -3,6 +3,18 @@
   flex-direction: column;
   min-height: 100dvh;
 }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 /* на мобільному резервуємо місце під закріплену знизу кнопку CTA,
    щоб футер не ховався за нею і сторінка не скролилась */
 @media (max-width: 767px) {

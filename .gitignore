@@ -23,7 +23,7 @@ docs
 
 # production
 /build
-
+screenshots
 # misc
 .DS_Store
 *.pem
