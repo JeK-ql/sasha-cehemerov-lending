@@ -5,17 +5,18 @@ import { PRODUCT, SITE_URL, requireEnv } from '@/lib/config';
 import type { WayForPayParams } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
-  const input = (await req.json()) as Partial<CheckoutInput> & { quantity?: number };
-
-  const check = validateCheckout(input);
-  if (!check.ok) {
-    return NextResponse.json({ error: `invalid:${check.reason}` }, { status: 400 });
+  const parsed = checkoutSchema.safeParse(await req.json());
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'invalid', issues: parsed.error.issues },
+      { status: 400 },
+    );
   }
   const input = parsed.data;
 
-  // Quantity arrives from v2's stepper. Clamp server-side — never trust the
-  // client. Backward-compatible: legacy "/" submits no field and gets 1.
-  const quantity = Math.max(1, Math.min(10, Math.floor(input.quantity ?? 1)));
+  // Quantity already validated by zod (≥1 int). Cap server-side at 10 — never
+  // trust the client even after schema validation.
+  const quantity = Math.min(10, input.quantity);
 
   const merchantAccount = requireEnv('WAYFORPAY_MERCHANT_ACCOUNT');
   const merchantDomainName = requireEnv('WAYFORPAY_MERCHANT_DOMAIN');
@@ -24,12 +25,17 @@ export async function POST(req: NextRequest) {
   const orderReference = `DROP01-${Date.now()}`;
   const orderDate = Math.floor(Date.now() / 1000);
   const [lastName, ...firstParts] = input.fullName.trim().split(/\s+/);
-  const amount = PRODUCT.price * input.quantity;
 
   const base = {
-    merchantAccount, merchantDomainName, orderReference, orderDate,
-    amount: PRODUCT.price * quantity, currency: PRODUCT.currency,
-    productName: [PRODUCT.name], productCount: [quantity], productPrice: [PRODUCT.price],
+    merchantAccount,
+    merchantDomainName,
+    orderReference,
+    orderDate,
+    amount: PRODUCT.price * quantity,
+    currency: PRODUCT.currency,
+    productName: [PRODUCT.name],
+    productCount: [quantity],
+    productPrice: [PRODUCT.price],
   };
 
   const params: WayForPayParams & {
