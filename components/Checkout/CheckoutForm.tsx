@@ -51,11 +51,11 @@ function formatUkrainianPhone(raw: string, prev: string): string {
   if (raw.length < prev.length && raw.length < 4) return '';
 
   let digits = raw.replace(/\D/g, '');
-  if (digits.startsWith('380'))      digits = digits.slice(3);
-  else if (digits.startsWith('80'))  digits = digits.slice(2);
-  else if (digits.startsWith('8'))   digits = digits.slice(1);
-  else if (digits.startsWith('0'))   digits = digits.slice(1);
-  else if (digits.startsWith('3'))   digits = digits.slice(1);
+  if (digits.startsWith('380')) digits = digits.slice(3);
+  else if (digits.startsWith('80')) digits = digits.slice(2);
+  else if (digits.startsWith('8')) digits = digits.slice(1);
+  else if (digits.startsWith('0')) digits = digits.slice(1);
+  else if (digits.startsWith('3')) digits = digits.slice(1);
 
   digits = digits.slice(0, 9);
   return '+380' + digits;
@@ -146,9 +146,13 @@ export function CheckoutForm() {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.order}>
-       
+        <div
+          className={styles.thumbBtn}
+
+        >
           <Image src="/too-much-яром-too-much-долиною.jpg" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
-     
+        </div>
+
         <div className={styles.orderInfo}>
           <div className={styles.orderName}>
             <span>too much яром</span>
