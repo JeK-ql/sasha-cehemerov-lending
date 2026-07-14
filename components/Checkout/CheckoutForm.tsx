@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { PRODUCT, SIZES, SIZE_MEASUREMENTS } from '@/lib/config';
+import { PRODUCT, SIZES, SIZE_MEASUREMENTS, type Size } from '@/lib/config';
 import type { CheckoutFormState } from '@/lib/types';
+import { totalQuantity } from '@/lib/checkoutSchema';
 import { validateCheckout } from '@/lib/validateCheckout';
 import styles from './CheckoutModal.module.css';
 import { NovaPoshtaPicker } from './NovaPoshtaPicker';
@@ -16,8 +17,7 @@ const EMPTY: CheckoutFormState = {
   fullName: '',
   phone: '',
   email: '',
-  quantity: 1,
-  size: '',
+  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
   deliveryMode: 'np',
   city: '',
   cityRef: '',
@@ -30,7 +30,7 @@ const EMPTY: CheckoutFormState = {
   zip: '',
 };
 
-// Upper bound for the stepper — keep in sync with the server-side clamp.
+// Сумарний ліміт штук на замовлення — синхронно з superRefine схеми і серверним clamp.
 const MAX_QUANTITY = 10;
 
 type ZoomTarget = 'front' | 'back' | null;
@@ -59,11 +59,9 @@ export function CheckoutForm() {
     patch({ phone: e.target.value });
   };
 
-  // Increment quantity AND pulse the price number via the Web Animations API.
-  // WAAPI is explicit (no animation on mount) and automatically replaces an
-  // in-flight animation if the user mashes "+".
-  const handleIncrease = () => {
-    setData((d) => ({ ...d, quantity: Math.min(MAX_QUANTITY, d.quantity + 1) }));
+  // Пульс ціни через Web Animations API — явний (без анімації на маунті),
+  // повторні кліки замінюють анімацію в польоті.
+  const pulsePrice = () => {
     if (typeof window === 'undefined') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     priceRef.current?.animate(
@@ -72,8 +70,22 @@ export function CheckoutForm() {
     );
   };
 
-  const handleDecrease = () => {
-    setData((d) => ({ ...d, quantity: Math.max(1, d.quantity - 1) }));
+  const totalCount = totalQuantity(data.sizes as Record<Size, number>);
+  const canAdd = totalCount < MAX_QUANTITY;
+
+  const setSizeCount = (s: Size, next: number) => {
+    setData((d) => ({
+      ...d,
+      sizes: { ...d.sizes, [s]: Math.max(0, Math.min(MAX_QUANTITY, next)) },
+    }));
+  };
+
+  // Тап по кнопці розміру або «+» у міні-степпері: +1 в межах сумарного ліміту.
+  const addSize = (s: Size) => {
+    if (!canAdd) return;
+    setSizeCount(s, data.sizes[s] + 1);
+    markTouched('sizes');
+    pulsePrice();
   };
 
   useEffect(() => {
@@ -91,8 +103,8 @@ export function CheckoutForm() {
     errors[k] && (touched[k] || submitAttempted) ? errors[k] : undefined;
 
   // Display only — the authoritative amount that gets signed by the WayForPay
-  // HMAC is recomputed server-side from `data.quantity`.
-  const total = PRODUCT.price * data.quantity;
+  // HMAC is recomputed server-side from the sizes record.
+  const total = PRODUCT.price * totalCount;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,40 +146,64 @@ export function CheckoutForm() {
             <span>TOO MUCH ЯРОМ TOO MUCH ДОЛИНОЮ</span>
           </div>
           <div className={`${styles.orderMeta} mono`}>
-            OVERSIZE{data.size ? ` · ${data.size}` : ''} · ×{data.quantity}
+            OVERSIZE
+            {SIZES.filter((s) => data.sizes[s] > 0)
+              .map((s) => ` · ${s} ×${data.sizes[s]}`)
+              .join('')}
           </div>
         </div>
       </div>
 
       <fieldset className={styles.block}>
         <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>РОЗМІР</span>
-        <div className={styles.segRow} role="radiogroup" aria-label="Розмір">
+        <div className={styles.segRow} role="group" aria-label="Розмір">
           {SIZES.map((s) => (
             <button
               key={s}
               type="button"
               className={styles.segBtn}
-              data-active={data.size === s ? 'true' : undefined}
-              aria-pressed={data.size === s}
-              onClick={() => {
-                patch({ size: s });
-                markTouched('size');
-              }}
+              data-active={data.sizes[s] > 0 ? 'true' : undefined}
+              aria-pressed={data.sizes[s] > 0}
+              onClick={() => addSize(s)}
             >
               {s}
+              {data.sizes[s] > 0 ? ` ×${data.sizes[s]}` : ''}
             </button>
           ))}
         </div>
-        {visibleError('size') ? (
-          <span className={`${styles.fieldError} mono`}>{visibleError('size')}</span>
-        ) : (
-          data.size &&
-          SIZE_MEASUREMENTS[data.size] && (
-            <span className={`${styles.fieldHint} mono`}>
-              ШИРИНА {SIZE_MEASUREMENTS[data.size]!.widthCm} СМ · ДОВЖИНА{' '}
-              {SIZE_MEASUREMENTS[data.size]!.lengthCm} СМ
-            </span>
-          )
+        {SIZES.filter((s) => data.sizes[s] > 0).map((s) => (
+          <div key={s}>
+            <div className={styles.sizeQtyRow}>
+              <span className={`${styles.sizeQtyLabel} mono`}>{s}</span>
+              <button
+                type="button"
+                className={`${styles.qtyBtn} ${styles.qtyBtnSmall}`}
+                onClick={() => setSizeCount(s, data.sizes[s] - 1)}
+                aria-label={`Менше: ${s}`}
+              >
+                −
+              </button>
+              <span className={`${styles.sizeQtyCount} mono`}>{data.sizes[s]}</span>
+              <button
+                type="button"
+                className={`${styles.qtyBtn} ${styles.qtyBtnSmall}`}
+                aria-disabled={!canAdd}
+                onClick={() => addSize(s)}
+                aria-label={`Більше: ${s}`}
+              >
+                +
+              </button>
+            </div>
+            {SIZE_MEASUREMENTS[s] && (
+              <span className={`${styles.fieldHint} mono`}>
+                ШИРИНА {SIZE_MEASUREMENTS[s]!.widthCm} СМ · ДОВЖИНА{' '}
+                {SIZE_MEASUREMENTS[s]!.lengthCm} СМ
+              </span>
+            )}
+          </div>
+        ))}
+        {visibleError('sizes') && (
+          <span className={`${styles.fieldError} mono`}>{visibleError('sizes')}</span>
         )}
       </fieldset>
 
@@ -267,45 +303,17 @@ export function CheckoutForm() {
         )}
       </fieldset>
 
-      {/* Quantity stepper + pay button. type="button" on the steppers is
-          critical — the default <button> type inside a <form> is "submit". */}
       <div className={styles.payRow}>
-        <button
-          type="button"
-          className={styles.qtyBtn}
-          aria-disabled={!valid || submitting || data.quantity <= 1}
-          onClick={() => {
-            if (submitting) return;
-            if (!valid) { setSubmitAttempted(true); return; }
-            if (data.quantity <= 1) return;
-            handleDecrease();
-          }}
-          aria-label="Зменшити кількість"
-        >
-          −
-        </button>
         <button
           type="submit"
           className={styles.pay}
           aria-disabled={!valid || submitting}
         >
           {submitting ? 'ЗАЧЕКАЙТЕ…' : (
-            <span ref={priceRef} className={styles.payAmount}>{total} ₴ (×{data.quantity})</span>
+            <span ref={priceRef} className={styles.payAmount}>
+              {total} ₴ (×{totalCount})
+            </span>
           )}
-        </button>
-        <button
-          type="button"
-          className={styles.qtyBtn}
-          aria-disabled={!valid || submitting || data.quantity >= MAX_QUANTITY}
-          onClick={() => {
-            if (submitting) return;
-            if (!valid) { setSubmitAttempted(true); return; }
-            if (data.quantity >= MAX_QUANTITY) return;
-            handleIncrease();
-          }}
-          aria-label="Збільшити кількість"
-        >
-          +
         </button>
       </div>
 
