@@ -3,6 +3,7 @@ import { purchaseSignature } from '@/lib/wayforpay';
 import { checkoutSchema } from '@/lib/checkoutSchema';
 import { PRODUCT, SITE_URL, requireEnv } from '@/lib/config';
 import type { WayForPayParams } from '@/lib/types';
+import { formatPendingOrderMessage, sendToTelegram } from '@/lib/telegram';
 
 export async function POST(req: NextRequest) {
   const parsed = checkoutSchema.safeParse(await req.json());
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     orderDate,
     amount: PRODUCT.price * quantity,
     currency: PRODUCT.currency,
-    productName: [`Футболка - ${PRODUCT.name}`],
+    productName: [`Футболка - ${PRODUCT.name} (${input.size})`],
     productCount: [quantity],
     productPrice: [PRODUCT.price],
   };
@@ -48,12 +49,42 @@ export async function POST(req: NextRequest) {
     clientFirstName: firstParts.join(' ') || '-',
     clientLastName: lastName,
     clientEmail: input.email,
-    clientPhone: input.phone.replace(/\s/g, ''),
+    clientPhone: input.phone.replace(/[\s()-]/g, ''),
     language: 'UA',
     serviceUrl: `${SITE_URL}/api/wayforpay-callback`,
     returnUrl: `${SITE_URL}/api/wayforpay-return`,
     merchantTransactionSecureType: 'AUTO',
   };
+
+  // Повні дані замовлення (розмір, адреса) WayForPay назад не повертає,
+  // тому заявка їде менеджеру вже зараз; колбек підтвердить оплату за №.
+  // Падіння Telegram не блокує оплату.
+  try {
+    const text = formatPendingOrderMessage({
+      orderReference,
+      fullName: input.fullName,
+      phone: input.phone.replace(/[\s()-]/g, ''),
+      email: input.email,
+      size: input.size,
+      quantity,
+      amount: base.amount,
+      deliveryMode: input.deliveryMode,
+      city: input.city,
+      warehouse: input.warehouse,
+      country: input.country,
+      street: input.street,
+      building: input.building,
+      flat: input.flat,
+      zip: input.zip,
+    });
+    await sendToTelegram(
+      requireEnv('TELEGRAM_BOT_TOKEN'),
+      requireEnv('TELEGRAM_CHAT_ID'),
+      text,
+    );
+  } catch (err) {
+    console.error('Telegram pending-order notify failed', err);
+  }
 
   return NextResponse.json(params);
 }

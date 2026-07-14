@@ -1,26 +1,55 @@
-interface OrderMessage {
+export interface PendingOrder {
   orderReference: string;
   fullName: string;
   phone: string;
   email: string;
+  size: string;
+  quantity: number;
+  amount: number;
+  deliveryMode: 'np' | 'other';
+  // Нова Пошта
   city: string;
   warehouse: string;
-  amount: number;
+  // «Інше»: Укрпошта по Україні та за кордон
+  country: string;
+  street: string;
+  building: string;
+  flat: string;
+  zip: string;
 }
 
-/** HTML-повідомлення для чату менеджерів. */
-export function formatOrderMessage(o: OrderMessage): string {
+/**
+ * Повідомлення про створену заявку — шлеться з /api/checkout ДО оплати,
+ * бо WayForPay-колбек не повертає адресу доставки. Менеджер відправляє
+ * посилку лише після другого повідомлення «Оплату підтверджено» з тим же №.
+ */
+export function formatPendingOrderMessage(o: PendingOrder): string {
+  const delivery =
+    o.deliveryMode === 'np'
+      ? `Нова Пошта: ${o.city}, ${o.warehouse}`
+      : `Укрпошта: ${o.country}, ${o.city}, ${o.street}, буд. ${o.building}` +
+        (o.flat ? `, кв. ${o.flat}` : '') +
+        `, індекс ${o.zip}`;
   return [
-    '🛒 <b>Нове замовлення</b>',
+    '🕓 <b>Заявка (очікує оплати)</b>',
     `<b>№:</b> ${o.orderReference}`,
-    `<b>Товар:</b> too much яром too much долиною`,
+    `<b>Товар:</b> too much яром too much долиною · розмір ${o.size} · ×${o.quantity}`,
     `<b>Сума:</b> ${o.amount} ₴`,
     '',
     `<b>Покупець:</b> ${o.fullName}`,
     `<b>Телефон:</b> ${o.phone}`,
     `<b>E-mail:</b> ${o.email}`,
     '',
-    `<b>Доставка:</b> ${o.city}, ${o.warehouse}`,
+    `<b>Доставка:</b> ${delivery}`,
+  ].join('\n');
+}
+
+/** Підтвердження оплати — шлеться з WayForPay-колбека після Approved. */
+export function formatPaidMessage(orderReference: string, amount: number): string {
+  return [
+    '✅ <b>Оплату підтверджено</b>',
+    `<b>№:</b> ${orderReference}`,
+    `<b>Сума:</b> ${amount} ₴`,
   ].join('\n');
 }
 

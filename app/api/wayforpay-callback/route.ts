@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callbackSignature, responseSignature } from '@/lib/wayforpay';
-import { formatOrderMessage, sendToTelegram } from '@/lib/telegram';
+import { formatPaidMessage, sendToTelegram } from '@/lib/telegram';
 import { requireEnv } from '@/lib/config';
 
 export async function POST(req: NextRequest) {
@@ -21,16 +21,11 @@ export async function POST(req: NextRequest) {
 
   if (expected === body.merchantSignature && body.transactionStatus === 'Approved') {
     try {
-      const text = formatOrderMessage({
-        orderReference: body.orderReference,
-        fullName: `${body.clientLastName ?? ''} ${body.clientFirstName ?? ''}`.trim() || '—',
-        phone: body.phone ?? body.clientPhone ?? '—',
-        email: body.email ?? body.clientEmail ?? '—',
-        city: body.deliveryCity ?? '—',
-        warehouse: body.deliveryWarehouse ?? '—',
-        amount: body.amount,
-      });
-      await sendToTelegram(requireEnv('TELEGRAM_BOT_TOKEN'), requireEnv('TELEGRAM_CHAT_ID'), text);
+      await sendToTelegram(
+        requireEnv('TELEGRAM_BOT_TOKEN'),
+        requireEnv('TELEGRAM_CHAT_ID'),
+        formatPaidMessage(body.orderReference, body.amount),
+      );
     } catch (err) {
       console.error('Telegram notify failed', err);
     }
