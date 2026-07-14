@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Привести лендінг isusneisus.com у відповідність вимогам модерації WayForPay (реквізити, скасування/повернення, географія доставки, способи оплати) і додати операційні фічі: розмір S/M/L, перемикач доставки «Нова Пошта / Інше», міжнародний телефон, робочу доставку замовлення менеджеру в Telegram.
+**Goal:** Привести лендінг isusneisus.com у відповідність вимогам модерації WayForPay (реквізити, скасування/повернення, географія доставки, способи оплати) і додати операційні фічі: розмір (МАЛЕНЬКИЙ/СЕРЕДНІЙ/ВЕЛИКИЙ — власні назви, рішення команди), перемикач доставки «Нова Пошта / Інше», міжнародний телефон, робочу доставку замовлення менеджеру в Telegram.
 
 **Architecture:** Односторінковий Next.js 16 App Router лендінг. Дані продавця централізуються в `lib/seller.ts` (плейсхолдери `【…】`), розміри — в `lib/config.ts`. Схема замовлення (`lib/checkoutSchema.ts`, zod) отримує `size` і дискримінатор `deliveryMode: 'np' | 'other'`; клієнтська форма і `/api/checkout` валідують одною схемою. Повна інформація замовлення їде в Telegram із `/api/checkout` (заявка), колбек WayForPay шле коротке підтвердження оплати — це чинить наявний баг, коли адреса доставки взагалі не доходила до менеджера.
 
@@ -355,7 +355,7 @@ git commit -m "feat: offer/returns legal copy for WayForPay moderation"
 - Modify: `lib/config.ts`
 
 **Interfaces:**
-- Produces: `PRODUCT.price === 2600`; `SIZES: readonly ['S','M','L']`; `type Size = 'S'|'M'|'L'`; `SIZE_MEASUREMENTS: Record<Size, { widthCm: number; lengthCm: number } | null>` — використовуються Tasks 5, 6, 8.
+- Produces: `PRODUCT.price === 2600`; `SIZES: readonly ['МАЛЕНЬКИЙ','СЕРЕДНІЙ','ВЕЛИКИЙ']`; `type Size = 'МАЛЕНЬКИЙ'|'СЕРЕДНІЙ'|'ВЕЛИКИЙ'`; `SIZE_MEASUREMENTS: Record<Size, { widthCm: number; lengthCm: number } | null>` — використовуються Tasks 5, 6, 8.
 
 - [ ] **Step 1: Оновити `lib/config.ts`**
 
@@ -369,8 +369,11 @@ export const PRODUCT = {
   sku: 'DROP01-OVERSIZE',
 } as const;
 
-/** Доступні розміри оверсайз-футболки. */
-export const SIZES = ['S', 'M', 'L'] as const;
+/**
+ * Доступні розміри оверсайз-футболки. Власні назви замість S/M/L —
+ * свідоме рішення команди (розміри не збігаються зі стандартними).
+ */
+export const SIZES = ['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'] as const;
 export type Size = (typeof SIZES)[number];
 
 /**
@@ -381,9 +384,9 @@ export const SIZE_MEASUREMENTS: Record<
   Size,
   { widthCm: number; lengthCm: number } | null
 > = {
-  S: null,
-  M: null,
-  L: null,
+  МАЛЕНЬКИЙ: null,
+  СЕРЕДНІЙ: null,
+  ВЕЛИКИЙ: null,
 };
 ```
 
@@ -437,7 +440,7 @@ const npOrder = {
   phone: '+380671234567',
   email: 'a@b.com',
   quantity: 1,
-  size: 'M' as const,
+  size: 'СЕРЕДНІЙ' as const,
   deliveryMode: 'np' as const,
   city: 'Львів',
   cityRef: 'ref-1',
@@ -519,9 +522,9 @@ describe('checkoutSchema — розмір', () => {
     }
   });
   it('rejects an unknown size', () => {
-    expect(checkoutSchema.safeParse({ ...npOrder, size: 'XXL' }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...npOrder, size: 'M' }).success).toBe(false);
   });
-  it.each(['S', 'M', 'L'] as const)('accepts size %s', (size) => {
+  it.each(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'] as const)('accepts size %s', (size) => {
     expect(checkoutSchema.safeParse({ ...npOrder, size }).success).toBe(true);
   });
 });
@@ -590,7 +593,7 @@ const valid: CheckoutFormState = {
   phone: '+380671234567',
   email: 'a@b.com',
   quantity: 1,
-  size: 'M',
+  size: 'СЕРЕДНІЙ',
   deliveryMode: 'np',
   city: 'Львів',
   cityRef: 'ref-1',
@@ -948,7 +951,10 @@ const EMPTY: CheckoutFormState = {
   background: none; border: 1.5px solid #c1baac; color: #c1baac;
   cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700;
-  font-size: 17px; text-transform: uppercase; letter-spacing: .04em;
+  /* 14px: підписи «МАЛЕНЬКИЙ/СЕРЕДНІЙ/ВЕЛИКИЙ» мають вміщатися в третину
+     ширини мобільного екрана без переносу. */
+  font-size: 14px; text-transform: uppercase; letter-spacing: .02em;
+  padding: 0 4px;
   transition: background 150ms ease, color 150ms ease,
               transform 150ms var(--ease-out);
 }
@@ -989,7 +995,7 @@ const EMPTY: CheckoutFormState = {
 Run: `npm test` → PASS. Run: `npm run lint` → без помилок (форма знову типобезпечна).
 
 Run: `npm run dev` → головна → кнопка купівлі → модалка:
-- блок «РОЗМІР» з трьома контурними кнопками одразу під фото; клік по «M» інвертує її (беж, чорний текст), мета-рядок стає `OVERSIZE · M · ×1`;
+- блок «РОЗМІР» з трьома контурними кнопками МАЛЕНЬКИЙ/СЕРЕДНІЙ/ВЕЛИКИЙ одразу під фото (підписи вміщаються без переносу і на ~375px); клік по «СЕРЕДНІЙ» інвертує її (беж, чорний текст), мета-рядок стає `OVERSIZE · СЕРЕДНІЙ · ×1`;
 - рядок замірів НЕ показується (SIZE_MEASUREMENTS — null);
 - сабміт без розміру показує «Оберіть розмір» червоним під кнопками;
 - телефон приймає `+48123456789` без перетворення на +380;
@@ -1238,7 +1244,7 @@ const base = {
   fullName: 'Чемеров Олександр',
   phone: '+380671234567',
   email: 'sasha@mail.com',
-  size: 'M',
+  size: 'СЕРЕДНІЙ',
   quantity: 2,
   amount: 5200,
   deliveryMode: 'np' as const,
@@ -1255,7 +1261,7 @@ describe('formatPendingOrderMessage', () => {
   it('includes order, buyer and NP delivery fields', () => {
     const msg = formatPendingOrderMessage(base);
     expect(msg).toContain('DROP01-9');
-    expect(msg).toContain('розмір M');
+    expect(msg).toContain('розмір СЕРЕДНІЙ');
     expect(msg).toContain('×2');
     expect(msg).toContain('5200');
     expect(msg).toContain('Чемеров Олександр');
@@ -1517,7 +1523,7 @@ Run: `npm run dev`. Пройти чек-лист:
 1. Головна: футер показує реквізити-плейсхолдери; лінки /offer і /returns працюють.
 2. /offer: §5.2 Visa/Mastercard; §6 обидві служби + строки; §13 реквізити.
 3. /returns: розділ 7 «Скасування замовлення».
-4. Модалка: розмір обовʼязковий; мета `OVERSIZE · M · ×N`; сума 2600 ₴ × кількість.
+4. Модалка: розмір обовʼязковий; мета `OVERSIZE · СЕРЕДНІЙ · ×N`; сума 2600 ₴ × кількість.
 5. Режим НП: місто/відділення як раніше. Режим «Інше»: країна/місто/вулиця/будинок/індекс обовʼязкові, квартира — ні.
 6. Телефон: `+380671234567` і `+48 123-456-789` проходять; `0671234567` — помилка.
 7. З валідною формою і тестовими WayForPay-кредами в `.env.local`: клік «Оплатити» відкриває віджет; у Telegram приходить «🕓 Заявка…» з розміром і повною адресою; після тестової оплати — «✅ Оплату підтверджено» з тим самим №. (Без кредів — перевірити, що POST /api/checkout повертає підписані параметри, а падіння Telegram лише логується.)
