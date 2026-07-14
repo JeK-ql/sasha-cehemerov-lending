@@ -8,6 +8,7 @@ import type { CheckoutFormState } from '@/lib/types';
 import { validateCheckout } from '@/lib/validateCheckout';
 import styles from './CheckoutModal.module.css';
 import { NovaPoshtaPicker } from './NovaPoshtaPicker';
+import { OtherDeliveryFields } from './OtherDeliveryFields';
 
 type FieldKey = keyof CheckoutFormState;
 
@@ -179,6 +180,7 @@ export function CheckoutForm() {
           autoComplete="name"
           autoCapitalize="words"
           error={visibleError('fullName')}
+          hint={data.deliveryMode === 'other' ? 'для закордону — латиницею, як у паспорті' : undefined}
         />
 
         {/* Phone — inlined so we can attach the UA formatter, cap length,
@@ -218,12 +220,51 @@ export function CheckoutForm() {
       </fieldset>
 
       <fieldset className={styles.block}>
-        <NovaPoshtaPicker
-          value={data}
-          onChange={patch}
-          onBlur={markTouched}
-          errors={{ city: visibleError('city'), warehouse: visibleError('warehouse') }}
-        />
+        <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>ДОСТАВКА</span>
+        <div className={styles.segRow} role="radiogroup" aria-label="Спосіб доставки">
+          <button
+            type="button"
+            className={styles.segBtn}
+            data-active={data.deliveryMode === 'np' ? 'true' : undefined}
+            aria-pressed={data.deliveryMode === 'np'}
+            onClick={() => patch({ deliveryMode: 'np' })}
+          >
+            НОВА ПОШТА
+          </button>
+          <button
+            type="button"
+            className={styles.segBtn}
+            data-active={data.deliveryMode === 'other' ? 'true' : undefined}
+            aria-pressed={data.deliveryMode === 'other'}
+            onClick={() => patch({ deliveryMode: 'other' })}
+          >
+            ІНШЕ
+          </button>
+        </div>
+        <span className={`${styles.fieldHint} mono`}>
+          Інше — Укрпошта: по Україні та за кордон
+        </span>
+        {data.deliveryMode === 'np' ? (
+          <NovaPoshtaPicker
+            value={data}
+            onChange={patch}
+            onBlur={markTouched}
+            errors={{ city: visibleError('city'), warehouse: visibleError('warehouse') }}
+          />
+        ) : (
+          <OtherDeliveryFields
+            value={data}
+            onChange={patch}
+            onBlur={markTouched}
+            errors={{
+              country: visibleError('country'),
+              city: visibleError('city'),
+              street: visibleError('street'),
+              building: visibleError('building'),
+              zip: visibleError('zip'),
+            }}
+          />
+        )}
       </fieldset>
 
       {/* Quantity stepper + pay button. type="button" on the steppers is
