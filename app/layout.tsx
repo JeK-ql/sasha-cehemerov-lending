@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     title: 'too much яром too much долиною — Sasha Chemerov',
     description: 'Дроп 01 — оверсайз-футболка.',
     url: 'https://isusneisus.com/',
-    images: ['/too-much-яром-too-much-долиною.jpg'],
+    images: ['/too-much-яром-too-much-долиною.webp'],
   },
 };
 
@@ -45,7 +45,7 @@ const productLd = {
   sku: 'DROP01-OVERSIZE',
   brand: { '@type': 'Brand', name: 'Sasha Chemerov × Димна Суміш' },
   image: [
-    'https://isusneisus.com/too-much-яром-too-much-долиною.jpg',
+    'https://isusneisus.com/too-much-яром-too-much-долиною.webp',
   ],
   description:
     'Оверсайз-футболка "too much яром too much долиною" — лімітований дроп Sasha Chemerov × Димна Суміш.',
