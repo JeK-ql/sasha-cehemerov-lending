@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { checkoutSchema } from '../checkoutSchema';
+import { SIZES } from '../config';
 
 const npOrder = {
   fullName: 'Чемеров Олександр',
   phone: '+380671234567',
   email: 'a@b.com',
-  quantity: 1,
-  size: 'СЕРЕДНІЙ' as const,
+  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
   deliveryMode: 'np' as const,
   city: 'Львів',
   cityRef: 'ref-1',
@@ -42,9 +42,6 @@ describe('checkoutSchema — базові поля', () => {
   it('rejects a bad email', () => {
     expect(checkoutSchema.safeParse({ ...npOrder, email: 'nope' }).success).toBe(false);
   });
-  it('rejects quantity below 1', () => {
-    expect(checkoutSchema.safeParse({ ...npOrder, quantity: 0 }).success).toBe(false);
-  });
 });
 
 describe('checkoutSchema — телефон (міжнародний)', () => {
@@ -78,20 +75,75 @@ describe('checkoutSchema — телефон (міжнародний)', () => {
   });
 });
 
-describe('checkoutSchema — розмір', () => {
-  it('rejects a missing size with the Ukrainian message', () => {
-    const res = checkoutSchema.safeParse({ ...npOrder, size: '' });
+describe('checkoutSchema — розміри (мультирозмірне замовлення)', () => {
+  it('accepts a single size with quantity', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 3, ВЕЛИКИЙ: 0 },
+      }).success,
+    ).toBe(true);
+  });
+  it('accepts a mix of sizes in one order', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: 2, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+      }).success,
+    ).toBe(true);
+  });
+  it('rejects an all-zero order with the size message', () => {
+    const res = checkoutSchema.safeParse({
+      ...npOrder,
+      sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+    });
     expect(res.success).toBe(false);
     if (!res.success) {
-      const issue = res.error.issues.find((i) => i.path[0] === 'size');
+      const issue = res.error.issues.find((i) => i.path[0] === 'sizes');
       expect(issue?.message).toBe('Оберіть розмір');
     }
   });
-  it('rejects an unknown size', () => {
-    expect(checkoutSchema.safeParse({ ...npOrder, size: 'M' }).success).toBe(false);
+  it('rejects more than 10 items total', () => {
+    const res = checkoutSchema.safeParse({
+      ...npOrder,
+      sizes: { МАЛЕНЬКИЙ: 5, СЕРЕДНІЙ: 5, ВЕЛИКИЙ: 1 },
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      const issue = res.error.issues.find((i) => i.path[0] === 'sizes');
+      expect(issue?.message).toBe('Максимум 10 штук у замовленні');
+    }
   });
-  it.each(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'] as const)('accepts size %s', (size) => {
-    expect(checkoutSchema.safeParse({ ...npOrder, size }).success).toBe(true);
+  it('rejects a negative count', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: -1, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 },
+      }).success,
+    ).toBe(false);
+  });
+  it('rejects a fractional count', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: 1.5, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+      }).success,
+    ).toBe(false);
+  });
+  it('rejects a missing size key', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0 },
+      }).success,
+    ).toBe(false);
+  });
+  it('keeps schema keys in sync with SIZES', () => {
+    // Якщо в SIZES додасться четвертий розмір, а обʼєкт sizes у схемі — ні,
+    // totalQuantity почне читати undefined і валідація «зʼїде» мовчки.
+    // checkoutSchema — ZodEffects (через superRefine), тому .shape бере
+    // innerType().
+    expect(Object.keys(checkoutSchema.innerType().shape.sizes.shape)).toEqual([...SIZES]);
   });
 });
 

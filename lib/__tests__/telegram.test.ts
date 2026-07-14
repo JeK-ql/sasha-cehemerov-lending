@@ -6,8 +6,7 @@ const base = {
   fullName: 'Чемеров Олександр',
   phone: '+380671234567',
   email: 'sasha@mail.com',
-  size: 'СЕРЕДНІЙ',
-  quantity: 2,
+  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 },
   amount: 5200,
   deliveryMode: 'np' as const,
   city: 'Львів',
@@ -23,8 +22,8 @@ describe('formatPendingOrderMessage', () => {
   it('includes order, buyer and NP delivery fields', () => {
     const msg = formatPendingOrderMessage(base);
     expect(msg).toContain('DROP01-9');
-    expect(msg).toContain('розмір СЕРЕДНІЙ');
-    expect(msg).toContain('×2');
+    expect(msg).toContain('СЕРЕДНІЙ ×2');
+    expect(msg).not.toContain('МАЛЕНЬКИЙ');
     expect(msg).toContain('5200');
     expect(msg).toContain('Чемеров Олександр');
     expect(msg).toContain('+380671234567');
@@ -67,6 +66,15 @@ describe('formatPendingOrderMessage', () => {
       zip: '31-019',
     });
     expect(msg).not.toContain('кв.');
+  });
+
+  it('lists every size with a non-zero count, comma-separated', () => {
+    const msg = formatPendingOrderMessage({
+      ...base,
+      sizes: { МАЛЕНЬКИЙ: 2, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+    });
+    expect(msg).toContain('МАЛЕНЬКИЙ ×2, СЕРЕДНІЙ ×1');
+    expect(msg).not.toContain('ВЕЛИКИЙ');
   });
 });
 

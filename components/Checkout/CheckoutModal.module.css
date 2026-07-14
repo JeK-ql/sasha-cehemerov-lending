@@ -112,7 +112,7 @@
 .pay:disabled { opacity: .45; cursor: not-allowed; }
 .pay:not(:disabled):active { transform: scale(0.985); }
 
-/* Stepper row: [ − ] [ ── pay (flex:1) ── ] [ + ] */
+/* Pay row: одна кнопка оплати на всю ширину. */
 .payRow { display: flex; gap: 8px; margin-top: 28px; }
 .qtyBtn {
   background: #c1baac; color: var(--ink); border: none; cursor: pointer;
@@ -133,6 +133,12 @@
 .qtyBtn[aria-disabled='true']:hover { background: #fff; color: var(--ink);
   outline: none; }
 .qtyBtn[aria-disabled='true']:active { transform: none; }
+
+/* ---------- per-size mini steppers (мультирозмірне замовлення) ---------- */
+.sizeQtyRow { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.sizeQtyLabel { flex: 1; font-size: 11px; letter-spacing: .04em; }
+.sizeQtyCount { min-width: 26px; text-align: center; font-size: 15px; }
+.qtyBtnSmall { width: 40px; height: 40px; font-size: 20px; line-height: 40px; }
 
 /* ---------- Segment controls (розмір, спосіб доставки) ---------- */
 .segLabel { margin-bottom: 12px; }

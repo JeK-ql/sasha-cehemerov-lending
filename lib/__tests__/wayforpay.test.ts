@@ -30,6 +30,26 @@ describe('purchaseSignature', () => {
       'test_merch;isusneisus.com;DROP01-1;1000;2200;UAH;Tee;1;2200');
     expect(sig).toBe(expected);
   });
+
+  it('expands multiple product positions in order: names, counts, prices', () => {
+    const sig = purchaseSignature(SECRET, {
+      merchantAccount: 'test_merch',
+      merchantDomainName: 'isusneisus.com',
+      orderReference: 'DROP01-2',
+      orderDate: 1000,
+      amount: 7800,
+      currency: 'UAH',
+      productName: ['Tee (МАЛЕНЬКИЙ)', 'Tee (СЕРЕДНІЙ)'],
+      productCount: [2, 1],
+      productPrice: [2600, 2600],
+    });
+    expect(sig).toBe(
+      hmacMd5(
+        SECRET,
+        'test_merch;isusneisus.com;DROP01-2;1000;7800;UAH;Tee (МАЛЕНЬКИЙ);Tee (СЕРЕДНІЙ);2;1;2600;2600',
+      ),
+    );
+  });
 });
 
 describe('callbackSignature', () => {
