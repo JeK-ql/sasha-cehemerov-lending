@@ -1,51 +1,52 @@
-/* v2 footer — black slab beneath the video.
-   Row 1: legal links pinned to the left/right halves of the line.
-   Row 2: copyright centered under them.
-   Typography mirrors the ЗАМОВЛЕННЯ modal: KyivTypeSans Light, mixed case,
-   no uppercase or letter-spacing. */
+/* v3 footer — one calm slab: legal links, social microlinks, contact line.
+   Requisites live in /offer §13; footer keeps only what a buyer taps.
+   Typography mirrors the ЗАМОВЛЕННЯ modal: KyivTypeSans Light. */
 .footer {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 24px;
+  align-items: center;
+  padding: 4px 16px;
   background: var(--ink);
   color: #fff;
   font-family: 'KyivTypeSans', system-ui, sans-serif;
   font-weight: 300;
-  font-size: 10px;
+  font-size: 11px;
 }
+/* Mobile: legal links share the first line, socials wrap onto their own. */
 .linksRow {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
-.linksRow a {
-  color: inherit;
-  text-decoration: none;
-  transition: color 160ms ease;
-}
-.linksRow a:hover {
-  color: var(--red);
-}
-@media (min-width: 768px) {
-  .footer { padding: 14px 40px; font-size: 11px; }
-}
-/* Рядки реквізитів — службовий підпис, тихіший за лінки. */
-.requisites {
+.socials {
+  order: 3;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  text-align: center;
+  justify-content: center;
+  gap: 4px;
   color: #8a8a8a;
-  font-size: 9px;
 }
-.requisites a {
+/* Vertical padding keeps every link's tap zone ≥44px (WCAG 2.5.8 / Fitts). */
+.footer a {
   color: inherit;
   text-decoration: none;
+  line-height: 1.2;
+  padding: 16px 10px;
   transition: color 160ms ease;
 }
-.requisites a:hover {
+.footer a:hover {
   color: var(--red);
 }
+.contacts {
+  color: #8a8a8a;
+  font-size: 10px;
+}
 @media (min-width: 768px) {
-  .requisites { font-size: 10px; }
+  .footer { padding: 6px 40px; }
+  .linksRow { display: grid; grid-template-columns: 1fr auto 1fr; }
+  .linksRow > a:first-child { justify-self: start; }
+  .socials { order: 0; grid-column: 2; width: auto; }
+  .linksRow > a:last-child { justify-self: end; }
 }
