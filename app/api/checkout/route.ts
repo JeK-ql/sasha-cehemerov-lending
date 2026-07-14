@@ -83,7 +83,14 @@ export async function POST(req: NextRequest) {
       text,
     );
   } catch (err) {
-    console.error('Telegram pending-order notify failed', err);
+    // Адреса існує лише тут — якщо повідомлення не пішло, лог мусить
+    // дозволити відновити замовлення вручну.
+    console.error(
+      'Telegram pending-order notify failed',
+      orderReference,
+      JSON.stringify(input),
+      err,
+    );
   }
 
   return NextResponse.json(params);

@@ -126,7 +126,7 @@ export function CheckoutForm() {
           className={styles.thumbBtn}
 
         >
-          <Image src="/too-much-яром-too-much-долиною.jpg" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
+          <Image src="/too-much-яром-too-much-долиною.webp" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
         </div>
 
         <div className={styles.orderInfo}>
@@ -183,8 +183,8 @@ export function CheckoutForm() {
           hint={data.deliveryMode === 'other' ? 'для закордону — латиницею, як у паспорті' : undefined}
         />
 
-        {/* Phone — inlined so we can attach the UA formatter, cap length,
-            set autoComplete, and show the target placeholder. */}
+        {/* Phone — inlined to cap length, set autoComplete and show the
+            international placeholder; validation lives in checkoutSchema. */}
         <label className={styles.field}>
           <span className={`${styles.fieldLabel} mono`}>Телефон</span>
           <input
