@@ -1,3 +1,4 @@
+import { preload } from 'react-dom';
 import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
 import { Header } from '@/components/Header/Header';
 import { BuyOverlay } from '@/components/BuyOverlay/BuyOverlay';
@@ -8,6 +9,7 @@ import styles from './page.module.css';
 type SearchParams = Promise<{ paid?: string }>;
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
+  preload('/video.jpg', { as: 'image', fetchPriority: 'high' });
   const { paid } = await searchParams;
   const thankState = paid === '1' ? 'ok' : paid === '0' ? 'fail' : null;
 

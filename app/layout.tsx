@@ -7,7 +7,7 @@ import { organizationLd, productLd, PRODUCT_IMAGE_JPG } from '@/lib/structuredDa
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 const display = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['900'], variable: '--font-display' });
 const oswald = Oswald({ subsets: ['latin', 'cyrillic'], weight: ['600', '700'], variable: '--font-oswald' });
-const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400', '500'], variable: '--font-mono' });
+const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
   title: 'too much яром too much долиною — мерч Sasha Chemerov × Димна Суміш',
