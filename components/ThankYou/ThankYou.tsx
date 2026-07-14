@@ -21,6 +21,7 @@ export function ThankYou({ state }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close is a new function every render; only wire the listener once on mount
   }, []);
 
   if (!open) return null;

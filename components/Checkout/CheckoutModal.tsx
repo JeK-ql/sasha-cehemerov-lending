@@ -14,6 +14,7 @@ export function CheckoutModal() {
   // Mount on open; keep mounted through the exit animation, then unmount.
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional mount trigger when opening
       setMounted(true);
       return;
     }

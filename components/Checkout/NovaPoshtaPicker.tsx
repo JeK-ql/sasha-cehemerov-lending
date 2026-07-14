@@ -43,6 +43,7 @@ export function NovaPoshtaPicker({
   // Живий пошук міста, щойно введено 2+ символи.
   useEffect(() => {
     if (citySelected || cityQuery.trim().length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- навмисний скид пошуку при виборі міста/короткому запиті
       setCities([]);
       setLoadingCities(false);
       return;
@@ -70,6 +71,7 @@ export function NovaPoshtaPicker({
   // Завантажуємо точки видачі при зміні обраного міста.
   useEffect(() => {
     if (!value.cityRef) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- навмисний скид точок видачі при знятті вибору міста
       setWarehouses([]);
       return;
     }
