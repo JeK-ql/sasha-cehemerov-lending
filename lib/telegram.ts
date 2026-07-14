@@ -3,8 +3,8 @@ export interface PendingOrder {
   fullName: string;
   phone: string;
   email: string;
-  size: string;
-  quantity: number;
+  /** Кількість по кожному розміру; в повідомлення потрапляють лише N>0. */
+  sizes: Record<string, number>;
   amount: number;
   deliveryMode: 'np' | 'other';
   // Нова Пошта
@@ -30,10 +30,14 @@ export function formatPendingOrderMessage(o: PendingOrder): string {
       : `Укрпошта: ${o.country}, ${o.city}, ${o.street}, буд. ${o.building}` +
         (o.flat ? `, кв. ${o.flat}` : '') +
         `, індекс ${o.zip}`;
+  const sizesLine = Object.entries(o.sizes)
+    .filter(([, n]) => n > 0)
+    .map(([size, n]) => `${size} ×${n}`)
+    .join(', ');
   return [
     '🕓 <b>Заявка (очікує оплати)</b>',
     `<b>№:</b> ${o.orderReference}`,
-    `<b>Товар:</b> too much яром too much долиною · розмір ${o.size} · ×${o.quantity}`,
+    `<b>Товар:</b> too much яром too much долиною · ${sizesLine}`,
     `<b>Сума:</b> ${o.amount} ₴`,
     '',
     `<b>Покупець:</b> ${o.fullName}`,

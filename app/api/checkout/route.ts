@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { purchaseSignature } from '@/lib/wayforpay';
-import { checkoutSchema } from '@/lib/checkoutSchema';
-import { PRODUCT, SITE_URL, requireEnv } from '@/lib/config';
+import { checkoutSchema, totalQuantity } from '@/lib/checkoutSchema';
+import { PRODUCT, SITE_URL, SIZES, requireEnv, type Size } from '@/lib/config';
 import type { WayForPayParams } from '@/lib/types';
 import { formatPendingOrderMessage, sendToTelegram } from '@/lib/telegram';
 
@@ -15,9 +15,16 @@ export async function POST(req: NextRequest) {
   }
   const input = parsed.data;
 
-  // Quantity already validated by zod (≥1 int). Cap server-side at 10 — never
-  // trust the client even after schema validation.
-  const quantity = Math.min(10, input.quantity);
+  // Схема вже валідувала межі, але серверу не можна довіряти клієнту:
+  // clamp по-розмірно і перевірка сумарних меж ще раз.
+  const sizes = Object.fromEntries(
+    SIZES.map((s) => [s, Math.max(0, Math.min(10, input.sizes[s]))]),
+  ) as Record<Size, number>;
+  const totalCount = totalQuantity(sizes);
+  if (totalCount < 1 || totalCount > 10) {
+    return NextResponse.json({ error: 'invalid quantity' }, { status: 400 });
+  }
+  const positions = SIZES.filter((s) => sizes[s] > 0);
 
   const merchantAccount = requireEnv('WAYFORPAY_MERCHANT_ACCOUNT');
   const merchantDomainName = requireEnv('WAYFORPAY_MERCHANT_DOMAIN');
@@ -32,11 +39,11 @@ export async function POST(req: NextRequest) {
     merchantDomainName,
     orderReference,
     orderDate,
-    amount: PRODUCT.price * quantity,
+    amount: PRODUCT.price * totalCount,
     currency: PRODUCT.currency,
-    productName: [`Футболка - ${PRODUCT.name} (${input.size})`],
-    productCount: [quantity],
-    productPrice: [PRODUCT.price],
+    productName: positions.map((s) => `Футболка - ${PRODUCT.name} (${s})`),
+    productCount: positions.map((s) => sizes[s]),
+    productPrice: positions.map(() => PRODUCT.price),
   };
 
   const params: WayForPayParams & {
@@ -65,8 +72,7 @@ export async function POST(req: NextRequest) {
       fullName: input.fullName,
       phone: input.phone.replace(/[\s()-]/g, ''),
       email: input.email,
-      size: input.size,
-      quantity,
+      sizes,
       amount: base.amount,
       deliveryMode: input.deliveryMode,
       city: input.city,
