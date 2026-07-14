@@ -33,7 +33,7 @@ describe('validateCheckout', () => {
 
   it('returns the name message for a single-word name', () => {
     const errs = validateCheckout({ ...valid, fullName: 'Іван' });
-    expect(errs.fullName).toBe("Вкажіть прізвище та ім'я");
+    expect(errs.fullName).toBe("Вкажіть ім'я та прізвище");
   });
 
   it('returns the warehouse message when missing in warehouse mode', () => {
