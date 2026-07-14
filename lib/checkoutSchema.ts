@@ -4,6 +4,13 @@ import { SIZES, type Size } from './config';
 /** Нормалізує телефон перед перевіркою: прибирає пробіли, дужки, дефіси. */
 const normalizePhone = (v: string) => v.replace(/[\s()-]/g, '');
 
+/** Кількість одного розміру: ціле, 0–10. Сумарні межі — у superRefine. */
+const sizeCount = z.number().int().min(0).max(10);
+
+/** Сумарна кількість штук у замовленні. */
+export const totalQuantity = (sizes: Partial<Record<Size, number>>): number =>
+  SIZES.reduce((sum, s) => sum + (sizes[s] ?? 0), 0);
+
 /** Схема замовлення — спільна для клієнтської форми і /api/checkout. */
 export const checkoutSchema = z
   .object({
@@ -20,8 +27,11 @@ export const checkoutSchema = z
     email: z
       .string()
       .refine((v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), 'Невірний e-mail'),
-    quantity: z.number().int().min(1, 'Кількість має бути не менше 1'),
-    size: z.enum(SIZES, { message: 'Оберіть розмір' }),
+    sizes: z.object({
+      МАЛЕНЬКИЙ: sizeCount,
+      СЕРЕДНІЙ: sizeCount,
+      ВЕЛИКИЙ: sizeCount,
+    }),
     deliveryMode: z.enum(['np', 'other']),
     // --- Нова Пошта ---
     city: z.string(),
@@ -36,6 +46,17 @@ export const checkoutSchema = z
     zip: z.string(),
   })
   .superRefine((data, ctx) => {
+    const total = totalQuantity(data.sizes);
+    if (total < 1) {
+      ctx.addIssue({ code: 'custom', path: ['sizes'], message: 'Оберіть розмір' });
+    } else if (total > 10) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['sizes'],
+        message: 'Максимум 10 штук у замовленні',
+      });
+    }
+
     if (data.deliveryMode === 'np') {
       if (!data.city.trim()) {
         ctx.addIssue({ code: 'custom', path: ['city'], message: 'Оберіть місто' });
@@ -79,7 +100,8 @@ export type DeliveryType = CheckoutInput['deliveryType'];
 export type DeliveryMode = CheckoutInput['deliveryMode'];
 
 /**
- * Стан клієнтської форми: збігається зі схемою, але розмір може бути ще не
- * обраний (''). safeParse такого стану дає помилку «Оберіть розмір».
+ * Стан клієнтської форми. З переходом на `sizes` (усі нулі — валідна форма
+ * типу, помилку дає superRefine) окремий widened-тип не потрібен; назва
+ * збережена, бо її імпортують CheckoutForm/OtherDeliveryFields.
  */
-export type CheckoutFormState = Omit<CheckoutInput, 'size'> & { size: Size | '' };
+export type CheckoutFormState = CheckoutInput;
