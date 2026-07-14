@@ -8,8 +8,8 @@ const normalizePhone = (v: string) => v.replace(/[\s()-]/g, '');
 const sizeCount = z.number().int().min(0).max(10);
 
 /** Сумарна кількість штук у замовленні. */
-export const totalQuantity = (sizes: Partial<Record<Size, number>>): number =>
-  SIZES.reduce((sum, s) => sum + (sizes[s] ?? 0), 0);
+export const totalQuantity = (sizes: Record<Size, number>): number =>
+  SIZES.reduce((sum, s) => sum + sizes[s], 0);
 
 /** Схема замовлення — спільна для клієнтської форми і /api/checkout. */
 export const checkoutSchema = z
@@ -46,7 +46,7 @@ export const checkoutSchema = z
     zip: z.string(),
   })
   .superRefine((data, ctx) => {
-    const total = totalQuantity(data.sizes);
+    const total = totalQuantity(data.sizes as Record<Size, number>);
     if (total < 1) {
       ctx.addIssue({ code: 'custom', path: ['sizes'], message: 'Оберіть розмір' });
     } else if (total > 10) {
