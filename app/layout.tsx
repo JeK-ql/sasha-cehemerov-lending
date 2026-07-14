@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Montserrat, Oswald, IBM_Plex_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
+import { organizationLd, productLd } from '@/lib/structuredData';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 const display = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['900'], variable: '--font-display' });
@@ -26,56 +27,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: '#FAFAFA',
   colorScheme: 'light',
-};
-
-const organizationLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  '@id': 'https://isusneisus.com/#organization',
-  name: 'Sasha Chemerov × Димна Суміш',
-  url: 'https://isusneisus.com/',
-  logo: 'https://isusneisus.com/logo.png',
-};
-
-const productLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Product',
-  '@id': 'https://isusneisus.com/#product',
-  name: 'too much яром too much долиною',
-  sku: 'DROP01-OVERSIZE',
-  brand: { '@type': 'Brand', name: 'Sasha Chemerov × Димна Суміш' },
-  image: [
-    'https://isusneisus.com/too-much-яром-too-much-долиною.webp',
-  ],
-  description:
-    'Оверсайз-футболка "too much яром too much долиною" — лімітований дроп Sasha Chemerov × Димна Суміш.',
-  offers: {
-    '@type': 'Offer',
-    url: 'https://isusneisus.com/',
-    priceCurrency: 'UAH',
-    price: '2600',
-    availability: 'https://schema.org/InStock',
-    itemCondition: 'https://schema.org/NewCondition',
-    seller: { '@id': 'https://isusneisus.com/#organization' },
-    hasMerchantReturnPolicy: {
-      '@type': 'MerchantReturnPolicy',
-      applicableCountry: 'UA',
-      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-      merchantReturnDays: 14,
-      returnMethod: 'https://schema.org/ReturnByMail',
-      returnFees: 'https://schema.org/FreeReturn',
-    },
-    shippingDetails: {
-      '@type': 'OfferShippingDetails',
-      shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'UA' },
-      shippingRate: { '@type': 'MonetaryAmount', value: '0', currency: 'UAH' },
-      deliveryTime: {
-        '@type': 'ShippingDeliveryTime',
-        handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
-        transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' },
-      },
-    },
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
