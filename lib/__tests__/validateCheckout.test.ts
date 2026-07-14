@@ -1,19 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { validateCheckout } from '../validateCheckout';
-import type { CheckoutInput } from '../checkoutSchema';
+import type { CheckoutFormState } from '../checkoutSchema';
 
-const valid: CheckoutInput = {
+const valid: CheckoutFormState = {
   fullName: 'Іван Іванов',
   phone: '+380671234567',
   email: 'a@b.com',
   quantity: 1,
+  size: 'СЕРЕДНІЙ',
+  deliveryMode: 'np',
   city: 'Львів',
   cityRef: 'ref-1',
   deliveryType: 'warehouse',
   warehouse: 'Відділення №1',
+  country: 'Україна',
   street: '',
   building: '',
   flat: '',
+  zip: '',
 };
 
 describe('validateCheckout', () => {
@@ -21,14 +25,14 @@ describe('validateCheckout', () => {
     expect(validateCheckout(valid)).toEqual({});
   });
 
-  it('returns the phone length message for "+380124"', () => {
-    const errs = validateCheckout({ ...valid, phone: '+380124' });
-    expect(errs.phone).toBe('Введіть 9 цифр після +380');
+  it('maps a missing size to the size field', () => {
+    const errs = validateCheckout({ ...valid, size: '' });
+    expect(errs.size).toBe('Оберіть розмір');
   });
 
-  it('returns the email message for a bad email', () => {
-    const errs = validateCheckout({ ...valid, email: 'nope' });
-    expect(errs.email).toBe('Невірний e-mail');
+  it('returns the phone message for a number without +', () => {
+    const errs = validateCheckout({ ...valid, phone: '0671234567' });
+    expect(errs.phone).toBe('Номер має починатися з «+» і коду країни');
   });
 
   it('returns the name message for a single-word name', () => {
@@ -36,23 +40,23 @@ describe('validateCheckout', () => {
     expect(errs.fullName).toBe("Вкажіть ім'я та прізвище");
   });
 
-  it('returns the warehouse message when missing in warehouse mode', () => {
-    const errs = validateCheckout({ ...valid, warehouse: '' });
-    expect(errs.warehouse).toBe('Оберіть відділення або поштомат');
-  });
-
-  it('returns the city message when missing', () => {
-    const errs = validateCheckout({ ...valid, city: '' });
-    expect(errs.city).toBe('Оберіть місто');
+  it('returns other-mode address errors', () => {
+    const errs = validateCheckout({
+      ...valid,
+      deliveryMode: 'other',
+      country: '',
+      street: '',
+      building: '',
+      zip: '',
+    });
+    expect(errs.country).toBe('Вкажіть країну');
+    expect(errs.street).toBe('Вкажіть вулицю');
+    expect(errs.building).toBe('Вкажіть будинок');
+    expect(errs.zip).toBe('Вкажіть поштовий індекс');
   });
 
   it('returns multiple errors at once', () => {
-    const errs = validateCheckout({
-      ...valid,
-      fullName: '',
-      email: 'nope',
-      phone: '',
-    });
+    const errs = validateCheckout({ ...valid, fullName: '', email: 'nope', phone: '' });
     expect(errs.fullName).toBeDefined();
     expect(errs.email).toBeDefined();
     expect(errs.phone).toBeDefined();

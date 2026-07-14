@@ -1,8 +1,8 @@
-import { checkoutSchema, type CheckoutInput } from './checkoutSchema';
+import { checkoutSchema, type CheckoutFormState, type CheckoutInput } from './checkoutSchema';
 
 export type FieldErrors = Partial<Record<keyof CheckoutInput, string>>;
 
-export function validateCheckout(data: CheckoutInput): FieldErrors {
+export function validateCheckout(data: CheckoutFormState): FieldErrors {
   const result = checkoutSchema.safeParse(data);
   if (result.success) return {};
   const flat = result.error.flatten().fieldErrors;

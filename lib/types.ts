@@ -1,4 +1,9 @@
-export type { CheckoutInput, DeliveryType } from './checkoutSchema';
+export type {
+  CheckoutInput,
+  CheckoutFormState,
+  DeliveryType,
+  DeliveryMode,
+} from './checkoutSchema';
 
 export interface WayForPayParams {
   merchantAccount: string;

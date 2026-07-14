@@ -1,77 +1,145 @@
 import { describe, it, expect } from 'vitest';
 import { checkoutSchema } from '../checkoutSchema';
 
-const base = {
+const npOrder = {
   fullName: 'Чемеров Олександр',
   phone: '+380671234567',
   email: 'a@b.com',
   quantity: 1,
+  size: 'СЕРЕДНІЙ' as const,
+  deliveryMode: 'np' as const,
   city: 'Львів',
   cityRef: 'ref-1',
   deliveryType: 'warehouse' as const,
   warehouse: 'Відділення №1',
+  country: 'Україна',
   street: '',
   building: '',
   flat: '',
+  zip: '',
 };
 
-const courier = {
-  ...base,
-  deliveryType: 'courier' as const,
+const otherOrder = {
+  ...npOrder,
+  deliveryMode: 'other' as const,
+  cityRef: '',
   warehouse: '',
-  street: 'вул. Шевченка',
+  country: 'Польща',
+  city: 'Kraków',
+  street: 'ul. Floriańska',
   building: '12',
+  flat: '3',
+  zip: '31-019',
 };
 
-describe('checkoutSchema', () => {
-  it('accepts a valid warehouse order', () => {
-    expect(checkoutSchema.safeParse(base).success).toBe(true);
-  });
-  it('accepts a valid courier order', () => {
-    expect(checkoutSchema.safeParse(courier).success).toBe(true);
+describe('checkoutSchema — базові поля', () => {
+  it('accepts a valid NP order', () => {
+    expect(checkoutSchema.safeParse(npOrder).success).toBe(true);
   });
   it('rejects a single-word name', () => {
-    expect(checkoutSchema.safeParse({ ...base, fullName: 'Іван' }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...npOrder, fullName: 'Іван' }).success).toBe(false);
   });
   it('rejects a bad email', () => {
-    expect(checkoutSchema.safeParse({ ...base, email: 'nope' }).success).toBe(false);
-  });
-  it('rejects a bad phone', () => {
-    expect(checkoutSchema.safeParse({ ...base, phone: '123' }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...npOrder, email: 'nope' }).success).toBe(false);
   });
   it('rejects quantity below 1', () => {
-    expect(checkoutSchema.safeParse({ ...base, quantity: 0 }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...npOrder, quantity: 0 }).success).toBe(false);
   });
-  it('rejects a warehouse order with no warehouse', () => {
-    expect(checkoutSchema.safeParse({ ...base, warehouse: '' }).success).toBe(false);
+});
+
+describe('checkoutSchema — телефон (міжнародний)', () => {
+  it('accepts a Ukrainian number', () => {
+    expect(checkoutSchema.safeParse({ ...npOrder, phone: '+380671234567' }).success).toBe(true);
   });
-  it('rejects a courier order with no street', () => {
-    expect(checkoutSchema.safeParse({ ...courier, street: '' }).success).toBe(false);
+  it('accepts a foreign number', () => {
+    expect(checkoutSchema.safeParse({ ...npOrder, phone: '+48123456789' }).success).toBe(true);
   });
-  it('rejects a courier order with no building', () => {
-    expect(checkoutSchema.safeParse({ ...courier, building: '' }).success).toBe(false);
+  it('accepts spaces and dashes inside the number', () => {
+    expect(checkoutSchema.safeParse({ ...npOrder, phone: '+48 123-456-789' }).success).toBe(true);
   });
-  it('reports the Ukrainian message for a missing warehouse', () => {
-    const res = checkoutSchema.safeParse({ ...base, warehouse: '' });
+  it('rejects a number without leading +', () => {
+    const res = checkoutSchema.safeParse({ ...npOrder, phone: '380671234567' });
     expect(res.success).toBe(false);
     if (!res.success) {
-      expect(res.error.issues[0].message).toBe('Оберіть відділення або поштомат');
+      const issue = res.error.issues.find((i) => i.path[0] === 'phone');
+      expect(issue?.message).toBe('Номер має починатися з «+» і коду країни');
     }
   });
-  it('reports the prefix message when phone does not start with +380', () => {
-    const res = checkoutSchema.safeParse({ ...base, phone: '+1234567890' });
+  it('rejects a too-short number', () => {
+    const res = checkoutSchema.safeParse({ ...npOrder, phone: '+38012' });
     expect(res.success).toBe(false);
     if (!res.success) {
-      const phoneIssue = res.error.issues.find((i) => i.path[0] === 'phone');
-      expect(phoneIssue?.message).toBe('Введіть номер у форматі +380…');
+      const issue = res.error.issues.find((i) => i.path[0] === 'phone');
+      expect(issue?.message).toBe('Введіть 7–15 цифр після «+»');
     }
   });
-  it('reports the length message when phone is +380 but too short', () => {
-    const res = checkoutSchema.safeParse({ ...base, phone: '+380124' });
+  it('rejects a too-long number', () => {
+    expect(checkoutSchema.safeParse({ ...npOrder, phone: '+1234567890123456' }).success).toBe(false);
+  });
+});
+
+describe('checkoutSchema — розмір', () => {
+  it('rejects a missing size with the Ukrainian message', () => {
+    const res = checkoutSchema.safeParse({ ...npOrder, size: '' });
     expect(res.success).toBe(false);
     if (!res.success) {
-      const phoneIssue = res.error.issues.find((i) => i.path[0] === 'phone');
-      expect(phoneIssue?.message).toBe('Введіть 9 цифр після +380');
+      const issue = res.error.issues.find((i) => i.path[0] === 'size');
+      expect(issue?.message).toBe('Оберіть розмір');
     }
+  });
+  it('rejects an unknown size', () => {
+    expect(checkoutSchema.safeParse({ ...npOrder, size: 'M' }).success).toBe(false);
+  });
+  it.each(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'] as const)('accepts size %s', (size) => {
+    expect(checkoutSchema.safeParse({ ...npOrder, size }).success).toBe(true);
+  });
+});
+
+describe('checkoutSchema — режим «Нова Пошта»', () => {
+  it('rejects a missing city', () => {
+    const res = checkoutSchema.safeParse({ ...npOrder, city: '' });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.find((i) => i.path[0] === 'city')?.message).toBe('Оберіть місто');
+    }
+  });
+  it('rejects a missing warehouse with the Ukrainian message', () => {
+    const res = checkoutSchema.safeParse({ ...npOrder, warehouse: '' });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.find((i) => i.path[0] === 'warehouse')?.message).toBe(
+        'Оберіть відділення або поштомат',
+      );
+    }
+  });
+  it('does not require country/street/zip in NP mode', () => {
+    expect(
+      checkoutSchema.safeParse({ ...npOrder, country: '', street: '', zip: '' }).success,
+    ).toBe(true);
+  });
+});
+
+describe('checkoutSchema — режим «Інше» (Укрпошта/світ)', () => {
+  it('accepts a valid international order', () => {
+    expect(checkoutSchema.safeParse(otherOrder).success).toBe(true);
+  });
+  it('does not require cityRef/warehouse in other mode', () => {
+    expect(checkoutSchema.safeParse({ ...otherOrder, cityRef: '', warehouse: '' }).success).toBe(true);
+  });
+  it.each([
+    ['country', 'Вкажіть країну'],
+    ['city', 'Вкажіть місто'],
+    ['street', 'Вкажіть вулицю'],
+    ['building', 'Вкажіть будинок'],
+    ['zip', 'Вкажіть поштовий індекс'],
+  ] as const)('rejects a missing %s', (field, message) => {
+    const res = checkoutSchema.safeParse({ ...otherOrder, [field]: '' });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.find((i) => i.path[0] === field)?.message).toBe(message);
+    }
+  });
+  it('accepts an empty flat (optional)', () => {
+    expect(checkoutSchema.safeParse({ ...otherOrder, flat: '' }).success).toBe(true);
   });
 });
