@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Montserrat, Oswald, IBM_Plex_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
-import { organizationLd, productLd } from '@/lib/structuredData';
+import { organizationLd, productLd, PRODUCT_IMAGE_JPG } from '@/lib/structuredData';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 const display = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['900'], variable: '--font-display' });
@@ -10,17 +10,22 @@ const oswald = Oswald({ subsets: ['latin', 'cyrillic'], weight: ['600', '700'], 
 const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400', '500'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-  title: 'too much яром too much долиною — Sasha Chemerov',
-  description: 'Дроп 01 — оверсайз-футболка від Саші Чемерова та гурту «Димна Суміш».',
+  title: 'too much яром too much долиною — мерч Sasha Chemerov × Димна Суміш',
+  description:
+    'Оверсайз-футболка «too much яром too much долиною» — лімітований дроп 01 Sasha Chemerov × Димна Суміш. 2600 ₴, доставка Новою Поштою по Україні, оплата карткою через WayForPay.',
   metadataBase: new URL('https://isusneisus.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'too much яром too much долиною — Sasha Chemerov',
-    description: 'Дроп 01 — оверсайз-футболка.',
+    title: 'too much яром too much долиною — мерч Sasha Chemerov × Димна Суміш',
+    description:
+      'Лімітований дроп 01. 2600 ₴, доставка Новою Поштою по Україні.',
     url: 'https://isusneisus.com/',
-    images: ['/too-much-яром-too-much-долиною.webp'],
+    siteName: 'isusneisus.com',
+    locale: 'uk_UA',
+    type: 'website',
+    images: [PRODUCT_IMAGE_JPG],
   },
 };
 
