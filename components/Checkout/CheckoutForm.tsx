@@ -73,19 +73,20 @@ export function CheckoutForm() {
   const totalCount = totalQuantity(data.sizes as Record<Size, number>);
   const canAdd = totalCount < MAX_QUANTITY;
 
-  const setSizeCount = (s: Size, next: number) => {
-    setData((d) => ({
-      ...d,
-      sizes: { ...d.sizes, [s]: Math.max(0, Math.min(MAX_QUANTITY, next)) },
-    }));
-  };
-
-  // Тап по кнопці розміру або «+» у міні-степпері: +1 в межах сумарного ліміту.
-  const addSize = (s: Size) => {
-    if (!canAdd) return;
-    setSizeCount(s, data.sizes[s] + 1);
-    markTouched('sizes');
-    pulsePrice();
+  // Уся арифметика — всередині updater: швидкі повторні тапи не гублять
+  // інкременти і не пробивають сумарний ліміт (stale-closure safe).
+  const changeSize = (s: Size, delta: 1 | -1) => {
+    setData((d) => {
+      const sizes = d.sizes as Record<Size, number>;
+      if (delta > 0 && totalQuantity(sizes) >= MAX_QUANTITY) return d;
+      const next = Math.max(0, Math.min(MAX_QUANTITY, sizes[s] + delta));
+      if (next === sizes[s]) return d;
+      return { ...d, sizes: { ...sizes, [s]: next } };
+    });
+    if (delta > 0) {
+      markTouched('sizes');
+      pulsePrice();
+    }
   };
 
   useEffect(() => {
@@ -164,7 +165,7 @@ export function CheckoutForm() {
               className={styles.segBtn}
               data-active={data.sizes[s] > 0 ? 'true' : undefined}
               aria-pressed={data.sizes[s] > 0}
-              onClick={() => addSize(s)}
+              onClick={() => changeSize(s, 1)}
             >
               {s}
               {data.sizes[s] > 0 ? ` ×${data.sizes[s]}` : ''}
@@ -178,7 +179,7 @@ export function CheckoutForm() {
               <button
                 type="button"
                 className={`${styles.qtyBtn} ${styles.qtyBtnSmall}`}
-                onClick={() => setSizeCount(s, data.sizes[s] - 1)}
+                onClick={() => changeSize(s, -1)}
                 aria-label={`Менше: ${s}`}
               >
                 −
@@ -188,7 +189,7 @@ export function CheckoutForm() {
                 type="button"
                 className={`${styles.qtyBtn} ${styles.qtyBtnSmall}`}
                 aria-disabled={!canAdd}
-                onClick={() => addSize(s)}
+                onClick={() => changeSize(s, 1)}
                 aria-label={`Більше: ${s}`}
               >
                 +

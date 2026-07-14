@@ -112,7 +112,7 @@
 .pay:disabled { opacity: .45; cursor: not-allowed; }
 .pay:not(:disabled):active { transform: scale(0.985); }
 
-/* Stepper row: [ − ] [ ── pay (flex:1) ── ] [ + ] */
+/* Pay row: одна кнопка оплати на всю ширину. */
 .payRow { display: flex; gap: 8px; margin-top: 28px; }
 .qtyBtn {
   background: #c1baac; color: var(--ink); border: none; cursor: pointer;
