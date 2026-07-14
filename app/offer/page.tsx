@@ -1,7 +1,18 @@
+import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
 import { SELLER } from '@/lib/seller';
 
-export const metadata = { title: 'Публічна оферта — Sasha Chemerov' };
+export const metadata: Metadata = {
+  title: 'Публічна оферта — Sasha Chemerov',
+  description:
+    'Договір публічної оферти інтернет-магазину isusneisus.com: замовлення, оплата, доставка, повернення, реквізити продавця.',
+  alternates: { canonical: '/offer' },
+  openGraph: {
+    title: 'Публічна оферта — Sasha Chemerov',
+    description: 'Умови купівлі на isusneisus.com.',
+    url: 'https://isusneisus.com/offer',
+  },
+};
 
 export default function OfferPage() {
   return (

@@ -1,6 +1,17 @@
+import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
 
-export const metadata = { title: 'Умови повернення — Sasha Chemerov' };
+export const metadata: Metadata = {
+  title: 'Умови повернення — Sasha Chemerov',
+  description:
+    'Умови повернення та обміну товару, придбаного на isusneisus.com: строки, порядок, кошти — за Законом України «Про захист прав споживачів».',
+  alternates: { canonical: '/returns' },
+  openGraph: {
+    title: 'Умови повернення — Sasha Chemerov',
+    description: 'Порядок повернення та обміну товару на isusneisus.com.',
+    url: 'https://isusneisus.com/returns',
+  },
+};
 
 export default function ReturnsPage() {
   return (
