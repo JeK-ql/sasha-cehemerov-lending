@@ -134,6 +134,35 @@
   outline: none; }
 .qtyBtn[aria-disabled='true']:active { transform: none; }
 
+/* ---------- Segment controls (розмір, спосіб доставки) ---------- */
+.segLabel { margin-bottom: 12px; }
+.segRow { display: flex; gap: 8px; }
+.segBtn {
+  flex: 1; height: 52px;
+  background: none; border: 1.5px solid #c1baac; color: #c1baac;
+  cursor: pointer;
+  font-family: var(--font-oswald); font-weight: 700;
+  /* 14px: підписи «МАЛЕНЬКИЙ/СЕРЕДНІЙ/ВЕЛИКИЙ» мають вміщатися в третину
+     ширини мобільного екрана без переносу. */
+  font-size: 14px; text-transform: uppercase; letter-spacing: .02em;
+  padding: 0 4px;
+  transition: background 150ms ease, color 150ms ease,
+              transform 150ms var(--ease-out);
+}
+.segBtn[data-active='true'] { background: #c1baac; color: var(--ink); }
+.segBtn:not([data-active='true']):active { transform: scale(0.97); }
+.segRow + .fieldError, .segRow + .fieldHint { margin-top: 10px; }
+
+/* Два поля в один рядок (будинок + квартира). */
+.fieldRow { display: flex; gap: 16px; }
+.fieldRow .field { flex: 1; }
+
+/* Тиха нотатка про доставку під кнопкою оплати. */
+.deliveryNote {
+  font-size: 8px; color: #8f8a7d; text-align: center;
+  margin-top: 12px; letter-spacing: .05em; text-transform: uppercase;
+}
+
 /* Same treatment for the pay button. */
 .pay[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
 .pay[aria-disabled='true']:active { transform: none; }
@@ -211,7 +240,8 @@
 .order { animation-delay: 170ms; }
 .block:nth-of-type(1) { animation-delay: 230ms; }
 .block:nth-of-type(2) { animation-delay: 290ms; }
-.payRow { animation-delay: 350ms; }
+.block:nth-of-type(3) { animation-delay: 350ms; }
+.payRow { animation-delay: 410ms; }
 
 /* Reduced motion — the panel slide is kept intentionally: it conveys where
    the sheet comes from and is an explicit product requirement. Only the

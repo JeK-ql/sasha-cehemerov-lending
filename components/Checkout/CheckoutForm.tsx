@@ -3,29 +3,30 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { PRODUCT } from '@/lib/config';
-import type { CheckoutInput } from '@/lib/types';
+import { PRODUCT, SIZES, SIZE_MEASUREMENTS } from '@/lib/config';
+import type { CheckoutFormState } from '@/lib/types';
 import { validateCheckout } from '@/lib/validateCheckout';
 import styles from './CheckoutModal.module.css';
 import { NovaPoshtaPicker } from './NovaPoshtaPicker';
 
-type FieldKey = keyof CheckoutInput;
+type FieldKey = keyof CheckoutFormState;
 
-// CheckoutInput is now z.infer<typeof checkoutSchema> — requires every field
-// the schema defines. Initialise them all (deliveryType locked to "warehouse"
-// since v2's picker UI doesn't show the courier branch).
-const EMPTY: CheckoutInput = {
+const EMPTY: CheckoutFormState = {
   fullName: '',
   phone: '',
   email: '',
   quantity: 1,
+  size: '',
+  deliveryMode: 'np',
   city: '',
   cityRef: '',
   deliveryType: 'warehouse',
   warehouse: '',
+  country: 'Україна',
   street: '',
   building: '',
   flat: '',
+  zip: '',
 };
 
 // Upper bound for the stepper — keep in sync with the server-side clamp.
@@ -33,36 +34,8 @@ const MAX_QUANTITY = 10;
 
 type ZoomTarget = 'front' | 'back' | null;
 
-/**
- * Normalises any user input into the Ukrainian "+380XXXXXXXXX" form.
- *
- * Autofill triggers when typed first: "+", "3", "8", "0" — the typed char
- * is consumed into the "+380" prefix (not appended after it). Any other
- * first digit (5/6/7/9) gets the "+380" prefix prepended in front of it.
- *
- * Backspacing past the "+380" prefix clears the field so the user can
- * start fresh — disambiguated from the autofill case for "+" by comparing
- * the new value's length to the previous one.
- *
- * Caps total length at 13 chars: "+380" + 9 subscriber digits.
- */
-function formatUkrainianPhone(raw: string, prev: string): string {
-  if (raw === '') return '';
-  if (raw.length < prev.length && raw.length < 4) return '';
-
-  let digits = raw.replace(/\D/g, '');
-  if (digits.startsWith('380')) digits = digits.slice(3);
-  else if (digits.startsWith('80')) digits = digits.slice(2);
-  else if (digits.startsWith('8')) digits = digits.slice(1);
-  else if (digits.startsWith('0')) digits = digits.slice(1);
-  else if (digits.startsWith('3')) digits = digits.slice(1);
-
-  digits = digits.slice(0, 9);
-  return '+380' + digits;
-}
-
 export function CheckoutForm() {
-  const [data, setData] = useState<CheckoutInput>(EMPTY);
+  const [data, setData] = useState<CheckoutFormState>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [zoomed, setZoomed] = useState<ZoomTarget>(null);
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
@@ -74,13 +47,15 @@ export function CheckoutForm() {
 
   // Single helper: partial-merge into data. Used by every input and by the
   // NovaPoshtaPicker's onChange contract.
-  const patch = (p: Partial<CheckoutInput>) => setData((d) => ({ ...d, ...p }));
+  const patch = (p: Partial<CheckoutFormState>) => setData((d) => ({ ...d, ...p }));
 
   const set = (k: 'fullName' | 'email') => (e: React.ChangeEvent<HTMLInputElement>) =>
     patch({ [k]: e.target.value });
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setData((d) => ({ ...d, phone: formatUkrainianPhone(e.target.value, d.phone) }));
+    // Міжнародний формат без автоформатування: «+», код країни, 7–15 цифр.
+    // Пробіли/дужки/дефіси дозволені — схема нормалізує їх перед перевіркою.
+    patch({ phone: e.target.value });
   };
 
   // Increment quantity AND pulse the price number via the Web Animations API.
@@ -157,9 +132,43 @@ export function CheckoutForm() {
           <div className={styles.orderName}>
             <span>TOO MUCH ЯРОМ TOO MUCH ДОЛИНОЮ</span>
           </div>
-          <div className={`${styles.orderMeta} mono`}>OVERSIZE · ОДИН РОЗМІР · ×{data.quantity}</div>
+          <div className={`${styles.orderMeta} mono`}>
+            OVERSIZE{data.size ? ` · ${data.size}` : ''} · ×{data.quantity}
+          </div>
         </div>
       </div>
+
+      <fieldset className={styles.block}>
+        <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>РОЗМІР</span>
+        <div className={styles.segRow} role="radiogroup" aria-label="Розмір">
+          {SIZES.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={styles.segBtn}
+              data-active={data.size === s ? 'true' : undefined}
+              aria-pressed={data.size === s}
+              onClick={() => {
+                patch({ size: s });
+                markTouched('size');
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+        {visibleError('size') ? (
+          <span className={`${styles.fieldError} mono`}>{visibleError('size')}</span>
+        ) : (
+          data.size &&
+          SIZE_MEASUREMENTS[data.size] && (
+            <span className={`${styles.fieldHint} mono`}>
+              ШИРИНА {SIZE_MEASUREMENTS[data.size]!.widthCm} СМ · ДОВЖИНА{' '}
+              {SIZE_MEASUREMENTS[data.size]!.lengthCm} СМ
+            </span>
+          )
+        )}
+      </fieldset>
 
       <fieldset className={styles.block}>
         <Field
@@ -185,8 +194,8 @@ export function CheckoutForm() {
             value={data.phone}
             onChange={handlePhoneChange}
             onBlur={() => markTouched('phone')}
-            maxLength={13}
-            placeholder="+380XXXXXXXXX"
+            maxLength={20}
+            placeholder="+380 …"
           />
           {visibleError('phone') && (
             <span className={`${styles.fieldError} mono`}>{visibleError('phone')}</span>
@@ -258,6 +267,10 @@ export function CheckoutForm() {
           +
         </button>
       </div>
+
+      <p className={`${styles.deliveryNote} mono`}>
+        Доставка — за рахунок отримувача, за тарифами перевізника
+      </p>
 
       {zoomed && typeof document !== 'undefined' && createPortal(
         <div
