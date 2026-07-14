@@ -76,14 +76,16 @@ export function CheckoutForm() {
   // Уся арифметика — всередині updater: швидкі повторні тапи не гублять
   // інкременти і не пробивають сумарний ліміт (stale-closure safe).
   const changeSize = (s: Size, delta: 1 | -1) => {
+    let changed = false;
     setData((d) => {
       const sizes = d.sizes as Record<Size, number>;
       if (delta > 0 && totalQuantity(sizes) >= MAX_QUANTITY) return d;
       const next = Math.max(0, Math.min(MAX_QUANTITY, sizes[s] + delta));
       if (next === sizes[s]) return d;
+      changed = true;
       return { ...d, sizes: { ...sizes, [s]: next } };
     });
-    if (delta > 0) {
+    if (delta > 0 && changed) {
       markTouched('sizes');
       pulsePrice();
     }
