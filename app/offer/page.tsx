@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
-import { SELLER } from '@/lib/seller';
+import { SELLER, SELLER_TELEGRAM_READY } from '@/lib/seller';
 
 export const metadata: Metadata = {
   title: 'Публічна оферта — Sasha Chemerov',
@@ -223,6 +223,12 @@ export default function OfferPage() {
         Фактична адреса: {SELLER.actualAddress}
         <br />
         Телефон: {SELLER.phone}
+        {SELLER_TELEGRAM_READY && (
+          <>
+            <br />
+            Telegram: {SELLER.telegram}
+          </>
+        )}
         <br />
         E-mail: {SELLER.email}
       </p>
