@@ -13,6 +13,7 @@ const csp = [
   "frame-src https://secure.wayforpay.com",
   "base-uri 'self'",
   "form-action 'self' https://secure.wayforpay.com",
+  "frame-ancestors 'none'",
 ].join('; ');
 
 const securityHeaders = [
@@ -20,6 +21,7 @@ const securityHeaders = [
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
   { key: 'Content-Security-Policy', value: csp },
+  { key: 'X-Frame-Options', value: 'DENY' },
 ];
 
 const nextConfig: NextConfig = {

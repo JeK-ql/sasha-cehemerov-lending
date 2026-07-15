@@ -5,7 +5,7 @@ import { SOCIAL_LINKS } from '../socials';
 describe('structuredData', () => {
   it('усі URL зображень Product — тільки ASCII (без сирої кирилиці)', () => {
     for (const url of productLd.image) {
-      expect(url).toMatch(/^https:\/\/[\x20-\x7E]+$/);
+      expect(url).toMatch(/^https:\/\/[\x21-\x7E]+$/);
     }
   });
 
@@ -24,5 +24,11 @@ describe('structuredData', () => {
 
   it('Product.size відповідає SIZES з конфігу', () => {
     expect(productLd.size).toEqual(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ']);
+  });
+
+  it('return policy does not falsely claim free returns', () => {
+    expect(productLd.offers.hasMerchantReturnPolicy.returnFees).toBe(
+      'https://schema.org/ReturnShippingFees',
+    );
   });
 });

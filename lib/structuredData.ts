@@ -22,7 +22,7 @@ export const productLd = {
   name: PRODUCT.name,
   sku: PRODUCT.sku,
   brand: { '@type': 'Brand', name: 'Sasha Chemerov × Димна Суміш' },
-  image: [`${SITE_URL}${PRODUCT_IMAGE_WEBP}`],
+  image: [`${SITE_URL}${PRODUCT_IMAGE_WEBP}`, `${SITE_URL}${PRODUCT_IMAGE_JPG}`],
   description:
     'Оверсайз-футболка "too much яром too much долиною" — лімітований дроп Sasha Chemerov × Димна Суміш.',
   size: [...SIZES],
@@ -41,7 +41,7 @@ export const productLd = {
       returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
       merchantReturnDays: 14,
       returnMethod: 'https://schema.org/ReturnByMail',
-      returnFees: 'https://schema.org/FreeReturn',
+      returnFees: 'https://schema.org/ReturnShippingFees',
     },
     // Вартість доставки платить покупець за тарифами перевізника (оферта §5.3,
     // §6.2) — тому shippingRate тут свідомо відсутній.
@@ -50,7 +50,7 @@ export const productLd = {
       shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'UA' },
       deliveryTime: {
         '@type': 'ShippingDeliveryTime',
-        handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
+        handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' },
         transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'DAY' },
       },
     },
