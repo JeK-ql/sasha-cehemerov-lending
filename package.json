@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "optimize:images": "node scripts/optimize-images.mjs"
+    "optimize:images": "node scripts/optimize-images.mjs",
+    "refresh:cities": "node scripts/refresh-popular-cities.mjs"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.6",

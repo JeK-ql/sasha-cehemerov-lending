@@ -96,18 +96,6 @@ export function NovaPoshtaPicker({
     onChange({ city: city.label, cityRef: city.ref, warehouse: '' });
   }
 
-  // Клік по популярному місту — резолвимо його Ref через звичайний пошук.
-  async function selectPopularCity(name: string) {
-    try {
-      const res = await fetch(`/api/novaposhta?type=cities&q=${encodeURIComponent(name)}`);
-      const json = await res.json();
-      const first: NpOption | undefined = (json.items ?? [])[0];
-      if (first) selectCity(first);
-    } catch {
-      /* мовчки ігноруємо — користувач може ввести місто вручну */
-    }
-  }
-
   function editCity(text: string) {
     setCityQuery(text);
     onChange({ city: '', cityRef: '', warehouse: '' });
@@ -140,14 +128,14 @@ export function NovaPoshtaPicker({
         {showPopular && (
           <ul className={styles.ac}>
             <li className={`${styles.acHead} mono`}>Популярні міста</li>
-            {POPULAR_CITIES.map((name) => (
+            {POPULAR_CITIES.map((c) => (
               <li
-                key={name}
+                key={c.ref}
                 className={styles.acItem}
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => selectPopularCity(name)}
+                onClick={() => selectCity({ label: c.label, ref: c.ref })}
               >
-                {name}
+                {c.name}
               </li>
             ))}
           </ul>
