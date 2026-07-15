@@ -17,12 +17,6 @@ const p = (...parts) => path.join(root, ...parts);
 
 const photos = [
   {
-    src: "source-assets/regenerated/hero.jpeg",
-    out: "public/hero.webp",
-    width: 1920,
-    quality: 78,
-  },
-  {
     src: "source-assets/regenerated/font.jpeg",
     out: "public/front.webp",
     width: 1400,

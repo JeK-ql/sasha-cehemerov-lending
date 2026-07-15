@@ -33,6 +33,7 @@ async function resolveCity(apiKey, name) {
       methodProperties: { CityName: name, Limit: '1' },
     }),
   });
+  if (!res.ok) throw new Error(`НП searchSettlements HTTP ${res.status} для «${name}»`);
   const json = await res.json();
   const first = json?.data?.[0]?.Addresses?.[0];
   if (!first?.Ref) throw new Error(`НП не знайшла місто «${name}»`);

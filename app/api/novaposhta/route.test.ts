@@ -57,6 +57,25 @@ describe('GET /api/novaposhta', () => {
     expect(res.headers.get('cache-control')).toBe('no-store');
   });
 
+  it('НП success:false (напр. поганий ключ): 502 + no-store, не 200 з порожнім списком', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ success: false, data: [], errors: ['API key error'] }),
+          { headers: { 'Content-Type': 'application/json' } },
+        ),
+      ),
+    );
+
+    const res = await GET(
+      new NextRequest('http://localhost/api/novaposhta?type=cities&q=%D0%BA%D0%B8%D1%97%D0%B2'),
+    );
+
+    expect(res.status).toBe(502);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+
   it('невідомий type: 400 + no-store', async () => {
     vi.stubGlobal('fetch', vi.fn());
 

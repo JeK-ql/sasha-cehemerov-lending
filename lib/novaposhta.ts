@@ -62,7 +62,13 @@ export async function searchCities(apiKey: string, query: string): Promise<NpOpt
       methodProperties: { CityName: query, Limit: '8' },
     }),
   });
+  if (!res.ok) throw new Error(`НП searchSettlements HTTP ${res.status}`);
   const json = await res.json();
+  /* НП звітує збої (поганий ключ, ліміт) як HTTP 200 + success:false + порожній
+     data — якщо не кинути тут, порожній результат піде як success і залипне
+     в CDN-кеші на добу для популярних запитів. Відсутність success (старі
+     тести/моки) — не помилка, кидаємо тільки на явний false. */
+  if (json?.success === false) throw new Error('НП searchSettlements: success:false');
   const addresses = json?.data?.[0]?.Addresses;
   return mapCities(addresses);
 }
@@ -77,6 +83,9 @@ export async function listWarehouses(apiKey: string, settlementRef: string): Pro
       methodProperties: { SettlementRef: settlementRef },
     }),
   });
+  if (!res.ok) throw new Error(`НП getWarehouses HTTP ${res.status}`);
   const json = await res.json();
+  // Той самий захист, що й у searchCities — див. коментар там.
+  if (json?.success === false) throw new Error('НП getWarehouses: success:false');
   return mapWarehouses(json?.data);
 }

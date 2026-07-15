@@ -47,6 +47,9 @@ const nextConfig: NextConfig = {
       },
       {
         // Медіа-файли в корені public/ (tshirt.mp4, video.jpg, *.webp, logo.png…)
+        // УВАГА: цей паттерн зловить і майбутні динамічні роути App Router з
+        // такими розширеннями в корені (напр. opengraph-image.png) — якщо
+        // з'явиться такий роут, виключи його тут окремо.
         source: '/:file([^/]+\\.(?:mp4|webp|jpe?g|png))',
         headers: [{ key: 'Cache-Control', value: IMMUTABLE_CACHE }],
       },
