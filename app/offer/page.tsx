@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
 import { SELLER, SELLER_TELEGRAM_READY } from '@/lib/seller';
+import { PRODUCT_IMAGE_JPG } from '@/lib/structuredData';
 
 export const metadata: Metadata = {
   title: 'Публічна оферта - Sasha Chemerov',
@@ -11,6 +12,9 @@ export const metadata: Metadata = {
     title: 'Публічна оферта - Sasha Chemerov',
     description: 'Умови купівлі на isusneisus.com.',
     url: 'https://isusneisus.com/offer',
+    // Сторінка задає власний openGraph, тож images батька не успадковуються —
+    // додаємо явно, інакше прев'ю посилання буде без картинки.
+    images: [PRODUCT_IMAGE_JPG],
   },
 };
 

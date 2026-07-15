@@ -33,6 +33,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: '#FAFAFA',
   colorScheme: 'light',
+  // edge-to-edge: дозволяє env(safe-area-inset-*), щоб темний футер/хедер
+  // заповнювали home-indicator і чубчик на iPhone (інакше знизу біла смуга).
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
