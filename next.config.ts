@@ -10,9 +10,9 @@ const isDev = process.env.NODE_ENV === 'development';
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://secure.wayforpay.com https://www.googletagmanager.com`,
-  "style-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://secure.wayforpay.com",
   "img-src 'self' data: https:",
-  "font-src 'self'",
+  "font-src 'self' data: https://secure.wayforpay.com",
   `connect-src 'self'${isDev ? ' ws:' : ''} https://secure.wayforpay.com https://api.wayforpay.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com`,
   "frame-src https://secure.wayforpay.com",
   "base-uri 'self'",
