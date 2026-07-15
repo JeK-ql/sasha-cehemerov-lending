@@ -33,15 +33,47 @@ const EMPTY: CheckoutFormState = {
 // Сумарний ліміт штук на замовлення - синхронно з superRefine схеми і серверним clamp.
 const MAX_QUANTITY = 10;
 
+// Чернетка форми в localStorage — щоб рефреш/повторне відкриття не втрачали
+// введене (включно з вибором розмірів). Версія в ключі: зміниш форму полів —
+// підніми версію, щоб стара несумісна чернетка не зламала гідратацію.
+const DRAFT_KEY = 'isus-checkout-draft-v1';
+const clearDraft = () => {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {
+    /* приватний режим / вимкнене сховище — ігноруємо */
+  }
+};
+
 type ZoomTarget = 'front' | 'back' | null;
 
 export function CheckoutForm() {
-  const [data, setData] = useState<CheckoutFormState>(EMPTY);
+  // Ленивий ініт із чернетки. Форма монтується лише на клієнті (модалка до
+  // відкриття рендерить null), тож читати localStorage тут безпечно — SSR її
+  // не рендерить, розбіжності гідратації немає.
+  const [data, setData] = useState<CheckoutFormState>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(DRAFT_KEY) : null;
+      if (raw) return { ...EMPTY, ...(JSON.parse(raw) as Partial<CheckoutFormState>) };
+    } catch {
+      /* пошкоджена чернетка — стартуємо з чистої форми */
+    }
+    return EMPTY;
+  });
   const [submitting, setSubmitting] = useState(false);
   const [zoomed, setZoomed] = useState<ZoomTarget>(null);
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const priceRef = useRef<HTMLSpanElement>(null);
+
+  // Зберігаємо чернетку на кожну зміну — рефреш/повторне відкриття її відновлять.
+  useEffect(() => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+    } catch {
+      /* сховище недоступне (приватний режим) — не критично */
+    }
+  }, [data]);
 
   const markTouched = (k: FieldKey) =>
     setTouched((t) => (t[k] ? t : { ...t, [k]: true }));
@@ -126,7 +158,21 @@ export function CheckoutForm() {
       if (!res.ok) throw new Error('checkout failed');
       const params = await res.json();
       if (!window.Wayforpay) throw new Error('widget not loaded');
-      new window.Wayforpay().run(params);
+      new window.Wayforpay().run(
+        params,
+        () => {
+          // Оплату прийнято: чистимо чернетку і ведемо на подяку (/?paid=1).
+          clearDraft();
+          window.location.assign('/?paid=1');
+        },
+        () => {
+          // Відхилено: чернетку лишаємо, щоб можна було спробувати ще раз.
+          window.location.assign('/?paid=0');
+        },
+        () => {
+          /* pending (для карток рідко) — віджет сам покаже статус */
+        },
+      );
     } catch {
       alert('Не вдалося почати оплату. Спробуйте ще раз.');
     } finally {
