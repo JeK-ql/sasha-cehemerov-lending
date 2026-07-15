@@ -11,15 +11,15 @@ const oswald = Oswald({ subsets: ['latin', 'cyrillic'], weight: ['600', '700'], 
 const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-  title: 'too much яром too much долиною — мерч Sasha Chemerov × Димна Суміш',
+  title: 'too much яром too much долиною - мерч Sasha Chemerov × Димна Суміш',
   description:
-    'Оверсайз-футболка «too much яром too much долиною» — лімітований дроп 01 Sasha Chemerov × Димна Суміш. 2600 ₴, доставка Новою Поштою по Україні, оплата карткою через WayForPay.',
+    'Оверсайз-футболка «too much яром too much долиною» - лімітований дроп 01 Sasha Chemerov × Димна Суміш. 2600 ₴, доставка Новою Поштою по Україні, оплата карткою через WayForPay.',
   metadataBase: new URL('https://isusneisus.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'too much яром too much долиною — мерч Sasha Chemerov × Димна Суміш',
+    title: 'too much яром too much долиною - мерч Sasha Chemerov × Димна Суміш',
     description:
       'Лімітований дроп 01. 2600 ₴, доставка Новою Поштою по Україні.',
     url: 'https://isusneisus.com/',
@@ -39,7 +39,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${mono.variable}`}>
+    <html
+      lang="uk"
+      data-scroll-behavior="smooth"
+      className={`${inter.variable} ${display.variable} ${oswald.variable} ${mono.variable}`}
+    >
       <body>
         {children}
         <script

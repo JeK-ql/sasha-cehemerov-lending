@@ -30,7 +30,7 @@ const EMPTY: CheckoutFormState = {
   zip: '',
 };
 
-// Сумарний ліміт штук на замовлення — синхронно з superRefine схеми і серверним clamp.
+// Сумарний ліміт штук на замовлення - синхронно з superRefine схеми і серверним clamp.
 const MAX_QUANTITY = 10;
 
 type ZoomTarget = 'front' | 'back' | null;
@@ -55,11 +55,11 @@ export function CheckoutForm() {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Міжнародний формат без автоформатування: «+», код країни, 7–15 цифр.
-    // Пробіли/дужки/дефіси дозволені — схема нормалізує їх перед перевіркою.
+    // Пробіли/дужки/дефіси дозволені - схема нормалізує їх перед перевіркою.
     patch({ phone: e.target.value });
   };
 
-  // Пульс ціни через Web Animations API — явний (без анімації на маунті),
+  // Пульс ціни через Web Animations API - явний (без анімації на маунті),
   // повторні кліки замінюють анімацію в польоті.
   const pulsePrice = () => {
     if (typeof window === 'undefined') return;
@@ -73,7 +73,7 @@ export function CheckoutForm() {
   const totalCount = totalQuantity(data.sizes as Record<Size, number>);
   const canAdd = totalCount < MAX_QUANTITY;
 
-  // Уся арифметика — всередині updater: швидкі повторні тапи не гублять
+  // Уся арифметика - всередині updater: швидкі повторні тапи не гублять
   // інкременти і не пробивають сумарний ліміт (stale-closure safe).
   const changeSize = (s: Size, delta: 1 | -1) => {
     let changed = false;
@@ -105,7 +105,7 @@ export function CheckoutForm() {
   const visibleError = (k: FieldKey): string | undefined =>
     errors[k] && (touched[k] || submitAttempted) ? errors[k] : undefined;
 
-  // Display only — the authoritative amount that gets signed by the WayForPay
+  // Display only - the authoritative amount that gets signed by the WayForPay
   // HMAC is recomputed server-side from the sizes record.
   const total = PRODUCT.price * totalCount;
 
@@ -219,10 +219,10 @@ export function CheckoutForm() {
           autoComplete="name"
           autoCapitalize="words"
           error={visibleError('fullName')}
-          hint={data.deliveryMode === 'other' ? 'для закордону — латиницею, як у паспорті' : undefined}
+          hint={data.deliveryMode === 'other' ? 'для закордону - латиницею, як у паспорті' : undefined}
         />
 
-        {/* Phone — inlined to cap length, set autoComplete and show the
+        {/* Phone - inlined to cap length, set autoComplete and show the
             international placeholder; validation lives in checkoutSchema. */}
         <label className={styles.field}>
           <span className={`${styles.fieldLabel} mono`}>Телефон</span>
@@ -281,7 +281,7 @@ export function CheckoutForm() {
           </button>
         </div>
         <span className={`${styles.fieldHint} mono`}>
-          Інше — Укрпошта: по Україні та за кордон
+          Інше - Укрпошта: по Україні та за кордон
         </span>
         {data.deliveryMode === 'np' ? (
           <NovaPoshtaPicker
@@ -321,7 +321,7 @@ export function CheckoutForm() {
       </div>
 
       <p className={`${styles.deliveryNote} mono`}>
-        Доставка — за рахунок отримувача, за тарифами перевізника
+        Доставка - за рахунок отримувача, за тарифами перевізника
       </p>
 
       {zoomed && typeof document !== 'undefined' && createPortal(

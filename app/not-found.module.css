@@ -1,0 +1,103 @@
+/* 404 — mirrors the home page shell (page.module.css): a flex column that
+   keeps Header pinned, the poster hero centred, and Footer at the bottom.
+   The thorns watermark (body::before) shows through the transparent --bg. */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px 64px;
+}
+
+/* Eyebrow echoes the header's "DROP 01 // …" mono label so the page reads
+   as the same site, not a bare server error screen (Jakob's Law). */
+.kicker {
+  font-size: 11px;
+  color: var(--grey);
+  margin-bottom: 4px;
+}
+
+/* Giant faint "404" — atmospheric backdrop, not a shout. The solid headline
+   sits over it via the negative margin for a poster-style overlap. */
+.posterBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.code {
+  font-size: clamp(120px, 32vw, 340px);
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  opacity: 0.08;
+  user-select: none;
+  pointer-events: none;
+}
+.headline {
+  font-size: clamp(30px, 8vw, 68px);
+  line-height: 0.9;
+  color: var(--ink);
+  max-width: 14ch;
+  margin-top: clamp(-14px, -2.5vw, -36px);
+}
+
+.support {
+  margin-top: 20px;
+  max-width: 42ch;
+  color: var(--grey);
+  font-size: clamp(15px, 2.6vw, 17px);
+  line-height: 1.5;
+}
+
+/* The one primary action — the only red element on the screen (Von Restorff).
+   Oswald 700 at ≥19px keeps the white-on-red label as large text, clearing
+   WCAG 1.4.3 large-text 3:1 (this red vs white is ~3.6:1). */
+.cta {
+  margin-top: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 32px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-oswald), sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(19px, 2.4vw, 22px);
+  text-decoration: none;
+  transition: background 220ms var(--ease-out), transform 220ms var(--ease-out);
+}
+.cta:hover {
+  background: var(--ink);
+}
+.cta:active {
+  transform: translateY(1px);
+}
+.cta:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.arrow {
+  transition: transform 220ms var(--ease-out);
+}
+.cta:hover .arrow {
+  transform: translateX(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta,
+  .arrow {
+    transition: none;
+  }
+}

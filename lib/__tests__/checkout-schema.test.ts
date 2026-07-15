@@ -32,7 +32,7 @@ const otherOrder = {
   zip: '31-019',
 };
 
-describe('checkoutSchema — базові поля', () => {
+describe('checkoutSchema - базові поля', () => {
   it('accepts a valid NP order', () => {
     expect(checkoutSchema.safeParse(npOrder).success).toBe(true);
   });
@@ -44,7 +44,7 @@ describe('checkoutSchema — базові поля', () => {
   });
 });
 
-describe('checkoutSchema — телефон (міжнародний)', () => {
+describe('checkoutSchema - телефон (міжнародний)', () => {
   it('accepts a Ukrainian number', () => {
     expect(checkoutSchema.safeParse({ ...npOrder, phone: '+380671234567' }).success).toBe(true);
   });
@@ -75,7 +75,7 @@ describe('checkoutSchema — телефон (міжнародний)', () => {
   });
 });
 
-describe('checkoutSchema — розміри (мультирозмірне замовлення)', () => {
+describe('checkoutSchema - розміри (мультирозмірне замовлення)', () => {
   it('accepts a single size with quantity', () => {
     expect(
       checkoutSchema.safeParse({
@@ -139,15 +139,15 @@ describe('checkoutSchema — розміри (мультирозмірне зам
     ).toBe(false);
   });
   it('keeps schema keys in sync with SIZES', () => {
-    // Якщо в SIZES додасться четвертий розмір, а обʼєкт sizes у схемі — ні,
+    // Якщо в SIZES додасться четвертий розмір, а обʼєкт sizes у схемі - ні,
     // totalQuantity почне читати undefined і валідація «зʼїде» мовчки.
-    // checkoutSchema — ZodEffects (через superRefine), тому .shape бере
+    // checkoutSchema - ZodEffects (через superRefine), тому .shape бере
     // innerType().
     expect(Object.keys(checkoutSchema.innerType().shape.sizes.shape)).toEqual([...SIZES]);
   });
 });
 
-describe('checkoutSchema — режим «Нова Пошта»', () => {
+describe('checkoutSchema - режим «Нова Пошта»', () => {
   it('rejects a missing city', () => {
     const res = checkoutSchema.safeParse({ ...npOrder, city: '' });
     expect(res.success).toBe(false);
@@ -171,7 +171,7 @@ describe('checkoutSchema — режим «Нова Пошта»', () => {
   });
 });
 
-describe('checkoutSchema — режим «Інше» (Укрпошта/світ)', () => {
+describe('checkoutSchema - режим «Інше» (Укрпошта/світ)', () => {
   it('accepts a valid international order', () => {
     expect(checkoutSchema.safeParse(otherOrder).success).toBe(true);
   });

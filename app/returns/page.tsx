@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
+import { SELLER, FOOTER_CONTACTS_READY, SELLER_TELEGRAM_READY } from '@/lib/seller';
 
 export const metadata: Metadata = {
-  title: 'Умови повернення — Sasha Chemerov',
+  title: 'Умови повернення - Sasha Chemerov',
   description:
-    'Умови повернення та обміну товару, придбаного на isusneisus.com: строки, порядок, кошти — за Законом України «Про захист прав споживачів».',
+    'Умови повернення та обміну товару, придбаного на isusneisus.com: строки, порядок, кошти - за Законом України «Про захист прав споживачів».',
   alternates: { canonical: '/returns' },
   openGraph: {
-    title: 'Умови повернення — Sasha Chemerov',
+    title: 'Умови повернення - Sasha Chemerov',
     description: 'Порядок повернення та обміну товару на isusneisus.com.',
     url: 'https://isusneisus.com/returns',
   },
@@ -93,7 +94,7 @@ export default function ReturnsPage() {
       </p>
       <p>
         5.3. Вартість зворотної доставки Товару належної якості сплачує
-        Покупець; Товару неналежної якості — Продавець.
+        Покупець; Товару неналежної якості - Продавець.
       </p>
 
       <h2>6. Повернення коштів</h2>
@@ -102,7 +103,7 @@ export default function ReturnsPage() {
         сплачені кошти протягом <strong>до 7 банківських днів</strong>.
       </p>
       <p>
-        6.2. Кошти повертаються тим самим способом, яким була здійснена оплата —
+        6.2. Кошти повертаються тим самим способом, яким була здійснена оплата -
         на банківську картку, з якої проводився платіж через сервіс WayForPay.
       </p>
       <p>
@@ -125,6 +126,26 @@ export default function ReturnsPage() {
         розділах 3–6 цих Умов.
       </p>
 
+      {FOOTER_CONTACTS_READY && (
+        <>
+          <h2>8. Контакти для повернення</h2>
+          <p>
+            E-mail: {SELLER.email}
+            <br />
+            Телефон: {SELLER.phone}
+            {SELLER_TELEGRAM_READY && (
+              <>
+                <br />
+                Telegram: {SELLER.telegram}
+              </>
+            )}
+          </p>
+          <p>
+            Повні реквізити Продавця наведено в розділі «Реквізити Продавця»{' '}
+            <a href="/offer">Договору публічної оферти</a>.
+          </p>
+        </>
+      )}
 
     </LegalPage>
   );
