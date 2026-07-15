@@ -28,9 +28,29 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
 ];
 
+/* Медіа і шрифти з public/ кешуються браузером на рік без revalidation.
+   ПРАВИЛО: заміняєш файл — міняєш імʼя файлу (див. README «Кеш медіа»),
+   інакше відвідувачі рік бачитимуть стару версію. */
+const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
+
 const nextConfig: NextConfig = {
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }];
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      {
+        source: '/fonts/:path*',
+        headers: [{ key: 'Cache-Control', value: IMMUTABLE_CACHE }],
+      },
+      {
+        source: '/fonts-new/:path*',
+        headers: [{ key: 'Cache-Control', value: IMMUTABLE_CACHE }],
+      },
+      {
+        // Медіа-файли в корені public/ (tshirt.mp4, video.jpg, *.webp, logo.png…)
+        source: '/:file([^/]+\\.(?:mp4|webp|jpe?g|png))',
+        headers: [{ key: 'Cache-Control', value: IMMUTABLE_CACHE }],
+      },
+    ];
   },
 };
 
