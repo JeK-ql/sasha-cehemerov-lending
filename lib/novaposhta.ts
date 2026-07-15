@@ -9,6 +9,14 @@ export interface NpWarehouse {
 
 const NP_ENDPOINT = 'https://api.novaposhta.ua/v2.0/json/';
 
+/**
+ * Нормалізує пошуковий запит міста: «Киї», « киї » → «киї».
+ * Єдиний вигляд запиту = єдиний кеш-ключ CDN (кешується по повному URL).
+ */
+export function normalizeCityQuery(q: string): string {
+  return q.trim().toLocaleLowerCase('uk-UA');
+}
+
 export function mapCities(raw: unknown): NpOption[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((c: { Present?: string; Description?: string; Ref: string }) => ({

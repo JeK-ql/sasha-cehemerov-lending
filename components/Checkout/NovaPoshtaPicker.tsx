@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './CheckoutModal.module.css';
 import { POPULAR_CITIES } from '@/lib/popularCities';
-import type { NpOption, NpWarehouse } from '@/lib/novaposhta';
+import { normalizeCityQuery, type NpOption, type NpWarehouse } from '@/lib/novaposhta';
 import type { CheckoutInput } from '@/lib/types';
 
 type DeliveryValue = Pick<
@@ -55,7 +55,7 @@ export function NovaPoshtaPicker({
     const id = setTimeout(async () => {
       try {
         const res = await fetch(
-          `/api/novaposhta?type=cities&q=${encodeURIComponent(cityQuery)}`,
+          `/api/novaposhta?type=cities&q=${encodeURIComponent(normalizeCityQuery(cityQuery))}`,
         );
         const json = await res.json();
         setCities(json.items ?? []);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mapCities, mapWarehouses } from '../novaposhta';
+import { mapCities, mapWarehouses, normalizeCityQuery } from '../novaposhta';
 
 describe('mapCities', () => {
   it('maps NP settlement payload to options', () => {
@@ -40,5 +40,15 @@ describe('mapWarehouses', () => {
   });
   it('returns an empty array for missing input', () => {
     expect(mapWarehouses(undefined)).toEqual([]);
+  });
+});
+
+describe('normalizeCityQuery', () => {
+  it('обрізає пробіли і зводить до нижнього регістру (укр. локаль)', () => {
+    expect(normalizeCityQuery('  КИЇ ')).toBe('киї');
+    expect(normalizeCityQuery('Львів')).toBe('львів');
+  });
+  it('порожній рядок лишається порожнім', () => {
+    expect(normalizeCityQuery('   ')).toBe('');
   });
 });
