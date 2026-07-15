@@ -40,10 +40,24 @@ html::-webkit-scrollbar-thumb {
 }
 html::-webkit-scrollbar-thumb:hover { background: var(--red); }
 
-/* Only html carries the base colour. body stays transparent so the fixed
-   thorns watermark (body::before, z-index:-1) is not painted over by the
-   body box's own background. */
-html { background: var(--bg); color: var(--ink); }
+/* html полотно навмисно ТЕМНЕ: iOS у зоні rubber-band (перетягування вгору/вниз)
+   малює фон саме кореневого елемента, а не фіксованих шарів. Темний край
+   зливається з хедером/футером замість білої смуги. Світлу поверхню контенту
+   дає фіксований body::after нижче; body лишається прозорим, щоб не перекрити
+   водяний знак (body::before, z-index:-1). */
+html { background: var(--ink); color: var(--ink); }
+
+/* Світле «полотно» контенту — фіксований шар під водяним знаком. Під час
+   rubber-band цей шар зсувається разом зі сторінкою й відкриває темний html,
+   тому по краях видно темне, а не біле. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: var(--bg);
+  pointer-events: none;
+}
 
 body {
   

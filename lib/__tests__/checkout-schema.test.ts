@@ -44,8 +44,10 @@ describe('checkoutSchema - базові поля', () => {
   });
 });
 
-describe('checkoutSchema - телефон (міжнародний)', () => {
-  it('accepts a Ukrainian number', () => {
+describe('checkoutSchema - телефон (міжнародний + українські форми)', () => {
+  const PHONE_MSG = 'Невірний телефон. Приклади: +380671234567, 0671234567, 380671234567';
+
+  it('accepts a Ukrainian +380 number', () => {
     expect(checkoutSchema.safeParse({ ...npOrder, phone: '+380671234567' }).success).toBe(true);
   });
   it('accepts a foreign number', () => {
@@ -54,24 +56,36 @@ describe('checkoutSchema - телефон (міжнародний)', () => {
   it('accepts spaces and dashes inside the number', () => {
     expect(checkoutSchema.safeParse({ ...npOrder, phone: '+48 123-456-789' }).success).toBe(true);
   });
-  it('rejects a number without leading +', () => {
-    const res = checkoutSchema.safeParse({ ...npOrder, phone: '380671234567' });
+  it.each([
+    ['0XXXXXXXXX (local)', '0938187709'],
+    ['380XXXXXXXXX (no +)', '380671234567'],
+    ['80XXXXXXXXX (old 8-prefix)', '80671234567'],
+    ['local with spaces/dashes', '093 818-77-09'],
+  ] as const)('accepts a Ukrainian number: %s', (_label, phone) => {
+    expect(checkoutSchema.safeParse({ ...npOrder, phone }).success).toBe(true);
+  });
+  it('rejects a bare number that matches no accepted form', () => {
+    const res = checkoutSchema.safeParse({ ...npOrder, phone: '123456789012' });
     expect(res.success).toBe(false);
     if (!res.success) {
       const issue = res.error.issues.find((i) => i.path[0] === 'phone');
-      expect(issue?.message).toBe('Номер має починатися з «+» і коду країни');
+      expect(issue?.message).toBe(PHONE_MSG);
     }
   });
-  it('rejects a too-short number', () => {
+  it('rejects a too-short international number', () => {
     const res = checkoutSchema.safeParse({ ...npOrder, phone: '+38012' });
     expect(res.success).toBe(false);
     if (!res.success) {
       const issue = res.error.issues.find((i) => i.path[0] === 'phone');
-      expect(issue?.message).toBe('Введіть 7–15 цифр після «+»');
+      expect(issue?.message).toBe(PHONE_MSG);
     }
   });
   it('rejects a too-long number', () => {
     expect(checkoutSchema.safeParse({ ...npOrder, phone: '+1234567890123456' }).success).toBe(false);
+  });
+  it('rejects a Ukrainian local number of the wrong length', () => {
+    expect(checkoutSchema.safeParse({ ...npOrder, phone: '093818770' }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...npOrder, phone: '09381877099' }).success).toBe(false);
   });
 });
 

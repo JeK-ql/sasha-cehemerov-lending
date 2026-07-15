@@ -32,9 +32,14 @@ describe('validateCheckout', () => {
     expect(errs.sizes).toBe('Оберіть розмір');
   });
 
-  it('returns the phone message for a number without +', () => {
+  it('accepts a Ukrainian local number without +', () => {
     const errs = validateCheckout({ ...valid, phone: '0671234567' });
-    expect(errs.phone).toBe('Номер має починатися з «+» і коду країни');
+    expect(errs.phone).toBeUndefined();
+  });
+
+  it('returns the phone message for an invalid number', () => {
+    const errs = validateCheckout({ ...valid, phone: '123456789012' });
+    expect(errs.phone).toBe('Невірний телефон. Приклади: +380671234567, 0671234567, 380671234567');
   });
 
   it('returns the name message for a single-word name', () => {

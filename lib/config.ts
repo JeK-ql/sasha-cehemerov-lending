@@ -1,6 +1,7 @@
 export const PRODUCT = {
   name: 'too much яром too much долиною',
-  price: 2600,
+  // ⚠️ ТЕСТОВА ЦІНА для перевірки оплати WayForPay. ПОВЕРНУТИ 2600 ПЕРЕД ЗАПУСКОМ!
+  price: 1,
   currency: 'UAH',
   sku: 'DROP01-OVERSIZE',
 } as const;

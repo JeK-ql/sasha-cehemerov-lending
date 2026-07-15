@@ -20,10 +20,17 @@ export const checkoutSchema = z
         (v) => v.trim().split(/\s+/).filter(Boolean).length >= 2,
         "Вкажіть ім'я та прізвище",
       ),
-    phone: z
-      .string()
-      .refine((v) => normalizePhone(v).startsWith('+'), 'Номер має починатися з «+» і коду країни')
-      .refine((v) => /^\+\d{7,15}$/.test(normalizePhone(v)), 'Введіть 7–15 цифр після «+»'),
+    phone: z.string().refine((v) => {
+      const p = normalizePhone(v);
+      // Міжнародний із «+» (7–15 цифр) або український у будь-якому звичному
+      // записі: 0XXXXXXXXX, 380XXXXXXXXX, 80XXXXXXXXX.
+      return (
+        /^\+\d{7,15}$/.test(p) ||
+        /^380\d{9}$/.test(p) ||
+        /^80\d{9}$/.test(p) ||
+        /^0\d{9}$/.test(p)
+      );
+    }, 'Невірний телефон. Приклади: +380671234567, 0671234567, 380671234567'),
     email: z
       .string()
       .refine((v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), 'Невірний e-mail'),

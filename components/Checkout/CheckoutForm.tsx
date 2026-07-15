@@ -54,8 +54,8 @@ export function CheckoutForm() {
     patch({ [k]: e.target.value });
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Міжнародний формат без автоформатування: «+», код країни, 7–15 цифр.
-    // Пробіли/дужки/дефіси дозволені - схема нормалізує їх перед перевіркою.
+    // Без автоформатування: міжнародний («+», код країни, 7–15 цифр) або
+    // український 0XXXXXXXXX. Пробіли/дужки/дефіси схема нормалізує перед перевіркою.
     patch({ phone: e.target.value });
   };
 
@@ -236,7 +236,7 @@ export function CheckoutForm() {
             onChange={handlePhoneChange}
             onBlur={() => markTouched('phone')}
             maxLength={20}
-            placeholder="+380 …"
+            placeholder="ваш номер"
           />
           {visibleError('phone') && (
             <span className={`${styles.fieldError} mono`}>{visibleError('phone')}</span>
@@ -254,7 +254,6 @@ export function CheckoutForm() {
           autoCapitalize="none"
           spellCheck={false}
           error={visibleError('email')}
-          hint="ЧЕК СЮДИ"
         />
       </fieldset>
 
