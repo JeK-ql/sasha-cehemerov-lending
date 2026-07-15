@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Montserrat, Oswald, IBM_Plex_Mono } from 'next/font/google';
 import Script from 'next/script';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
 import { organizationLd, productLd, PRODUCT_IMAGE_JPG } from '@/lib/structuredData';
 
@@ -35,6 +36,8 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="uk" className={`${inter.variable} ${display.variable} ${oswald.variable} ${mono.variable}`}>
       <body>
@@ -48,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd) }}
         />
         <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="lazyOnload" />
+        {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );

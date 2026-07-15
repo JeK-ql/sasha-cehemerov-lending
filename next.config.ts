@@ -5,11 +5,11 @@ import type { NextConfig } from 'next';
    без nonce-інфраструктури; прибирати тільки разом із переходом на nonce. */
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://secure.wayforpay.com",
+  "script-src 'self' 'unsafe-inline' https://secure.wayforpay.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self'",
-  "connect-src 'self' https://secure.wayforpay.com https://api.wayforpay.com",
+  "connect-src 'self' https://secure.wayforpay.com https://api.wayforpay.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
   "frame-src https://secure.wayforpay.com",
   "base-uri 'self'",
   "form-action 'self' https://secure.wayforpay.com",
