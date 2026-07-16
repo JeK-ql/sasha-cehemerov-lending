@@ -68,6 +68,20 @@ describe('formatPendingOrderMessage', () => {
     expect(msg).not.toContain('кв.');
   });
 
+  it('екранує HTML у полях покупця — «<» в адресі не ламає parse_mode', () => {
+    const msg = formatPendingOrderMessage({
+      ...base,
+      fullName: 'Тест <b>Жирний</b> & Ко',
+      city: 'Київ',
+      warehouse: 'вул. Шевченка <буд. 5>',
+    });
+    expect(msg).not.toContain('<b>Жирний</b>');
+    expect(msg).toContain('&lt;b&gt;Жирний&lt;/b&gt; &amp; Ко');
+    expect(msg).toContain('вул. Шевченка &lt;буд. 5&gt;');
+    // Службова розмітка повідомлення лишається живою
+    expect(msg).toContain('<b>Покупець:</b>');
+  });
+
   it('lists every size with a non-zero count, comma-separated', () => {
     const msg = formatPendingOrderMessage({
       ...base,

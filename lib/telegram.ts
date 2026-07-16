@@ -19,30 +19,40 @@ export interface PendingOrder {
 }
 
 /**
+ * Екранування для parse_mode: 'HTML'. Без нього «<» у полях покупця
+ * (ім'я, адреса) ламає розбір повідомлення — Telegram відповідає 400,
+ * і заявка не долітає до менеджерів.
+ */
+export function escapeHtml(s: string): string {
+  return s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}
+
+/**
  * Повідомлення про створену заявку — шлеться з /api/checkout ДО оплати,
  * бо WayForPay-колбек не повертає адресу доставки. Менеджер відправляє
  * посилку лише після другого повідомлення «Оплату підтверджено» з тим же №.
  */
 export function formatPendingOrderMessage(o: PendingOrder): string {
+  const esc = escapeHtml;
   const delivery =
     o.deliveryMode === 'np'
-      ? `Нова Пошта: ${o.city}, ${o.warehouse}`
-      : `Укрпошта: ${o.country}, ${o.city}, ${o.street}, буд. ${o.building}` +
-        (o.flat ? `, кв. ${o.flat}` : '') +
-        `, індекс ${o.zip}`;
+      ? `Нова Пошта: ${esc(o.city)}, ${esc(o.warehouse)}`
+      : `Укрпошта: ${esc(o.country)}, ${esc(o.city)}, ${esc(o.street)}, буд. ${esc(o.building)}` +
+        (o.flat ? `, кв. ${esc(o.flat)}` : '') +
+        `, індекс ${esc(o.zip)}`;
   const sizesLine = Object.entries(o.sizes)
     .filter(([, n]) => n > 0)
     .map(([size, n]) => `${size} ×${n}`)
     .join(', ');
   return [
     '🕓 <b>Заявка (очікує оплати)</b>',
-    `<b>№:</b> ${o.orderReference}`,
+    `<b>№:</b> ${esc(o.orderReference)}`,
     `<b>Товар:</b> too much яром too much долиною · ${sizesLine}`,
     `<b>Сума:</b> ${o.amount} ₴`,
     '',
-    `<b>Покупець:</b> ${o.fullName}`,
-    `<b>Телефон:</b> ${o.phone}`,
-    `<b>E-mail:</b> ${o.email}`,
+    `<b>Покупець:</b> ${esc(o.fullName)}`,
+    `<b>Телефон:</b> ${esc(o.phone)}`,
+    `<b>E-mail:</b> ${esc(o.email)}`,
     '',
     `<b>Доставка:</b> ${delivery}`,
   ].join('\n');
@@ -52,7 +62,7 @@ export function formatPendingOrderMessage(o: PendingOrder): string {
 export function formatPaidMessage(orderReference: string, amount: number): string {
   return [
     '✅ <b>Оплату підтверджено</b>',
-    `<b>№:</b> ${orderReference}`,
+    `<b>№:</b> ${escapeHtml(orderReference)}`,
     `<b>Сума:</b> ${amount} ₴`,
   ].join('\n');
 }
