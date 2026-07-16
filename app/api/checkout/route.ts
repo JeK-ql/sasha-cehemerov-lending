@@ -7,9 +7,9 @@ import { formatPendingOrderMessage, sendToTelegram } from '@/lib/telegram';
 import { getDb } from '@/lib/mongo';
 import {
   createPendingOrder,
+  currentAvailability,
   releaseExpiredReservations,
   reserveStock,
-  stockAvailability,
   unreserveStock,
 } from '@/lib/inventory';
 
@@ -48,8 +48,10 @@ export async function POST(req: NextRequest) {
     const db = await getDb();
     await releaseExpiredReservations(db);
     if (!(await reserveStock(db, sizes))) {
+      // Прострочені резерви щойно звільнили вище — тут достатньо
+      // чистого читання без повторної очистки.
       return NextResponse.json(
-        { error: 'out-of-stock', availability: await stockAvailability(db) },
+        { error: 'out-of-stock', availability: await currentAvailability(db) },
         { status: 409 },
       );
     }

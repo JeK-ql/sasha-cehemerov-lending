@@ -3,7 +3,8 @@ import { getDb } from '@/lib/mongo';
 import { stockAvailability } from '@/lib/inventory';
 import { SIZES } from '@/lib/config';
 
-// Залишки міняються з кожним замовленням — жодного кешування.
+// Route handlers у Next 16 і так динамічні за замовчуванням — це явна
+// страховка: залишки не можна кешувати за жодних умов і майбутніх дефолтів.
 export const dynamic = 'force-dynamic';
 
 /**

@@ -31,35 +31,37 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error('markOrderPaid failed', body.orderReference, err);
       }
-      try {
-        const messages = [formatPaidMessage(body.orderReference, body.amount)];
-        if (paidResult === 'oversold') {
-          messages.push(
-            [
-              '⚠️ <b>УВАГА: оплачено, але розмір уже розпродано</b>',
-              `<b>№:</b> ${body.orderReference}`,
-              'Резерв встиг звільнитись (оплата пізніше 30 хв), і залишку не вистачило.',
-              "Зв'яжіться з покупцем: відправити з залишків іншого замовлення або повернути кошти.",
-            ].join('\n'),
-          );
-        } else if (paidResult === 'db-error') {
-          messages.push(
-            [
-              '⚠️ <b>УВАГА: оплату не записано в базу складу</b>',
-              `<b>№:</b> ${body.orderReference}`,
-              'Перевірте залишки вручну — резерв міг звільнитись за таймаутом.',
-            ].join('\n'),
-          );
-        }
-        for (const text of messages) {
+      const messages = [formatPaidMessage(body.orderReference, body.amount)];
+      if (paidResult === 'oversold') {
+        messages.push(
+          [
+            '⚠️ <b>УВАГА: оплачено, але розмір уже розпродано</b>',
+            `<b>№:</b> ${body.orderReference}`,
+            'Резерв встиг звільнитись (оплата пізніше 30 хв), і залишку не вистачило.',
+            "Зв'яжіться з покупцем: відправити з залишків іншого замовлення або повернути кошти.",
+          ].join('\n'),
+        );
+      } else if (paidResult === 'db-error') {
+        messages.push(
+          [
+            '⚠️ <b>УВАГА: оплату не записано в базу складу</b>',
+            `<b>№:</b> ${body.orderReference}`,
+            'Перевірте залишки вручну — резерв міг звільнитись за таймаутом.',
+          ].join('\n'),
+        );
+      }
+      // Кожне повідомлення — незалежно: падіння «Оплату підтверджено»
+      // не має проковтнути критичне попередження про oversold.
+      for (const text of messages) {
+        try {
           await sendToTelegram(
             requireEnv('TELEGRAM_BOT_TOKEN'),
             requireEnv('TELEGRAM_CHAT_ID'),
             text,
           );
+        } catch (err) {
+          console.error('Telegram notify failed', body.orderReference, err);
         }
-      } catch (err) {
-        console.error('Telegram notify failed', err);
       }
     } else if (
       body.transactionStatus === 'Declined' ||

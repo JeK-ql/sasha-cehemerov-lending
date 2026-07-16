@@ -8,6 +8,7 @@ import {
   reserveStock,
   releaseExpiredReservations,
   stockAvailability,
+  currentAvailability,
   createPendingOrder,
   markOrderPaid,
   releaseOrder,
@@ -181,9 +182,31 @@ describe('резерв і оплата', () => {
     await createPendingOrder(db, order);
     await releaseOrder(db, order.orderReference);
     stock().СЕРЕДНІЙ = 1; // хтось викупив майже все
-    expect(await markOrderPaid(db, order.orderReference)).toBe('oversold');
+    expect(
+      await markOrderPaid(db, order.orderReference, new Date(), { retries: 0 }),
+    ).toBe('oversold');
     expect(stock().СЕРЕДНІЙ).toBe(1);
     expect(orderDocs[0]).toMatchObject({ status: 'paid', oversold: true });
+  });
+
+  it('раса зі звільненням: retry дочікується повернення складу, oversold не хибить', async () => {
+    await reserveStock(db, order.sizes);
+    await createPendingOrder(db, order);
+    // Стан гонки: release claim-нув статус, але $inc складу ще «в польоті».
+    orderDocs[0].status = 'released';
+    stock().СЕРЕДНІЙ = 1; // менше, ніж треба (2)
+    // «Долітаючий» $inc конкурентного release: спрацює на першому ж
+    // await setTimeout усередині retry-циклу.
+    setTimeout(() => {
+      stock().СЕРЕДНІЙ += 2;
+    }, 0);
+    expect(
+      await markOrderPaid(db, order.orderReference, new Date(), {
+        retries: 2,
+        retryDelayMs: 0,
+      }),
+    ).toBe('paid-after-release');
+    expect(stock().СЕРЕДНІЙ).toBe(1); // 1 + 2 (повернення) - 2 (списання)
   });
 
   it('releaseOrder ідемпотентний — повторний виклик не повертає склад двічі', async () => {
@@ -241,5 +264,22 @@ describe('stockAvailability', () => {
       СЕРЕДНІЙ: false,
       ВЕЛИКИЙ: false,
     });
+  });
+
+  it('currentAvailability — чисте читання, прострочені резерви не чіпає', async () => {
+    await reserveStock(db, counts(1, 0, 0));
+    await createPendingOrder(
+      db,
+      {
+        orderReference: 'DROP01-stale',
+        sizes: counts(1, 0, 0),
+        amount: 2600,
+        customer: { name: 'А Б', phone: '0', email: 'a@b.c' },
+      },
+      new Date(Date.now() - RESERVATION_TTL_MS - 1000),
+    );
+    await currentAvailability(db);
+    expect(orderDocs[0].status).toBe('pending'); // не звільнила
+    expect(stock()).toEqual(counts(17, 11, 15));
   });
 });

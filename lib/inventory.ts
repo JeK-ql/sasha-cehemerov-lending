@@ -4,7 +4,7 @@ import { SIZES, type Size } from './config';
 /**
  * Облік залишків дропу. Весь склад — ОДИН документ у колекції `inventory`:
  * MongoDB атомарно оновлює один документ, тому умова «всіх розмірів
- * вистачає» + `$inc` в одній операції виключають овersell без транзакцій.
+ * вистачає» + `$inc` в одній операції виключають оверсел без транзакцій.
  *
  * `stock` = доступне до продажу зараз (активні резерви вже відняті).
  * Резерв ставиться при створенні заявки і повертається, якщо оплата не
@@ -19,6 +19,12 @@ export type SizeCounts = Record<Size, number>;
 
 export type OrderStatus = 'pending' | 'paid' | 'released';
 
+export interface Customer {
+  name: string;
+  phone: string;
+  email: string;
+}
+
 export interface OrderDoc {
   _id: string;
   sizes: SizeCounts;
@@ -29,7 +35,7 @@ export interface OrderDoc {
   paidAt?: Date;
   /** Оплата прийшла після звільнення резерву, а складу вже не вистачило. */
   oversold?: boolean;
-  customer: { name: string; phone: string; email: string };
+  customer: Customer;
 }
 
 interface InventoryDoc {
@@ -60,25 +66,15 @@ export function stockInc(sizes: SizeCounts, sign: 1 | -1): Record<string, number
 
 /**
  * Повертає на склад резерви прострочених неоплачених заявок.
- * Статус міняється атомарно (pending → released) — конкурентні виклики
- * не повернуть той самий резерв двічі.
+ * Кожна заявка звільняється через releaseOrder — той самий атомарний
+ * claim, тож конкурентні виклики не повернуть резерв двічі.
  */
 export async function releaseExpiredReservations(db: Db, now = new Date()): Promise<void> {
-  const orders = ordersOf(db);
-  const expired = await orders
+  const expired = await ordersOf(db)
     .find({ status: 'pending', expiresAt: { $lt: now } })
     .toArray();
   for (const order of expired) {
-    const claimed = await orders.findOneAndUpdate(
-      { _id: order._id, status: 'pending' },
-      { $set: { status: 'released' } },
-    );
-    if (claimed) {
-      await inventoryOf(db).updateOne(
-        { _id: INVENTORY_ID },
-        { $inc: stockInc(claimed.sizes, 1) },
-      );
-    }
+    await releaseOrder(db, order._id);
   }
 }
 
@@ -101,13 +97,25 @@ export async function unreserveStock(db: Db, sizes: SizeCounts): Promise<void> {
   );
 }
 
-/** Наявність по розмірах (без цифр — тільки є/нема). */
-export async function stockAvailability(db: Db): Promise<Record<Size, boolean>> {
-  await releaseExpiredReservations(db);
+/** Чисте читання наявності, без побічних ефектів (для гарячих шляхів,
+ *  де прострочені резерви щойно звільнили). */
+export async function currentAvailability(db: Db): Promise<Record<Size, boolean>> {
   const doc = await inventoryOf(db).findOne({ _id: INVENTORY_ID });
   return Object.fromEntries(
     SIZES.map((s) => [s, (doc?.stock[s] ?? 0) > 0]),
   ) as Record<Size, boolean>;
+}
+
+/**
+ * Наявність по розмірах (без цифр — тільки є/нема) з попереднім звільненням
+ * прострочених резервів. Очистка тут потрібна не лише для свіжості даних:
+ * якщо останні футболки зависли в кинутих заявках, UI покаже «розпродано»,
+ * checkout ніхто не викличе — і без цієї очистки резерви не звільнилися б
+ * ніколи.
+ */
+export async function stockAvailability(db: Db): Promise<Record<Size, boolean>> {
+  await releaseExpiredReservations(db);
+  return currentAvailability(db);
 }
 
 export async function createPendingOrder(
@@ -116,7 +124,7 @@ export async function createPendingOrder(
     orderReference: string;
     sizes: SizeCounts;
     amount: number;
-    customer: { name: string; phone: string; email: string };
+    customer: Customer;
   },
   now = new Date(),
 ): Promise<void> {
@@ -148,6 +156,9 @@ export async function markOrderPaid(
   db: Db,
   orderReference: string,
   now = new Date(),
+  // Retry закриває расу зі звільненням резерву (див. коментар нижче);
+  // у тестах перевизначається, щоб не чекати таймаути.
+  { retries = 2, retryDelayMs = 150 }: { retries?: number; retryDelayMs?: number } = {},
 ): Promise<MarkPaidResult> {
   const orders = ordersOf(db);
 
@@ -164,7 +175,15 @@ export async function markOrderPaid(
     { $set: { status: 'paid', paidAt: now } },
   );
   if (fromReleased) {
-    if (await reserveStock(db, fromReleased.sizes)) return 'paid-after-release';
+    // Звільнення резерву — два кроки (claim статусу, потім $inc складу).
+    // Конкурентний release міг уже змінити статус, але ще не повернути
+    // склад — перший reserveStock тоді хибно не знайде залишку. Кілька
+    // коротких повторів дають $inc долетіти, перш ніж оголосити oversold.
+    for (let attempt = 0; ; attempt++) {
+      if (await reserveStock(db, fromReleased.sizes)) return 'paid-after-release';
+      if (attempt >= retries) break;
+      await new Promise((r) => setTimeout(r, retryDelayMs));
+    }
     await orders.updateOne({ _id: orderReference }, { $set: { oversold: true } });
     return 'oversold';
   }
@@ -173,16 +192,16 @@ export async function markOrderPaid(
   return existing ? 'already-paid' : 'unknown';
 }
 
-/** Declined/Expired від WayForPay: одразу повернути резерв на склад. */
+/**
+ * Повертає резерв неоплаченої заявки на склад (Declined/Expired від
+ * WayForPay або прострочений TTL). Атомарний claim статусу гарантує
+ * одноразовість; $inc іде другим кроком, тож крах між ними втрачає
+ * одиниці складу (безпечний напрямок: недопродаж, не оверсел).
+ */
 export async function releaseOrder(db: Db, orderReference: string): Promise<void> {
   const claimed = await ordersOf(db).findOneAndUpdate(
     { _id: orderReference, status: 'pending' },
     { $set: { status: 'released' } },
   );
-  if (claimed) {
-    await inventoryOf(db).updateOne(
-      { _id: INVENTORY_ID },
-      { $inc: stockInc(claimed.sizes, 1) },
-    );
-  }
+  if (claimed) await unreserveStock(db, claimed.sizes);
 }
