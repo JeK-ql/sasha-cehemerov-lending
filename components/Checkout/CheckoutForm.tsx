@@ -203,16 +203,19 @@ export function CheckoutForm() {
       setStockMsg(null);
       const params = await res.json();
       if (!window.Wayforpay) throw new Error('widget not loaded');
+      // ref у редіректі: сторінка подяки перепитає фактичний статус у базі
+      // (вердикт віджета — попередній, 3DS може підтвердитись пізніше).
+      const ref = `&ref=${params.orderReference}`;
       new window.Wayforpay().run(
         params,
         () => {
           // Оплату прийнято: чистимо чернетку і ведемо на подяку (/?paid=1).
           clearDraft();
-          window.location.assign('/?paid=1');
+          window.location.assign(`/?paid=1${ref}`);
         },
         () => {
           // Відхилено: чернетку лишаємо, щоб можна було спробувати ще раз.
-          window.location.assign('/?paid=0');
+          window.location.assign(`/?paid=0${ref}`);
         },
         () => {
           /* pending (для карток рідко) — віджет сам покаже статус */

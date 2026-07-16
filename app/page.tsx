@@ -6,12 +6,14 @@ import { Footer } from '@/components/Footer/Footer';
 import { ThankYou } from '@/components/ThankYou/ThankYou';
 import styles from './page.module.css';
 
-type SearchParams = Promise<{ paid?: string }>;
+type SearchParams = Promise<{ paid?: string; ref?: string }>;
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   preload('/video.jpg', { as: 'image', fetchPriority: 'high' });
-  const { paid } = await searchParams;
+  const { paid, ref } = await searchParams;
   const thankState = paid === '1' ? 'ok' : paid === '0' ? 'fail' : null;
+  // Номер замовлення для перевірки фактичного статусу оплати в базі.
+  const orderRef = ref && /^DROP01-\d{10,16}$/.test(ref) ? ref : undefined;
 
   return (
     <CheckoutProvider>
@@ -33,7 +35,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         />
         <BuyOverlay />
         <Footer />
-        {thankState && <ThankYou state={thankState} />}
+        {thankState && <ThankYou state={thankState} orderRef={orderRef} />}
       </main>
     </CheckoutProvider>
   );
