@@ -13,9 +13,9 @@ export const SOCIAL_LINKS = [
     url: 'https://www.facebook.com/sashachemerov/',
     name: 'Facebook Саші Чемерова',
   },
-  {
-    label: 'IG Димна Суміш',
-    url: 'https://www.instagram.com/dymnasumish.official/',
-    name: 'Instagram гурту «Димна Суміш»',
-  },
+  // {
+  //   label: 'IG Димна Суміш',
+  //   url: 'https://www.instagram.com/dymnasumish.official/',
+  //   name: 'Instagram гурту «Димна Суміш»',
+  // },
 ] as const;
