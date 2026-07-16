@@ -64,7 +64,41 @@ export function CheckoutForm() {
   const [zoomed, setZoomed] = useState<ZoomTarget>(null);
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  // null = наявність ще не завантажена (усі розміри доступні до відповіді).
+  const [available, setAvailable] = useState<Record<Size, boolean> | null>(null);
+  const [stockMsg, setStockMsg] = useState<string | null>(null);
   const priceRef = useRef<HTMLSpanElement>(null);
+
+  // Наявність + чистка розпроданих розмірів (у т.ч. відновлених із чернетки).
+  const applyAvailability = (avail: Record<Size, boolean>) => {
+    setAvailable(avail);
+    setData((d) => {
+      const sizes = { ...(d.sizes as Record<Size, number>) };
+      let changed = false;
+      for (const s of SIZES) {
+        if (!avail[s] && sizes[s] > 0) {
+          sizes[s] = 0;
+          changed = true;
+        }
+      }
+      return changed ? { ...d, sizes } : d;
+    });
+  };
+
+  // Товару по 20 шт. на розмір: питаємо сервер, що ще в наявності.
+  // Помилка запиту не блокує форму — checkout переперевірить резервом.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/stock')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((avail: Record<Size, boolean> | null) => {
+        if (avail && !cancelled) applyAvailability(avail);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Зберігаємо чернетку на кожну зміну — рефреш/повторне відкриття її відновлять.
   useEffect(() => {
@@ -155,7 +189,18 @@ export function CheckoutForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (res.status === 409) {
+        // Товар розібрали, поки заповнювали форму: оновлюємо наявність,
+        // чистимо розпродані розміри і даємо обрати заново.
+        const body = (await res.json().catch(() => null)) as
+          | { availability?: Record<Size, boolean> }
+          | null;
+        if (body?.availability) applyAvailability(body.availability);
+        setStockMsg('На жаль, обраний розмір щойно розібрали. Оновили наявність.');
+        return;
+      }
       if (!res.ok) throw new Error('checkout failed');
+      setStockMsg(null);
       const params = await res.json();
       if (!window.Wayforpay) throw new Error('widget not loaded');
       new window.Wayforpay().run(
@@ -206,20 +251,29 @@ export function CheckoutForm() {
       <fieldset className={styles.block}>
         <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>РОЗМІР</span>
         <div className={styles.segRow} role="group" aria-label="Розмір">
-          {SIZES.map((s) => (
-            <button
-              key={s}
-              type="button"
-              className={styles.segBtn}
-              data-active={data.sizes[s] > 0 ? 'true' : undefined}
-              aria-pressed={data.sizes[s] > 0}
-              onClick={() => changeSize(s, 1)}
-            >
-              {s}
-              {data.sizes[s] > 0 ? ` ×${data.sizes[s]}` : ''}
-            </button>
-          ))}
+          {SIZES.map((s) => {
+            const soldOut = available?.[s] === false;
+            return (
+              <button
+                key={s}
+                type="button"
+                className={styles.segBtn}
+                data-active={data.sizes[s] > 0 ? 'true' : undefined}
+                aria-pressed={data.sizes[s] > 0}
+                disabled={soldOut}
+                onClick={() => changeSize(s, 1)}
+              >
+                {s}
+                {soldOut ? (
+                  <span className={styles.soldOut}>РОЗПРОДАНО</span>
+                ) : (
+                  data.sizes[s] > 0 ? ` ×${data.sizes[s]}` : ''
+                )}
+              </button>
+            );
+          })}
         </div>
+        {stockMsg && <span className={`${styles.fieldError} mono`}>{stockMsg}</span>}
         {SIZES.filter((s) => data.sizes[s] > 0).map((s) => (
           <div key={s}>
             <div className={styles.sizeQtyRow}>

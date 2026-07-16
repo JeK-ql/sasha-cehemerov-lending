@@ -4,6 +4,14 @@ import { checkoutSchema, totalQuantity } from '@/lib/checkoutSchema';
 import { PRODUCT, SITE_URL, SIZES, requireEnv, type Size } from '@/lib/config';
 import type { WayForPayParams } from '@/lib/types';
 import { formatPendingOrderMessage, sendToTelegram } from '@/lib/telegram';
+import { getDb } from '@/lib/mongo';
+import {
+  createPendingOrder,
+  releaseExpiredReservations,
+  reserveStock,
+  stockAvailability,
+  unreserveStock,
+} from '@/lib/inventory';
 
 export async function POST(req: NextRequest) {
   const parsed = checkoutSchema.safeParse(await req.json());
@@ -31,6 +39,44 @@ export async function POST(req: NextRequest) {
   const secret = requireEnv('WAYFORPAY_SECRET_KEY');
 
   const orderReference = `DROP01-${Date.now()}`;
+
+  // Резерв складу ДО прийому оплати: товару лише по 20 шт. на розмір.
+  // Якщо Mongo лежить — замовлення не приймаємо (краще не продати, ніж
+  // продати неіснуюче).
+  let reserved = false;
+  try {
+    const db = await getDb();
+    await releaseExpiredReservations(db);
+    if (!(await reserveStock(db, sizes))) {
+      return NextResponse.json(
+        { error: 'out-of-stock', availability: await stockAvailability(db) },
+        { status: 409 },
+      );
+    }
+    reserved = true;
+    await createPendingOrder(db, {
+      orderReference,
+      sizes,
+      amount: PRODUCT.price * totalCount,
+      customer: {
+        name: input.fullName,
+        phone: input.phone.replace(/[\s()-]/g, ''),
+        email: input.email,
+      },
+    });
+  } catch (err) {
+    console.error('Inventory reservation failed', orderReference, err);
+    if (reserved) {
+      // Заявка не записалась — повертаємо щойно списаний резерв, інакше
+      // він завис би назавжди (звільняти нічим: замовлення в базі нема).
+      try {
+        await unreserveStock(await getDb(), sizes);
+      } catch (rollbackErr) {
+        console.error('Reservation rollback failed', orderReference, rollbackErr);
+      }
+    }
+    return NextResponse.json({ error: 'inventory-unavailable' }, { status: 503 });
+  }
   const orderDate = Math.floor(Date.now() / 1000);
   const [lastName, ...firstParts] = input.fullName.trim().split(/\s+/);
 

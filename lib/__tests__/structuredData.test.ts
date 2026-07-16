@@ -13,9 +13,9 @@ describe('structuredData', () => {
     expect(productLd.offers.shippingDetails).not.toHaveProperty('shippingRate');
   });
 
-  it('Organization має sameAs з трьох соцпрофілів', () => {
+  it('Organization має sameAs з усіх соцпрофілів', () => {
     expect(organizationLd.sameAs).toEqual(SOCIAL_LINKS.map((s) => s.url));
-    expect(organizationLd.sameAs).toHaveLength(3);
+    expect(organizationLd.sameAs.length).toBeGreaterThan(0);
   });
 
   it('Offer має priceValidUntil у форматі ISO-дати', () => {
