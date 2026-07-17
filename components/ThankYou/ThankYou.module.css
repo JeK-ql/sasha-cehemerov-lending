@@ -87,9 +87,22 @@
   margin-top: 18px;
 }
 
+/* Примітка про затримку підтвердження банку на екрані «Помилка оплати».
+   Без uppercase і широкого трекінгу — це три рядки, які людина мусить
+   реально прочитати, а не декоративний підпис. */
+.note {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--grey);
+  margin: 26px auto 0;
+  max-width: 44ch;
+}
+
 @media (min-width: 768px) {
   .close { top: 32px; left: 40px; font-size: 11px; }
   .sub { font-size: 13px; margin-top: 22px; }
+  .note { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

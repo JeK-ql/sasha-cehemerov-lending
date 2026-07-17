@@ -66,12 +66,23 @@ export function ThankYou({ state, orderRef }: Props) {
 
   if (!open) return null;
 
-  const text =
+  const text: { head: string; sub: string; note?: string } =
     verdict === 'checking'
       ? { head: 'Хвилинку…', sub: 'перевіряємо оплату' }
       : verdict === 'ok'
         ? { head: 'Дякуємо', sub: 'за вашу покупку' }
-        : { head: 'Помилка оплати', sub: 'спробуйте ще раз' };
+        : {
+            head: 'Помилка оплати',
+            sub: 'спробуйте ще раз',
+            // Банк інколи підтверджує оплату із затримкою (3DS) — людина
+            // бачить «помилку», хоча гроші списано. Без цієї примітки вона
+            // платить повторно або панікує.
+            note:
+              'Якщо гроші списалися з картки - не хвилюйтеся: банк іноді ' +
+              'підтверджує оплату із затримкою. Щойно підтвердження дійде ' +
+              'до нас, ми відправимо ваше замовлення. Повторно оплачувати ' +
+              'не потрібно.',
+          };
 
   return (
     <div className={styles.scrim} role="dialog" aria-modal="true" aria-labelledby="ty-h">
@@ -84,6 +95,7 @@ export function ThankYou({ state, orderRef }: Props) {
           {text.head}
         </h2>
         <p className={styles.sub}>{text.sub}</p>
+        {text.note && <p className={styles.note}>{text.note}</p>}
       </div>
     </div>
   );
