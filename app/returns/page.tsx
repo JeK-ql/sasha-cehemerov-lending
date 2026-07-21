@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
-import { SELLER, FOOTER_CONTACTS_READY, SELLER_TELEGRAM_READY } from '@/lib/seller';
+import { SELLER, FOOTER_CONTACTS_READY } from '@/lib/seller';
 import { PRODUCT_IMAGE_JPG } from '@/lib/structuredData';
 
 export const metadata: Metadata = {
@@ -133,17 +133,7 @@ export default function ReturnsPage() {
       {FOOTER_CONTACTS_READY && (
         <>
           <h2>8. Контакти для повернення</h2>
-          <p>
-            E-mail: {SELLER.email}
-            <br />
-            Телефон: {SELLER.phone}
-            {SELLER_TELEGRAM_READY && (
-              <>
-                <br />
-                Telegram: {SELLER.telegram}
-              </>
-            )}
-          </p>
+          <p>E-mail: {SELLER.email}</p>
           <p>
             Повні реквізити Продавця наведено в розділі «Реквізити Продавця»{' '}
             <a href="/offer">Договору публічної оферти</a>.

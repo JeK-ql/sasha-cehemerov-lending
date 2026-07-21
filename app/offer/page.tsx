@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
-import { SELLER, SELLER_TELEGRAM_READY } from '@/lib/seller';
+import { SELLER } from '@/lib/seller';
 import { PRODUCT_IMAGE_JPG } from '@/lib/structuredData';
 
 export const metadata: Metadata = {
@@ -225,14 +225,6 @@ export default function OfferPage() {
         Юридична адреса: {SELLER.legalAddress}
         <br />
         Фактична адреса: {SELLER.actualAddress}
-        <br />
-        Телефон: {SELLER.phone}
-        {SELLER_TELEGRAM_READY && (
-          <>
-            <br />
-            Telegram: {SELLER.telegram}
-          </>
-        )}
         <br />
         E-mail: {SELLER.email}
       </p>
