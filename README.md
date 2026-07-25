@@ -11,7 +11,7 @@ npm install
 ## Змінні оточення
 
 Скопіювати `.env.local.example` у `.env.local` і заповнити значення:
-
+112
 ```bash
 cp .env.local.example .env.local
 ```
