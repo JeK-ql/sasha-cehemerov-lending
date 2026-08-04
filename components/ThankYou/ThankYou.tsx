@@ -2,15 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type { CheckoutTheme } from '@/lib/products';
 import styles from './ThankYou.module.css';
 
-type Props = { state: 'ok' | 'fail'; orderRef?: string; homePath: string };
+type Props = {
+  state: 'ok' | 'fail';
+  orderRef?: string;
+  homePath: string;
+  /** Айдентика сторінки-хазяйки; без прапорця — чорнильна тема головної. */
+  theme?: CheckoutTheme;
+};
 
 /** Скільки разів і як часто перепитуємо базу, поки колбек WayForPay летить. */
 const STATUS_ATTEMPTS = 6;
 const STATUS_INTERVAL_MS = 2000;
 
-export function ThankYou({ state, orderRef, homePath }: Props) {
+export function ThankYou({ state, orderRef, homePath, theme = 'ink' }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(true);
   // Вердикт віджета/редіректу — попередній: 3DS може підтвердитись пізніше.
@@ -85,7 +92,13 @@ export function ThankYou({ state, orderRef, homePath }: Props) {
           };
 
   return (
-    <div className={styles.scrim} role="dialog" aria-modal="true" aria-labelledby="ty-h">
+    <div
+      className={styles.scrim}
+      data-theme={theme}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ty-h"
+    >
       <button type="button" onClick={close} className={`${styles.close} mono`}>
         ← закрити
       </button>

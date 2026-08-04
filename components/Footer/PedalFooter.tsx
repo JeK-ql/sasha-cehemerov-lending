@@ -52,7 +52,9 @@ export function PedalFooter() {
       {/* Legal left, socials right — edge to edge. */}
       <div className={styles.top}>
         <nav className={styles.legal} aria-label="Навігація і правова інформація">
-          <Link href="/" className={styles.promo}>
+          {/* transitionTypes: зворотний бік переходу «зін-флаєр» — зін падає
+              вниз і відкриває головну (див. globals.css). */}
+          <Link href="/" className={styles.promo} transitionTypes={['pedal-close']}>
             Футболка «too much яром too much долиною»
           </Link>
           <Link href="/offer">Публічна оферта</Link>

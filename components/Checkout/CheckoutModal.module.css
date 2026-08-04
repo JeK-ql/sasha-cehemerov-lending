@@ -10,19 +10,48 @@
 }
 
 /* ---------- Overlay scrim ---------- */
+/* Затемнення живе на ::before, а не на самому .overlay: анімуємо opacity
+   шару (композитинг на GPU), а не background-color (repaint усього вʼюпорта
+   кожен кадр). Панель — сусід псевдоелемента, тому її це не торкається. */
 .overlay {
   position: fixed; inset: 0; z-index: 60;
+}
+.overlay::before {
+  content: '';
+  position: absolute; inset: 0;
   background-color: rgba(0, 0, 0, 0.55);
 }
-.overlay[data-state='open']    { animation: ovlIn 400ms ease both; }
-.overlay[data-state='closing'] { animation: ovlOut 320ms ease both; }
-@keyframes ovlIn  { from { background-color: rgba(0, 0, 0, 0); } }
-@keyframes ovlOut { to   { background-color: rgba(0, 0, 0, 0); } }
+.overlay[data-state='open']::before    { animation: ovlIn 400ms ease both; }
+.overlay[data-state='closing']::before { animation: ovlOut 260ms ease both; }
+@keyframes ovlIn  { from { opacity: 0; } }
+@keyframes ovlOut { to   { opacity: 0; } }
 
 /* ---------- Panel — mobile: bottom sheet ---------- */
+/* Уся палітра модалки — у змінних --ck-*. Дефолти — чорнильна тема головної
+   (футболка); блок [data-theme='acid'] нижче перевдягає модалку в айдентику
+   сторінки педалі. Нові кольори сюди — тільки через змінну. */
 .panel {
+  --ck-bg: var(--ink);
+  --ck-text: #c1baac;
+  --ck-line: #2a2a2a;            /* роздільники блоку замовлення */
+  --ck-soft: #3a3a3a;            /* грабер, скролбар, рамка тега відділення */
+  --ck-dim: #9a9a9a;             /* другорядний текст: хрестик, теги */
+  --ck-dim-border: #444;
+  --ck-dim-border-hover: #777;
+  --ck-muted: #8f8a7d;           /* нотатка про доставку */
+  --ck-error: var(--red);
+  --ck-cta-bg: #c1baac;          /* кнопка оплати, степери, активний сегмент */
+  --ck-cta-text: var(--ink);
+  --ck-ac-bg: #161616;           /* дропдаун автокомпліта міст/відділень */
+  --ck-ac-border: #303030;
+  --ck-ac-text: #cfcfcf;
+  --ck-ac-line: #242424;
+  --ck-ac-hover-bg: #1f1f1f;
+  --ck-ac-hover-text: #c1baac;
+  --ck-ac-head: #6a6a6a;
+
   position: fixed; inset: 0;
-  background: var(--ink); color: #c1baac;
+  background: var(--ck-bg); color: var(--ck-text);
   display: flex; flex-direction: column;
   border-radius: 0;
   will-change: transform;
@@ -31,25 +60,110 @@
      the time the modal opens — declaring it here would just duplicate. */
   font-family: 'KyivTypeSans', system-ui, sans-serif;
 }
-.panel[data-state='open']    { animation: sheetIn 480ms var(--ease-glide) both; }
-.panel[data-state='closing'] { animation: sheetOut 380ms var(--ease-glide) both; }
-@keyframes sheetIn  { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes sheetOut { from { transform: translateY(0); }    to { transform: translateY(100%); } }
+/* Кислотна тема (/pedal): рівний лайм сторінки, деталі — чорні. CTA —
+   інверсія в чорне з лаймовим текстом, як кнопка PedalBuy. Червоний з
+   чорнильної теми на лаймі дає ~2.7:1, тому тут темніший #8f1500
+   (~6.9:1, WCAG AA). */
+.panel[data-theme='acid'] {
+  /* Фактури стіни тут свідомо НЕМАЄ, хоча на сторінці вона є. Зерно фону —
+     просторовий шум того ж масштабу, що й штрих 9-11px гліфа: на сторінці
+     під ним лежить намальований від руки текст у 40px, у формі — підписи
+     полів. Заміряно в браузері: колір тексту #0d0d0d на #cded16 дає 15:1,
+     тобто справа була не в контрасті, а в зерні. Модалка лишається рівним
+     лаймом. */
+  --ck-bg: #cded16;
+  --ck-text: #0d0d0d;
+  --ck-line: rgba(13, 13, 13, 0.28);
+  --ck-soft: rgba(13, 13, 13, 0.45);
+  --ck-dim: rgba(13, 13, 13, 0.68);
+  --ck-dim-border: rgba(13, 13, 13, 0.55);
+  --ck-dim-border-hover: #0d0d0d;
+  --ck-muted: rgba(13, 13, 13, 0.62);
+  --ck-error: #8f1500;
+  --ck-cta-bg: #0d0d0d;
+  --ck-cta-text: #cded16;
+  --ck-ac-bg: #cded16;
+  --ck-ac-border: #0d0d0d;
+  --ck-ac-text: #0d0d0d;
+  --ck-ac-line: rgba(13, 13, 13, 0.22);
+  --ck-ac-hover-bg: #0d0d0d;
+  --ck-ac-hover-text: #cded16;
+  --ck-ac-head: rgba(13, 13, 13, 0.62);
+}
+/* Мікрошрифт форми на кислотній темі. Базові розміри (7.5-10px) народилися
+   на чорнильній темі, де світлий текст на глухому чорному «товщає» від
+   ореолу субпіксельного згладжування. На лаймі чорний штрих такої товщини,
+   навпаки, витончується — ті самі 8-9px читаються помітно гірше. Піднято
+   лише тут; чорнильна тема головної лишається як була. */
+.panel[data-theme='acid'] .orderMeta { font-size: 12px; }
+.panel[data-theme='acid'] .legend { font-size: 12px; }
+.panel[data-theme='acid'] .fieldLabel { font-size: 12px; }
+.panel[data-theme='acid'] .fieldHint,
+.panel[data-theme='acid'] .fieldError,
+.panel[data-theme='acid'] .soldOut,
+.panel[data-theme='acid'] .deliveryNote { font-size: 11px; }
+.panel[data-theme='acid'] .acHead { font-size: 10px; }
+.panel[data-theme='acid'] .acTag { font-size: 9.5px; }
+/* Підказка під сегментами доставки виросла — без цього відступу вона
+   впритул підходила до підпису наступного поля. */
+.panel[data-theme='acid'] .segRow + .fieldHint { margin-bottom: 6px; }
 
-.grab { width: 38px; height: 4px; background: #3a3a3a; border-radius: 3px; margin: 9px auto 2px; }
+/* Плейсхолдера у стилях немає взагалі — поля беруть системний сірий, який
+   на лаймі вицвітає до нечитабельного. Прив'язуємо до кольору поля. */
+.panel[data-theme='acid'] .input::placeholder {
+  color: var(--ck-text);
+  opacity: 0.55;
+}
+
+/* «Ще не готово до оплати» на лаймі не можна показувати прозорістю: чорна
+   кнопка на 45% дає оливкову кашу, в якій лаймовий текст зникає (саме її
+   було видно на скріні). Замість opacity — явний приглушений фон і темний
+   текст: стан читається як неактивний, а сума лишається розбірливою. */
+.panel[data-theme='acid'] .pay:disabled,
+.panel[data-theme='acid'] .pay[aria-disabled='true'] {
+  opacity: 1;
+  background: rgba(13, 13, 13, 0.4);
+  color: #0d0d0d;
+}
+
+/* Вихід швидший за вхід (300 проти 480): поява — момент, коли користувач
+   дивиться, закриття — коли вже вирішив піти; система відповідає, не тягне.
+   Легкий нахил 0.6deg — відлуння переходу «зін-флаєр» (globals.css): шторка
+   заходить як аркуш паперу і рівняється на місці. transform-origin зверху,
+   щоб гойдався нижній край, а верхній лишався якорем. */
+.panel[data-state='open']    { animation: sheetIn 480ms var(--ease-glide) both; }
+.panel[data-state='closing'] { animation: sheetOut 300ms var(--ease-glide) both; }
+.panel { transform-origin: 50% 0; }
+@keyframes sheetIn {
+  from { transform: translateY(100%) rotate(0.6deg); }
+  to   { transform: translateY(0) rotate(0deg); }
+}
+@keyframes sheetOut {
+  from { transform: translateY(0) rotate(0deg); }
+  to   { transform: translateY(100%) rotate(0.6deg); }
+}
+/* Reduced motion: слайд лишається (свідома продуктова вимога — див. блок
+   reduced-motion нижче), але паперовий нахил — чистий рух заради руху,
+   тому тут керфрейми перевизначені без rotate. */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes sheetIn  { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes sheetOut { from { transform: translateY(0); }    to { transform: translateY(100%); } }
+}
+
+.grab { width: 38px; height: 4px; background: var(--ck-soft); border-radius: 3px; margin: 9px auto 2px; }
 .scroll { flex: 1; overflow-y: auto; padding: 8px 22px 26px;
   /* Скролбар під палітру модалки (Firefox): тонкий, прозорий трек. */
   scrollbar-width: thin;
-  scrollbar-color: #3a3a3a transparent;
+  scrollbar-color: var(--ck-soft) transparent;
 }
 /* Скролбар під палітру модалки (WebKit/Chromium). */
 .scroll::-webkit-scrollbar { width: 8px; }
 .scroll::-webkit-scrollbar-track { background: transparent; }
 .scroll::-webkit-scrollbar-thumb {
-  background: #3a3a3a; border-radius: 4px;
+  background: var(--ck-soft); border-radius: 4px;
   transition: background 150ms ease;
 }
-.scroll::-webkit-scrollbar-thumb:hover { background: #c1baac; }
+.scroll::-webkit-scrollbar-thumb:hover { background: var(--ck-text); }
 
 /* ---------- Panel — desktop: side panel from the right ---------- */
 @media (min-width: 768px) {
@@ -78,11 +192,11 @@
   font-weight: 300; }
 .x {
   grid-column: 3; justify-self: end;
-  width: 30px; height: 30px; background: none; border: 1.5px solid #444;
-  color: #9a9a9a; cursor: pointer;
+  width: 30px; height: 30px; background: none; border: 1.5px solid var(--ck-dim-border);
+  color: var(--ck-dim); cursor: pointer;
   transition: transform 140ms var(--ease-out), border-color 140ms ease, color 140ms ease;
 }
-.x:hover { border-color: #777; color: #c1baac; }
+.x:hover { border-color: var(--ck-dim-border-hover); color: var(--ck-text); }
 .x:active { transform: scale(0.9); }
 
 /* ---------- form ---------- */
@@ -90,7 +204,7 @@
 /* Photo on top filling the column, product name + meta centered below. */
 .order { display: flex; flex-direction: column; align-items: center; gap: 18px;
   padding: 18px 0;
-  border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; }
+  border-top: 1px solid var(--ck-line); border-bottom: 1px solid var(--ck-line); }
 .thumb { object-fit: cover; }
 /* Wraps the thumb so clicking opens the lightbox. Takes the full column
    width up to 600px, kept square via aspect-ratio:1. position:relative
@@ -100,7 +214,16 @@
   position: relative; overflow: hidden; }
 .orderInfo { width: 100%; text-align: center; }
 .orderName { font-size: 12px; font-weight: 600; text-transform: uppercase; }
-.orderMeta { font-size: 9.5px; color: #c1baac; margin-top: 4px;
+/* Леттеринг-назва (педаль): та сама ширина колонки, що й у фото (450px),
+   щоб обидві картинки замовлення трималися однієї осі. */
+.orderNameImg {
+  display: block;
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  margin: 0 auto;
+}
+.orderMeta { font-size: 9.5px; color: var(--ck-text); margin-top: 4px;
   font-family: 'KyivTypeSans', system-ui, sans-serif; }
 .orderPrice { font-size: 22px; }
 .block { border: none; margin-top: 24px; }
@@ -116,17 +239,17 @@
    спрацьовує — потрібний відступ уже дає базове .block вище. Стик
    контакти↔доставка лишається безшовним для обох товарів. */
 .block + .blockContact { margin-top: 24px; }
-.legend { font-size: 10px; color: #c1baac; margin-bottom: 16px; }
+.legend { font-size: 10px; color: var(--ck-text); margin-bottom: 16px; }
 .field { display: block; margin-bottom: 20px; position: relative; }
-.fieldLabel { font-size: 9px; color: #c1baac; display: block; margin-bottom: 9px;
+.fieldLabel { font-size: 9px; color: var(--ck-text); display: block; margin-bottom: 9px;
   font-family: 'KyivTypeSans', system-ui, sans-serif; }
-.input { width: 100%; background: none; border: none; border-bottom: 1.5px solid #c1baac;
-  padding-bottom: 9px; font-size: 15px; color: #c1baac; font-family: inherit;
+.input { width: 100%; background: none; border: none; border-bottom: 1.5px solid var(--ck-text);
+  padding-bottom: 9px; font-size: 15px; color: var(--ck-text); font-family: inherit;
   transition: border-color 160ms ease; }
-.input:focus { outline: none; border-color: var(--red); }
-.fieldHint { font-size: 8px; color: #c1baac; margin-top: 8px; display: block;
+.input:focus { outline: none; border-color: var(--ck-error); }
+.fieldHint { font-size: 8px; color: var(--ck-text); margin-top: 8px; display: block;
   font-family: 'KyivTypeSans', system-ui, sans-serif; }
-.pay { background: #c1baac; color: var(--ink); border: none; cursor: pointer;
+.pay { background: var(--ck-cta-bg); color: var(--ck-cta-text); border: none; cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700; text-transform: uppercase;
   font-size: 20px; padding: 19px;
   flex: 1; min-width: 0;
@@ -138,7 +261,7 @@
 /* Pay row: одна кнопка оплати на всю ширину. */
 .payRow { display: flex; gap: 8px; margin-top: 28px; }
 .qtyBtn {
-  background: #c1baac; color: var(--ink); border: none; cursor: pointer;
+  background: var(--ck-cta-bg); color: var(--ck-cta-text); border: none; cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700;
   font-size: 28px; line-height: 1; padding: 0;
   width: 64px; flex: none;
@@ -153,7 +276,9 @@
 /* Stepper "soft-disabled" — aria-disabled, not actual disabled, so the click
    handler still fires and reveals form errors. Mirrors :disabled visuals. */
 .qtyBtn[aria-disabled='true'] { opacity: 0.35; cursor: not-allowed; }
-.qtyBtn[aria-disabled='true']:hover { background: #fff; color: var(--ink);
+/* Керується змінною CTA, а не #fff: hover на soft-disabled степері має
+   лишати його в кольорі спокою (див. коментар вище), в обох темах. */
+.qtyBtn[aria-disabled='true']:hover { background: var(--ck-cta-bg); color: var(--ck-cta-text);
   outline: none; }
 .qtyBtn[aria-disabled='true']:active { transform: none; }
 
@@ -168,7 +293,7 @@
 .segRow { display: flex; gap: 8px; }
 .segBtn {
   flex: 1; height: 52px;
-  background: none; border: 1.5px solid #c1baac; color: #c1baac;
+  background: none; border: 1.5px solid var(--ck-text); color: var(--ck-text);
   cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700;
   /* 14px: підписи «МАЛЕНЬКИЙ/СЕРЕДНІЙ/ВЕЛИКИЙ» мають вміщатися в третину
@@ -178,11 +303,11 @@
   transition: background 150ms ease, color 150ms ease,
               transform 150ms var(--ease-out);
 }
-.segBtn[data-active='true'] { background: #c1baac; color: var(--ink); }
+.segBtn[data-active='true'] { background: var(--ck-cta-bg); color: var(--ck-cta-text); }
 .segBtn:not([data-active='true']):active { transform: scale(0.97); }
 .segBtn:disabled { opacity: .45; cursor: not-allowed; }
 /* Підпис під назвою розпроданого розміру. */
-.soldOut { display: block; font-size: 8px; letter-spacing: .08em; color: var(--red); }
+.soldOut { display: block; font-size: 8px; letter-spacing: .08em; color: var(--ck-error); }
 .segRow + .fieldError, .segRow + .fieldHint { margin-top: 10px; }
 
 /* Два поля в один рядок (будинок + квартира). */
@@ -191,7 +316,7 @@
 
 /* Тиха нотатка про доставку під кнопкою оплати. */
 .deliveryNote {
-  font-size: 8px; color: #8f8a7d; text-align: center;
+  font-size: 8px; color: var(--ck-muted); text-align: center;
   margin-top: 12px; letter-spacing: .05em; text-transform: uppercase;
 }
 
@@ -199,29 +324,50 @@
 .pay[aria-disabled='true'] { opacity: .45; cursor: not-allowed; }
 .pay[aria-disabled='true']:active { transform: none; }
 
+/* Біла фокус-обводка — як у PedalBuy: єдиний колір, видимий і на чорнильній,
+   і на кислотній темі, і поверх чорної CTA. */
+.x:focus-visible,
+.pay:focus-visible,
+.qtyBtn:focus-visible,
+.segBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 /* Wraps the price text on the pay button so it can be a transform target
    for the pulse animation (transforms don't apply to pure-inline boxes). */
 .payAmount { display: inline-block; transform-origin: center; }
 
+/* Помилка оплати під кнопкою. Свідомо більша за .fieldError (8px): це єдине
+   повідомлення, яке блокує покупку, і воно містить інструкцію, а не мітку
+   поля — 8px caps тут просто не прочитали б. */
+.payError {
+  margin-top: 12px;
+  color: var(--ck-error);
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+}
+
 /* ---------- NovaPoshtaPicker additions (ported from /) ---------- */
 /* Inline field error shown under invalid inputs (after first submit). */
 .fieldError {
-  font-size: 8px; color: var(--red); margin-top: 8px; display: block;
+  font-size: 8px; color: var(--ck-error); margin-top: 8px; display: block;
   letter-spacing: .03em; text-transform: uppercase;
 }
 /* Red underline on inputs marked invalid via the data-invalid attribute. */
-.input[data-invalid='true'] { border-color: var(--red); }
+.input[data-invalid='true'] { border-color: var(--ck-error); }
 
 /* Header inside the city autocomplete ("Популярні міста"). */
 .acHead {
   padding: 9px 12px 5px; font-size: 8px; letter-spacing: .08em;
-  text-transform: uppercase; color: #6a6a6a;
+  text-transform: uppercase; color: var(--ck-ac-head);
 }
 /* Warehouse autocomplete row: name on the left, Поштомат/Відділення pill right. */
 .acRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .acTag {
   font-size: 7.5px; letter-spacing: .06em; text-transform: uppercase;
-  color: #9a9a9a; border: 1px solid #3a3a3a; padding: 2px 5px; flex: none;
+  color: var(--ck-dim); border: 1px solid var(--ck-soft); padding: 2px 5px; flex: none;
 }
 
 /* City-search loading spinner. Wraps just the input so the spinner sits
@@ -250,7 +396,7 @@
 }
 
 .ac { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
-  background: #161616; border: 1px solid #303030; z-index: 5; list-style: none;
+  background: var(--ck-ac-bg); border: 1px solid var(--ck-ac-border); z-index: 5; list-style: none;
   max-height: 180px; overflow-y: auto;
   animation: acIn 220ms var(--ease-out) both;
   transform-origin: top;
@@ -259,9 +405,9 @@
   from { opacity: 0; transform: scaleY(0.94); }
   to { opacity: 1; transform: scaleY(1); }
 }
-.acItem { padding: 10px 12px; font-size: 13px; color: #cfcfcf; cursor: pointer;
-  border-bottom: 1px solid #242424; transition: background 120ms ease, color 120ms ease; }
-.acItem:hover { background: #1f1f1f; color: #c1baac; }
+.acItem { padding: 10px 12px; font-size: 13px; color: var(--ck-ac-text); cursor: pointer;
+  border-bottom: 1px solid var(--ck-ac-line); transition: background 120ms ease, color 120ms ease; }
+.acItem:hover { background: var(--ck-ac-hover-bg); color: var(--ck-ac-hover-text); }
 
 /* ---------- staggered content entrance ---------- */
 @keyframes riseIn {
@@ -294,16 +440,21 @@
   height: 100%;
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: var(--ink);
+  color: var(--ck-text);
   opacity: 0.5;
-  border: 1.5px dashed #c1baac;
+  border: 1.5px dashed var(--ck-text);
 }
 
 /* Опис товару — тільки для товарів, що його мають. */
+/* .form не має gap, тож відступи задають самі блоки. Без них скорочений
+   опис упирався просто в перший рядок таблиці характеристик.
+   Обидва класи рендеряться лише для товару з description/specs — тобто
+   зараз тільки на /pedal; футболка їх не має. */
 .productCopy {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin: 16px 0;
   font-size: 14px;
   line-height: 1.55;
 }
@@ -313,14 +464,14 @@
   flex-direction: column;
   gap: 6px;
   font-size: 12px;
-  margin: 0;
+  margin: 0 0 18px;
 }
 
 .specRow {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid #c1baac;
+  border-bottom: 1px solid var(--ck-line);
   padding-bottom: 4px;
 }
 

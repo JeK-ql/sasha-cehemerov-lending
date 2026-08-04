@@ -27,13 +27,18 @@ export function ProductSummary({
   return (
     <>
       <div className={styles.order}>
-        <div className={styles.thumbBtn}>
+        {/* aspectRatio — з реєстру: рамка підганяється під пропорції фото,
+            щоб cover не зрізав композицію. Не задано — лишається квадрат із CSS. */}
+        <div className={styles.thumbBtn} style={{ aspectRatio: product.thumbAspect }}>
           {product.thumb ? (
             <Image
               src={product.thumb}
               alt=""
               fill
-              sizes="(min-width: 768px) 220px, 33vw"
+              // Рамка тягнеться на всю ширину колонки (до 450px), а не на 220px:
+              // зі старим sizes браузер тягнув 256px-варіант і мазав його на
+              // ~350px слот.
+              sizes="(min-width: 768px) 450px, 100vw"
               className={styles.thumb}
             />
           ) : (
@@ -43,7 +48,21 @@ export function ProductSummary({
 
         <div className={styles.orderInfo}>
           <div className={styles.orderName}>
-            <span>{product.name.toUpperCase()}</span>
+            {product.nameImage ? (
+              // Леттеринг замість тексту (педаль). alt несе назву — для
+              // скрінрідера це і є назва товару в замовленні.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={product.nameImage.src}
+                alt={product.name}
+                width={product.nameImage.width}
+                height={product.nameImage.height}
+                decoding="async"
+                className={styles.orderNameImg}
+              />
+            ) : (
+              <span>{product.name.toUpperCase()}</span>
+            )}
           </div>
           <div className={`${styles.orderMeta} mono`}>
             {product.showVariantPicker ? metaParts.join(' · ') : `${product.price} ₴`}

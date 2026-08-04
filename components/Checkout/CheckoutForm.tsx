@@ -18,6 +18,16 @@ type FieldKey = keyof CheckoutFormState;
 // футболки. Версія v2 — структура форми змінилась, старі чернетки несумісні.
 const draftKey = (productId: string) => `isus-checkout-draft-v2:${productId}`;
 
+/** Опитування window.Wayforpay: крок і поріг, після якого це вже не «повільно». */
+const WIDGET_POLL_MS = 200;
+const WIDGET_WAIT_MS = 8000;
+
+const WIDGET_BLOCKED_MSG =
+  'Платіжний віджет не завантажився. Найчастіше його ріже блокувальник реклами ' +
+  'або антитрекер - вимкніть його для цього сайту й перезавантажте сторінку.';
+const WIDGET_LOADING_MSG = 'Платіжний віджет ще вантажиться - секунду.';
+const PAY_FAILED_MSG = 'Не вдалося почати оплату. Спробуйте ще раз.';
+
 const emptyForm = (product: Product): CheckoutFormState => ({
   productId: product.id,
   sizes: emptySizes(product),
@@ -71,6 +81,14 @@ export function CheckoutForm({ product }: { product: Product }) {
   // null = наявність ще не завантажена (усі розміри доступні до відповіді).
   const [available, setAvailable] = useState<Record<string, boolean> | null>(null);
   const [stockMsg, setStockMsg] = useState<string | null>(null);
+  // Готовність платіжного віджета. Перевірка синхронна, у лінивому ініті:
+  // форма монтується вже після кліку по кнопці покупки, тож зазвичай скрипт
+  // давно на місці й «ГОТУЄМО ОПЛАТУ…» навіть не блимне.
+  const [widgetReady, setWidgetReady] = useState(
+    () => typeof window !== 'undefined' && !!window.Wayforpay,
+  );
+  const [widgetBlocked, setWidgetBlocked] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   const priceRef = useRef<HTMLSpanElement>(null);
 
   // Наявність + чистка розпроданих розмірів (у т.ч. відновлених із чернетки).
@@ -104,6 +122,26 @@ export function CheckoutForm({ product }: { product: Product }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- applyAvailability лише читає product.id (уже в deps) і сталі setState-функції; додавання самої функції ганяло б запит на кожен рендер
   }, [product.id]);
+
+  // Чекаємо на скрипт WayForPay опитуванням, а не подією onLoad: тег <Script>
+  // оголошений у кореневому layout, і форма може змонтуватись як до його
+  // завантаження, так і після — опитування коректне в обох випадках.
+  useEffect(() => {
+    if (widgetReady) return;
+    const startedAt = Date.now();
+    const id = setInterval(() => {
+      if (window.Wayforpay) {
+        setWidgetReady(true);
+        setWidgetBlocked(false);
+        return; // зміна widgetReady перезапустить ефект, cleanup зніме інтервал
+      }
+      // Після порогу це вже майже напевно блокувальник, але опитування
+      // свідомо НЕ спиняємо: на дуже повільній мережі скрипт може доїхати
+      // пізніше — тоді кнопка просто оживе сама.
+      if (Date.now() - startedAt >= WIDGET_WAIT_MS) setWidgetBlocked(true);
+    }, WIDGET_POLL_MS);
+    return () => clearInterval(id);
+  }, [widgetReady]);
 
   // Зберігаємо чернетку на кожну зміну — рефреш/повторне відкриття її відновлять.
   useEffect(() => {
@@ -172,6 +210,9 @@ export function CheckoutForm({ product }: { product: Product }) {
   const visibleError = (k: FieldKey): string | undefined =>
     errors[k] && (touched[k] || submitAttempted) ? errors[k] : undefined;
 
+  // Одне місце для платіжних повідомлень під кнопкою.
+  const payNotice = !widgetReady && widgetBlocked ? WIDGET_BLOCKED_MSG : payError;
+
   const totalCount = totalQuantity(data.sizes);
   // Display only - the authoritative amount that gets signed by the WayForPay
   // HMAC is recomputed server-side from the sizes record.
@@ -184,6 +225,17 @@ export function CheckoutForm({ product }: { product: Product }) {
       setSubmitAttempted(true);
       return;
     }
+    // Віджет перевіряємо ДО /api/checkout: той запит резервує товар на складі
+    // на 30 хвилин, і без платіжного скрипта резерв просто згорів би — оплата
+    // ніколи б не почалась, а товар усе одно зник би з наявності. Конструктор
+    // захоплюємо в змінну, щоб запускати саме те, що щойно перевірили.
+    const Widget = window.Wayforpay;
+    if (!Widget) {
+      setWidgetReady(false);
+      setPayError(widgetBlocked ? WIDGET_BLOCKED_MSG : WIDGET_LOADING_MSG);
+      return;
+    }
+    setPayError(null);
     setSubmitting(true);
     try {
       const res = await fetch('/api/checkout', {
@@ -208,11 +260,10 @@ export function CheckoutForm({ product }: { product: Product }) {
       if (!res.ok) throw new Error('checkout failed');
       setStockMsg(null);
       const params = await res.json();
-      if (!window.Wayforpay) throw new Error('widget not loaded');
       // ref у редіректі: сторінка подяки перепитає фактичний статус у базі
       // (вердикт віджета — попередній, 3DS може підтвердитись пізніше).
       const ref = `&ref=${params.orderReference}`;
-      new window.Wayforpay().run(
+      new Widget().run(
         params,
         () => {
           // Оплату прийнято: чистимо чернетку і ведемо на подяку.
@@ -228,7 +279,9 @@ export function CheckoutForm({ product }: { product: Product }) {
         },
       );
     } catch {
-      alert('Не вдалося почати оплату. Спробуйте ще раз.');
+      // Раніше тут був нативний alert — тепер помилка живе в самій формі,
+      // поруч із кнопкою, у стилістиці модалки й доступна скрінрідеру.
+      setPayError(PAY_FAILED_MSG);
     } finally {
       setSubmitting(false);
     }
@@ -351,15 +404,23 @@ export function CheckoutForm({ product }: { product: Product }) {
         <button
           type="submit"
           className={styles.pay}
-          aria-disabled={!valid || submitting}
+          aria-disabled={!valid || submitting || !widgetReady}
         >
-          {submitting ? 'ЗАЧЕКАЙТЕ…' : (
+          {submitting ? 'ЗАЧЕКАЙТЕ…' : !widgetReady ? 'ГОТУЄМО ОПЛАТУ…' : (
             <span ref={priceRef} className={styles.payAmount}>
               {total} ₴{product.showVariantPicker ? ` (×${totalCount})` : ''}
             </span>
           )}
         </button>
       </div>
+
+      {/* Пояснення про заблокований віджет має пріоритет над помилкою сабміту:
+          воно каже, ЧОМУ кнопка неактивна, ще до того як у неї тицьнули. */}
+      {payNotice && (
+        <p className={styles.payError} role="alert">
+          {payNotice}
+        </p>
+      )}
 
       <p className={`${styles.deliveryNote} mono`}>
         Доставка - за рахунок отримувача, за тарифами перевізника

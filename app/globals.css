@@ -126,3 +126,74 @@ button { -webkit-tap-highlight-color: transparent; }
   text-transform: uppercase;
   letter-spacing: -0.01em;
 }
+
+/* ============================================================
+   Перехід сторінок «зін-флаєр» (головна ↔ /pedal)
+
+   Клік по стікеру: зелений зін заїжджає знизу поверх головної, з ледь
+   помітним нахилом — як флаєр, наліплений на постер. Головна при цьому
+   не зникає, а лишається під ним і трохи відступає вглиб. Зворотний
+   шлях дзеркальний: флаєр падає вниз, відкриваючи головну.
+
+   Активується тільки лінками з transitionTypes 'pedal-open'/'pedal-close'
+   (стікер на головній і промо-лінк у футері педалі); browser back і решта
+   навігацій ідуть без анімації (default="none" у <ViewTransition>).
+   ============================================================ */
+
+/* Зін завжди поверх сторінки, яку він накриває/відкриває. */
+::view-transition-group(.zine-rise),
+::view-transition-group(.zine-drop) {
+  z-index: 2;
+}
+
+::view-transition-new(.zine-rise) {
+  transform-origin: 50% 0;
+  animation: 420ms var(--ease-drawer) both vt-zine-rise;
+}
+/* Вихід швидший за вхід: система відповідає, не тягне час. */
+::view-transition-old(.zine-drop) {
+  transform-origin: 50% 0;
+  animation: 340ms var(--ease-drawer) both vt-zine-drop;
+}
+
+/* Сторінка під флаєром: перебиваємо дефолтний fade-out/fade-in снепшота —
+   вона мусить бути видимою весь час, лише ледь відступає вглиб. */
+::view-transition-old(.page-under-hold) {
+  animation: 420ms var(--ease-drawer) both vt-page-recede;
+}
+::view-transition-new(.page-under-reveal) {
+  animation: 340ms var(--ease-drawer) both vt-page-return;
+}
+
+/* 100vh, а не 100%: снепшот сторінки в кілька екранів заввишки — зсуваємо
+   рівно на вʼюпорт. Нахил ~1deg від верхнього краю — «паперовість» флаєра. */
+@keyframes vt-zine-rise {
+  from { transform: translateY(100vh) rotate(1.2deg); }
+  to   { transform: translateY(0) rotate(0deg); }
+}
+@keyframes vt-zine-drop {
+  from { transform: translateY(0) rotate(0deg); }
+  to   { transform: translateY(100vh) rotate(1.2deg); }
+}
+@keyframes vt-page-recede {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(0.985); }
+}
+@keyframes vt-page-return {
+  from { opacity: 1; transform: scale(0.985); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Reduced motion: прибираємо рух (слайд/нахил/масштаб), лишається тільки
+   короткий дефолтний кросфейд кореня — м'яко і без позиційної анімації. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(.zine-rise),
+  ::view-transition-group(.zine-drop),
+  ::view-transition-new(.zine-rise),
+  ::view-transition-old(.zine-drop),
+  ::view-transition-old(.page-under-hold),
+  ::view-transition-new(.page-under-reveal) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

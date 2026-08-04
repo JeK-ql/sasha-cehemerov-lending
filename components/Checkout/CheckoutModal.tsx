@@ -5,7 +5,9 @@ import { useCheckout } from './CheckoutProvider';
 import { CheckoutForm } from './CheckoutForm';
 import styles from './CheckoutModal.module.css';
 
-const EXIT_MS = 420;
+/* Тривалість close-анімації панелі (300ms у CheckoutModal.module.css)
+   + запас на кадр: анмаунт має відбутись ПІСЛЯ того, як шторка поїхала. */
+const EXIT_MS = 340;
 
 export function CheckoutModal() {
   const { isOpen, close, product } = useCheckout();
@@ -50,6 +52,7 @@ export function CheckoutModal() {
       <div
         className={styles.panel}
         data-state={state}
+        data-theme={product.checkoutTheme}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

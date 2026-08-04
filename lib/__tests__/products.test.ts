@@ -41,8 +41,20 @@ describe('реєстр товарів', () => {
     expect(p.maxPerOrder).toBe(1);
     expect(p.showVariantPicker).toBe(false);
     expect(p.path).toBe('/pedal');
-    expect(p.price).toBe(3000);
-    expect(p.specs?.length).toBe(9);
+    expect(p.price).toBe(13000);
+    // Модалка — крок оплати: короткий опис і компактна таблиця характеристик.
+    expect(p.description?.length).toBe(1);
+    expect(p.specs?.map((s) => s.label)).toEqual([
+      'Тип ефекту',
+      'Схема',
+      'Живлення',
+      'Тип байпасу',
+      'Органи керування',
+      'Розміри',
+      'Корпус',
+      'Тираж',
+      'Особливості',
+    ]);
   });
 
   it('getProduct повертає null на невідомому id, не кидає', () => {
@@ -70,6 +82,20 @@ describe('реєстр товарів', () => {
     expect(PRODUCTS.DROP01.metaLabel).toBe('OVERSIZE');
     expect(PRODUCTS.PEDAL01.metaLabel).toBeUndefined();
   });
+
+  it('тема чекауту: футболка — чорнильна, педаль — кислотна (айдентика сторінки)', () => {
+    expect(PRODUCTS.DROP01.checkoutTheme).toBe('ink');
+    expect(PRODUCTS.PEDAL01.checkoutTheme).toBe('acid');
+  });
+
+  it('назва педалі в підсумку замовлення — леттеринг з зін-макета, у футболки — текст', () => {
+    expect(PRODUCTS.PEDAL01.nameImage).toEqual({
+      src: '/zine-title.png',
+      width: 1440,
+      height: 338,
+    });
+    expect(PRODUCTS.DROP01.nameImage).toBeUndefined();
+  });
 });
 
 describe('медіа педалі', () => {
@@ -81,17 +107,23 @@ describe('медіа педалі', () => {
   });
 
   it('мініатюра в модалці та OG-картинка задані', () => {
-    expect(PRODUCTS.PEDAL01.thumb).toBe('/pedal-front.webp');
+    expect(PRODUCTS.PEDAL01.thumb).toBe('/pedal-kit.webp');
     // JSON-LD і OpenGraph: jpg, бо частина скраперів не читає webp.
     expect(PRODUCTS.PEDAL01.ogImage).toBe('/pedal-front.jpg');
   });
 
-  it('галерея містить три фото, перше — те саме, що мініатюра', () => {
-    expect(PRODUCTS.PEDAL01.gallery).toEqual([
-      '/pedal-front.webp',
-      '/pedal-angle.webp',
-      '/pedal-kit.webp',
-    ]);
+  it('мініатюра модалки не повторює хіро сторінки', () => {
+    const p = PRODUCTS.PEDAL01;
+    expect(p.media.kind).toBe('image');
+    expect(p.thumb).not.toBe(p.media.kind === 'image' ? p.media.src : null);
+  });
+
+  it('непрямокутне фото має власні пропорції рамки, інакше cover зріже кадр', () => {
+    expect(PRODUCTS.PEDAL01.thumbAspect).toBe('4 / 5');
+  });
+
+  it('галереї в педалі немає — у модалці рівно одне фото', () => {
+    expect(PRODUCTS.PEDAL01.gallery).toBeUndefined();
   });
 
   it('футболка галереї не має — у неї своє відео', () => {

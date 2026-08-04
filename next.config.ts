@@ -34,6 +34,11 @@ const securityHeaders = [
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // React <ViewTransition> для анімації переходу головна ↔ /pedal
+    // (див. globals.css, секція «Перехід сторінок»).
+    viewTransition: true,
+  },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },

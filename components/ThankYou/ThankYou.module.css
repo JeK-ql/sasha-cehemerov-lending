@@ -25,6 +25,28 @@
   .scrim { background-image: url('/bg-web.webp'); }
 }
 
+/* Кислотна тема (/pedal): замість тернового вотермарку — та сама фарбована
+   стіна, що й на сторінці педалі; текст лишається чорним (--ink), він на
+   лаймі дає ~14:1. Слабший веляр (0.35 проти 0.84): текстура тут — айдентика,
+   а не шум, бо чорна типографіка на ній читається як зін-графіка сторінки. */
+.scrim[data-theme='acid'] {
+  background-color: #cded16;
+  background-image: url('/zine-bg-phone.webp');
+  background-size: 100% 100%;
+}
+@media (min-width: 768px) {
+  .scrim[data-theme='acid'] { background-image: url('/zine-bg.webp'); }
+}
+.scrim[data-theme='acid']::before {
+  background: #cded16;
+  opacity: 0.35;
+}
+.scrim[data-theme='acid'] .sub,
+.scrim[data-theme='acid'] .note,
+.scrim[data-theme='acid'] .close { color: rgba(13, 13, 13, 0.72); }
+/* Червоний головної на лаймі не проходить контраст — темніший акцент. */
+.scrim[data-theme='acid'] .close:hover { color: #8f1500; }
+
 /* Лагідне затемнення вотермарку щоб текст читався. Накладаємо var(--bg)
    шар через ::before — простіше ніж намагатись керувати opacity самого
    background-image. */

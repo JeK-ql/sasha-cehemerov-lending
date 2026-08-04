@@ -54,7 +54,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
         />
-        <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="lazyOnload" />
+        {/* afterInteractive, не lazyOnload: віджет потрібен рівно в момент
+            сабміту чекауту, а lazyOnload ставив його в кінець черги — швидкий
+            користувач устигав натиснути «оплатити» раніше, ніж скрипт доїде.
+            Форма все одно чекає на window.Wayforpay (див. CheckoutForm), це
+            лише прибирає саму гонку. */}
+        <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="afterInteractive" />
         {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>

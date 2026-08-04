@@ -1,0 +1,61 @@
+/* Стікер приклеєний до екрана (fixed) і видимий увесь скрол; коли у вʼюпорті
+   зʼявляється футер, компонент вішає .hidden (див. IntersectionObserver у
+   PedalSticker.tsx). z-index 2 — над відео й BuyOverlay (1), під хедером (40)
+   і чекаутом/ThankYou (60). */
+.sticker {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 2;
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+  /* «Наліплюється» після появи сторінки; backwards ховає його до старту. */
+  animation: slapOn 0.5s var(--ease-out) 0.9s backwards;
+  transition: transform 0.25s var(--ease-out), opacity 0.25s var(--ease-glide);
+  will-change: transform;
+}
+.sticker:hover { transform: scale(1.06) rotate(3deg); }
+.sticker:active { transform: scale(0.94) rotate(0deg); }
+/* Фокус-кільце бежевим кольором кнопки «Придбати» — видиме на темному відео. */
+.sticker:focus-visible {
+  outline: 2px solid #dcc5a3;
+  outline-offset: 5px;
+  border-radius: 50%;
+}
+
+/* Футер у вʼюпорті — стікер тихо зникає, щоб не закривати його вміст. */
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Хитання — на картинці, а не на лінку: hover-transform лінка й нескінченна
+   анімація не бʼються за одну transform-властивість. */
+.image {
+  display: block;
+  width: 76px;
+  height: auto;
+  /* Точка «де стікер ще тримається на клею» — праворуч від розриву. */
+  transform-origin: 62% 38%;
+  animation: wobble 3.8s ease-in-out 1.4s infinite;
+}
+
+@media (min-width: 768px) {
+  .sticker { right: 24px; bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .image { width: 108px; }
+}
+
+@keyframes slapOn {
+  from { opacity: 0; transform: scale(1.45) rotate(9deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-3.5deg); }
+  75%      { transform: rotate(3.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker,
+  .image { animation: none; }
+}

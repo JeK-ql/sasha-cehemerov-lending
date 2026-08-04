@@ -22,6 +22,14 @@ export interface ProductSpec {
   value: string;
 }
 
+/**
+ * Кольорова тема чекаут-модалки і ThankYou-екрана. 'ink' — чорнильна тема
+ * головної; 'acid' — кислотно-лаймова айдентика сторінки педалі. Живе в
+ * реєстрі, бо айдентика — властивість товару, а не сторінки, що відкрила
+ * модалку.
+ */
+export type CheckoutTheme = 'ink' | 'acid';
+
 /** Головне медіа сторінки товару. */
 export type ProductMedia =
   | { kind: 'video'; src: string; poster: string }
@@ -50,8 +58,20 @@ export interface Product {
   /** false — варіант один, вибирати нічого, блок у формі не рендериться. */
   showVariantPicker: boolean;
   media: ProductMedia;
+  checkoutTheme: CheckoutTheme;
+  /**
+   * Леттеринг замість текстової назви в підсумку замовлення (айдентика
+   * сторінки педалі). Не заданий — рендериться текст `name`.
+   */
+  nameImage?: { src: string; width: number; height: number };
   /** Фото в модалці замовлення; null — файлу ще немає. */
   thumb: string | null;
+  /**
+   * CSS aspect-ratio рамки під `thumb`. Не заданий — рамка квадратна
+   * (значення з .thumbBtn). Задавай, коли фото не квадратне і кроп по
+   * центру зрізав би композицію.
+   */
+  thumbAspect?: string;
   /** Додаткові фото товару для модалки замовлення. */
   gallery?: string[];
   /** Картинка для JSON-LD і OpenGraph; null — файлу ще немає. */
@@ -92,6 +112,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     showVariantPicker: true,
     metaLabel: 'OVERSIZE',
     media: { kind: 'video', src: '/tshirt.mp4', poster: '/video.jpg' },
+    checkoutTheme: 'ink',
     thumb: '/too-much-яром-too-much-долиною.webp',
     ogImage: '/too-much-yarom-dolynoyu.jpg',
     schemaDescription:
@@ -104,22 +125,31 @@ export const PRODUCTS: Record<ProductId, Product> = {
     brandName: 'Kosko FX × Саша Чемеров',
     paymentName: 'Педаль Kosko FX × Саша Чемеров - Димна Суміш',
     headerCaption: 'ДИМНА СУМІШ // LIMITED 10',
-    price: 3000,
+    price: 13000,
     currency: 'UAH',
     sku: 'PEDAL01-DYMNA-SUMISH',
     variants: [{ key: 'STANDARD', label: 'STANDARD' }],
     maxPerOrder: 1,
     showVariantPicker: false,
     media: { kind: 'image', src: '/pedal-front.webp' },
-    thumb: '/pedal-front.webp',
-    gallery: ['/pedal-front.webp', '/pedal-angle.webp', '/pedal-kit.webp'],
+    checkoutTheme: 'acid',
+    // Той самий файл, що в хедері сторінки — назва в чекауті лишається
+    // намальованою, як усе на /pedal.
+    nameImage: { src: '/zine-title.png', width: 1440, height: 338 },
+    // Одне фото в модалці — і свідомо НЕ те, що вже стоїть хіро сторінки:
+    // покупець щойно прогорнув фронтальний кадр, повторювати його немає сенсу.
+    // Комплектний кадр показує, що саме приїде в коробці. Галереї немає: три
+    // ракурси однієї педалі відсували форму замовлення за екран.
+    thumb: '/pedal-kit.webp',
+    thumbAspect: '4 / 5',
     ogImage: '/pedal-front.jpg',
     schemaDescription:
       'Фузз-дисторшн "Димна Суміш" — лімітована колаборація Kosko FX × Саша Чемеров на основі схеми EarthQuaker Devices Hizumitas. Ручна робота, тираж 10 штук.',
+    // Модалка замовлення — крок оплати, а не сторінка каталогу: довгий опис
+    // відсовував форму за екран. Лишаємо один абзац і шість характеристик,
+    // які реально впливають на рішення купити.
     description: [
-      'Це ексклюзивна лімітована колаборація Kosko FX та Саші Чемерова, створена спеціально для шанувальників творчості гурту «Димна Суміш». Педаль зібрана повністю вручну, а серія обмежена лише 10 екземплярами.',
-      'В основі «Димна Суміш» лежить схема EQD Hizumitas (культовий вінтажний Elk Big Muff Sustainar) — фузз-дисторшн із монументальним характером. Ми зберегли весь його фірмовий жир, але зробили звук ще універсальнішим. Педаль має виключно щільний та пружний низ, завдяки чому чудово працює не лише з електрогітарою, а й з бас-гітарою. Крім того, ми злегка підняли середні частоти, тому інструмент більше не провалюється в загальному міксі та чітко прорізає будь-яку пачку.',
-      'Керування ефектом класичне та інтуїтивне: ручки Volume, Tone та Sustain дозволяють легко вирулити як легкий динамічний драйв для фактурних партій, так і агресивний фузз для важких рифів.',
+      'Фузз-дисторшн на основі схеми EQD Hizumitas (вінтажний Elk Big Muff Sustainar): щільний пружний низ — тримає і бас-гітару, підняті середні — не провалюється в міксі. Ручна робота, тираж 10 екземплярів.',
     ],
     specs: [
       { label: 'Тип ефекту', value: 'Distortion / Sustainer' },

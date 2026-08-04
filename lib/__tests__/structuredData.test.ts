@@ -38,7 +38,7 @@ describe('structuredData', () => {
       const ld = productLd(PRODUCTS.PEDAL01);
       expect(ld.name).toBe('Димна Суміш');
       expect(ld.sku).toBe('PEDAL01-DYMNA-SUMISH');
-      expect(ld.offers.price).toBe('3000');
+      expect(ld.offers.price).toBe('13000');
       expect(ld.offers.url).toContain('/pedal');
       expect(ld['@id']).toContain('#product-PEDAL01');
     });
