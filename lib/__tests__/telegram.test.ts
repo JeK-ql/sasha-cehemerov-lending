@@ -142,4 +142,30 @@ describe('formatRefundedMessage', () => {
   it('екранує HTML у номері замовлення', () => {
     expect(formatRefundedMessage('<b>x</b>', 1, 'refunded')).toContain('&lt;b&gt;');
   });
+
+  // Регрес на баг: released-заявка (склад уже повернутий раніше) не має
+  // казати «поверніть вручну npm run seed:stock» — одиниця вже на складі.
+  it('refunded-already-back не радить seed:stock і каже, що дій не треба', () => {
+    const msg = formatRefundedMessage('PEDAL01-2', 3000, 'refunded-already-back');
+    expect(msg).not.toContain('seed:stock');
+    expect(msg).toContain('додаткових дій не потрібно');
+  });
+
+  it('refunded-restocked не радить seed:stock', () => {
+    const msg = formatRefundedMessage('PEDAL01-3', 3000, 'refunded-restocked');
+    expect(msg).not.toContain('seed:stock');
+    expect(msg).toContain('додаткових дій не потрібно');
+  });
+
+  it('already-refunded-restocked — повторний колбек, склад уже повернутий', () => {
+    const msg = formatRefundedMessage('PEDAL01-4', 3000, 'already-refunded-restocked');
+    expect(msg).toContain('повторний');
+    expect(msg).not.toContain('seed:stock');
+  });
+
+  it('already-refunded (не restocked) досі радить seed:stock', () => {
+    const msg = formatRefundedMessage('PEDAL01-5', 3000, 'already-refunded');
+    expect(msg).toContain('повторний');
+    expect(msg).toContain('seed:stock');
+  });
 });

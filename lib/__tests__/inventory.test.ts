@@ -462,8 +462,49 @@ describe('markOrderRefunded', () => {
     await releaseOrder(db, order.orderReference);
     expect(pedalStock().STANDARD).toBe(10); // резерв уже повернутий
 
-    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded');
+    // Відмінне значення від 'refunded' (paid-гілка): тут одиницю вже
+    // повернуто на склад раніше, менеджеру не треба npm run seed:stock —
+    // на відміну від paid, де це насправді потрібно.
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded-already-back');
     expect(orderDocs[0]).toMatchObject({ status: 'refunded' });
     expect(pedalStock().STANDARD).toBe(10); // не повернувся вдруге
+  });
+
+  it('редеставлений колбек після pending-повернення каже, що склад уже повернуто', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded-restocked');
+    expect(pedalStock().STANDARD).toBe(10);
+
+    // Той самий вебхук долетів удруге: markOrderRefunded не може заново
+    // визначити, що сталось зі складом минулого разу — читає persisted
+    // stockReturned і каже правду, а не типову «поверніть вручну».
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('already-refunded-restocked');
+    expect(pedalStock().STANDARD).toBe(10); // не повернувся вдруге
+  });
+
+  it('редеставлений колбек після released-повернення теж каже, що склад уже повернуто', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    await releaseOrder(db, order.orderReference);
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded-already-back');
+
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('already-refunded-restocked');
+    expect(pedalStock().STANDARD).toBe(10);
+  });
+
+  it('редеставлений колбек після paid-повернення каже, що склад НЕ повернуто', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    await markOrderPaid(db, order.orderReference);
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded');
+    expect(pedalStock().STANDARD).toBe(9);
+
+    // Це саме той баг, який ламав тираж: без persisted stockReturned
+    // повторний колбек тут теж сказав би «поверніть вручну» — і за
+    // правильної paid-гілки це так, тож текст лишається правильним, але
+    // тепер це явно перевірено, а не випадковий збіг.
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('already-refunded');
+    expect(pedalStock().STANDARD).toBe(9); // склад не змінився
   });
 });

@@ -40,6 +40,13 @@ export interface OrderDoc {
   /** Оплата прийшла після звільнення резерву, а складу вже не вистачило. */
   oversold?: boolean;
   refundedAt?: Date;
+  /**
+   * Чи повернулась одиниця складу внаслідок цього повернення коштів —
+   * напряму (pending) або раніше, через releaseOrder (released). Пишеться
+   * разом з `refundedAt`, щоб повторний (redelivered) колбек
+   * `already-refunded*` міг чесно повторити те, що сказав перший колбек.
+   */
+  stockReturned?: boolean;
   customer: Customer;
 }
 
@@ -224,11 +231,15 @@ export async function markOrderPaid(
 }
 
 export type RefundResult =
-  /** Було `pending`: резерв повернувся на склад автоматично. */
+  /** Було `pending`: резерв повернувся на склад щойно, цим викликом. */
   | 'refunded-restocked'
-  /** Було `paid` або `released`: замовлення позначене поверненим, склад не чіпали. */
+  /** Було `released`: резерв уже повернувся на склад раніше (Declined/Expired). */
+  | 'refunded-already-back'
+  /** Було `paid`: склад свідомо НЕ повернули — товар могли вже відправити. */
   | 'refunded'
-  /** Повторний колбек по вже поверненому замовленню. */
+  /** Повторний (redelivered) колбек; склад був повернений оригінальним поверненням. */
+  | 'already-refunded-restocked'
+  /** Повторний (redelivered) колбек; склад оригінальним поверненням НЕ повертався. */
   | 'already-refunded'
   /** Замовлення в базі немає. */
   | 'unknown';
@@ -245,7 +256,16 @@ export type RefundResult =
  *   фізично немає. Менеджер повертає її вручну через `npm run seed:stock`.
  *   Повертає `'refunded'`;
  * - `released` — резерв уже й так повернутий раніше (Declined/Expired) —
- *   повторно склад не чіпаємо. Повертає `'refunded'`.
+ *   повторно склад не чіпаємо. Повертає `'refunded-already-back'` — це НЕ
+ *   те саме, що `'refunded'`: тут одиниця вже фізично на складі, і команда
+ *   `seed:stock` менеджеру не потрібна (на відміну від `'refunded'`, де
+ *   товар міг піти покупцю).
+ *
+ * Якщо жоден із цих трьох статусів не підійшов — це повторний
+ * (redelivered) колбек по вже поверненому замовленню. Що сталося зі
+ * складом тоді, читаємо з `stockReturned`, який попередній виклик уже
+ * зберіг на документі — сам поточний виклик відновити цю інформацію не
+ * може. Повертає `'already-refunded-restocked'` або `'already-refunded'`.
  */
 export async function markOrderRefunded(
   db: Db,
@@ -256,7 +276,7 @@ export async function markOrderRefunded(
 
   const fromPending = await orders.findOneAndUpdate(
     { _id: orderReference, status: 'pending' },
-    { $set: { status: 'refunded', refundedAt: now } },
+    { $set: { status: 'refunded', refundedAt: now, stockReturned: true } },
   );
   if (fromPending) {
     await unreserveStock(db, orderProductId(fromPending), fromPending.sizes);
@@ -265,18 +285,19 @@ export async function markOrderRefunded(
 
   const fromPaid = await orders.findOneAndUpdate(
     { _id: orderReference, status: 'paid' },
-    { $set: { status: 'refunded', refundedAt: now } },
+    { $set: { status: 'refunded', refundedAt: now, stockReturned: false } },
   );
   if (fromPaid) return 'refunded';
 
   const fromReleased = await orders.findOneAndUpdate(
     { _id: orderReference, status: 'released' },
-    { $set: { status: 'refunded', refundedAt: now } },
+    { $set: { status: 'refunded', refundedAt: now, stockReturned: true } },
   );
-  if (fromReleased) return 'refunded';
+  if (fromReleased) return 'refunded-already-back';
 
   const existing = await orders.findOne({ _id: orderReference });
-  return existing ? 'already-refunded' : 'unknown';
+  if (!existing) return 'unknown';
+  return existing.stockReturned ? 'already-refunded-restocked' : 'already-refunded';
 }
 
 /**
