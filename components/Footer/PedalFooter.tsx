@@ -1,6 +1,11 @@
+/**
+ * Футер сторінки педалі. Свідома копія Footer: /pedal має розходитись
+ * візуально з головною, тому спільний компонент тут навмисно не
+ * використовується. Правки одного НЕ переносяться в інший автоматично.
+ */
 import Link from 'next/link';
 import { SOCIAL_LINKS } from '@/lib/socials';
-import styles from './Footer.module.css';
+import styles from './PedalFooter.module.css';
 
 /** Inline-марки платіжних систем — без зовнішніх запитів, чіткі на будь-якому DPI. */
 function VisaMark() {
@@ -41,19 +46,22 @@ function MastercardMark() {
   );
 }
 
-export function Footer() {
+export function PedalFooter() {
   return (
     <footer className={styles.footer}>
       {/* Legal left, socials right — edge to edge. */}
       <div className={styles.top}>
         <nav className={styles.legal} aria-label="Навігація і правова інформація">
-          <Link href="/pedal" className={styles.promo}>
-            Педаль «Димна Суміш» · 10 шт.
+          <Link href="/" className={styles.promo}>
+            Футболка «too much яром too much долиною»
           </Link>
           <Link href="/offer">Публічна оферта</Link>
           <Link href="/returns">Умови повернення</Link>
         </nav>
         <nav className={styles.socials} aria-label="Соцмережі артиста й гурту">
+          <a href="https://koskofx.top/" target="_blank" rel="noopener">
+            Педаль зібрано Kosko FX
+          </a>
           {SOCIAL_LINKS.map((s) => (
             <a key={s.url} href={s.url} target="_blank" rel="noopener" aria-label={s.name}>
               {s.label}

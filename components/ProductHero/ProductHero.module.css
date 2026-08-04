@@ -1,0 +1,34 @@
+/* Ті самі правила, що були в app/page.module.css для .fill — медіа товару
+   заповнює простір між хедером і футером. */
+.fill {
+  flex: 1;
+  min-height: 100vh;
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  background: var(--bg);
+}
+
+@media (min-width: 768px) {
+  .fill {
+    object-position: 50% 25%;
+  }
+}
+
+/* Плейсхолдер: файлів товару ще немає. */
+.placeholder {
+  flex: 1;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 2px dashed #c1baac;
+}
+
+.placeholderText {
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}

@@ -5,26 +5,6 @@
   min-height: 100vh;
 }
 
-/* Hero video filling the space between header and CTA. object-fit:cover
-   makes the portrait 9:16 clip fill the sector (cropped on wide screens).
-   var(--bg) shows for the brief moment before the first frame paints. */
-.fill {
-  flex: 1;
-  min-height: 100vh;
-  width: 100%;
-  display: block;
-  object-fit: cover;
-  background: var(--bg);
-}
-/* Desktop: shift the visible band ~1/4 UP through the portrait clip — anchor
-   the visible portion toward the top of the source video. Mobile keeps the
-   default center positioning since portrait-on-portrait barely crops. */
-@media (min-width: 768px) {
-  .fill {
-    object-position: 50% 25%;
-  }
-}
-
 .srOnly {
   position: absolute;
   width: 1px;

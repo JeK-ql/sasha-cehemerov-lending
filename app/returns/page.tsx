@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/Legal/LegalPage';
 import { SELLER, FOOTER_CONTACTS_READY } from '@/lib/seller';
-import { PRODUCT_IMAGE_JPG } from '@/lib/structuredData';
+import { PRODUCTS } from '@/lib/products';
 
 export const metadata: Metadata = {
   title: 'Умови повернення - Sasha Chemerov',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     url: 'https://isusneisus.com/returns',
     // Сторінка задає власний openGraph, тож images батька не успадковуються —
     // додаємо явно, інакше прев'ю посилання буде без картинки.
-    images: [PRODUCT_IMAGE_JPG],
+    images: [PRODUCTS.DROP01.ogImage!],
   },
 };
 

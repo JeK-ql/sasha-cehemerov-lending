@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { Header } from '@/components/Header/Header';
 import { Footer } from '@/components/Footer/Footer';
+import { PRODUCTS } from '@/lib/products';
 import styles from './not-found.module.css';
 
 export default function NotFound() {
   return (
     <main className={styles.page}>
-      <Header />
+      <Header caption={PRODUCTS.DROP01.headerCaption} />
 
       <section className={styles.content}>
         <p className={`${styles.kicker} mono`}>DROP 01 // Загублена сторінка</p>

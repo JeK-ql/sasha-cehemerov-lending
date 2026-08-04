@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './ThankYou.module.css';
 
-type Props = { state: 'ok' | 'fail'; orderRef?: string };
+type Props = { state: 'ok' | 'fail'; orderRef?: string; homePath: string };
 
 /** Скільки разів і як часто перепитуємо базу, поки колбек WayForPay летить. */
 const STATUS_ATTEMPTS = 6;
 const STATUS_INTERVAL_MS = 2000;
 
-export function ThankYou({ state, orderRef }: Props) {
+export function ThankYou({ state, orderRef, homePath }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(true);
   // Вердикт віджета/редіректу — попередній: 3DS може підтвердитись пізніше.
@@ -52,7 +52,7 @@ export function ThankYou({ state, orderRef }: Props) {
 
   function close() {
     setOpen(false);
-    setTimeout(() => router.replace('/'), 240);
+    setTimeout(() => router.replace(homePath), 240);
   }
 
   useEffect(() => {

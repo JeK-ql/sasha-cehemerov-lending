@@ -3,7 +3,8 @@ import { Inter, Montserrat, Oswald, IBM_Plex_Mono } from 'next/font/google';
 import Script from 'next/script';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
-import { organizationLd, productLd, PRODUCT_IMAGE_JPG } from '@/lib/structuredData';
+import { organizationLd } from '@/lib/structuredData';
+import { PRODUCTS } from '@/lib/products';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 const display = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['900'], variable: '--font-display' });
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     siteName: 'isusneisus.com',
     locale: 'uk_UA',
     type: 'website',
-    images: [PRODUCT_IMAGE_JPG],
+    images: [PRODUCTS.DROP01.ogImage!],
   },
 };
 
@@ -52,10 +53,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd) }}
         />
         <Script src="https://secure.wayforpay.com/server/pay-widget.js" strategy="lazyOnload" />
         {gaId && <GoogleAnalytics gaId={gaId} />}

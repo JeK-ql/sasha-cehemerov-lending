@@ -1,11 +1,16 @@
 import { preload } from 'react-dom';
 import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
 import { Header } from '@/components/Header/Header';
+import { ProductHero } from '@/components/ProductHero/ProductHero';
 import { BuyOverlay } from '@/components/BuyOverlay/BuyOverlay';
 import { Footer } from '@/components/Footer/Footer';
 import { ThankYou } from '@/components/ThankYou/ThankYou';
 import { PRODUCTS } from '@/lib/products';
+import { productLd } from '@/lib/structuredData';
+import { ORDER_REF_RE } from '@/lib/orderReference';
 import styles from './page.module.css';
+
+const product = PRODUCTS.DROP01;
 
 type SearchParams = Promise<{ paid?: string; ref?: string }>;
 
@@ -13,31 +18,26 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   preload('/video.jpg', { as: 'image', fetchPriority: 'high' });
   const { paid, ref } = await searchParams;
   const thankState = paid === '1' ? 'ok' : paid === '0' ? 'fail' : null;
-  // Номер замовлення для перевірки фактичного статусу оплати в базі.
-  const orderRef = ref && /^DROP01-\d{10,16}$/.test(ref) ? ref : undefined;
+  const orderRef = ref && ORDER_REF_RE.test(ref) ? ref : undefined;
 
   return (
-    <CheckoutProvider product={PRODUCTS.DROP01}>
+    <CheckoutProvider product={product}>
       <main className={styles.page}>
         <h1 className={styles.srOnly}>
           too much яром too much долиною — оверсайз-футболка Sasha Chemerov × Димна Суміш, Drop 01
         </h1>
-        <Header />
-        <video
-          className={styles.fill}
-          src="/tshirt.mp4"
-          poster="/video.jpg"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden="true"
-        />
+        <Header caption={product.headerCaption} />
+        <ProductHero product={product} />
         <BuyOverlay />
         <Footer />
-        {thankState && <ThankYou state={thankState} orderRef={orderRef} />}
+        {thankState && (
+          <ThankYou state={thankState} orderRef={orderRef} homePath={product.path} />
+        )}
       </main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd(product)) }}
+      />
     </CheckoutProvider>
   );
 }
