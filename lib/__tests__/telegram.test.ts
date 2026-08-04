@@ -3,6 +3,7 @@ import { formatPendingOrderMessage, formatPaidMessage, formatRefundedMessage } f
 
 const base = {
   orderReference: 'DROP01-9',
+  productName: 'too much яром too much долиною',
   fullName: 'Чемеров Олександр',
   phone: '+380671234567',
   email: 'sasha@mail.com',
@@ -89,6 +90,29 @@ describe('formatPendingOrderMessage', () => {
     });
     expect(msg).toContain('МАЛЕНЬКИЙ ×2, СЕРЕДНІЙ ×1');
     expect(msg).not.toContain('ВЕЛИКИЙ');
+  });
+
+  it('назва товару в заявці береться з переданого поля, а не з константи', () => {
+    const msg = formatPendingOrderMessage({
+      orderReference: 'PEDAL01-1754200000000ab3z',
+      productName: 'Димна Суміш',
+      fullName: 'Олександр Чемеров',
+      phone: '0671234567',
+      email: 't@t.ua',
+      sizes: { STANDARD: 1 },
+      amount: 3000,
+      deliveryMode: 'np',
+      city: 'Київ',
+      warehouse: 'Відділення №1',
+      country: '',
+      street: '',
+      building: '',
+      flat: '',
+      zip: '',
+    });
+    expect(msg).toContain('Димна Суміш');
+    expect(msg).not.toContain('too much');
+    expect(msg).toContain('STANDARD ×1');
   });
 });
 

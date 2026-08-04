@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { purchaseSignature } from '@/lib/wayforpay';
 import { checkoutSchema, totalQuantity } from '@/lib/checkoutSchema';
-import { PRODUCT, SIZES, type Size } from '@/lib/products';
+import { DEFAULT_PRODUCT_ID, getProduct, positionName, variantKeys } from '@/lib/products';
 import { SITE_URL, requireEnv } from '@/lib/config';
 import type { WayForPayParams } from '@/lib/types';
 import { formatPendingOrderMessage, sendToTelegram } from '@/lib/telegram';
@@ -14,6 +14,7 @@ import {
   reserveStock,
   unreserveStock,
   RESERVATION_TTL_MS,
+  type VariantCounts,
 } from '@/lib/inventory';
 
 export async function POST(req: NextRequest) {
@@ -26,22 +27,31 @@ export async function POST(req: NextRequest) {
   }
   const input = parsed.data;
 
+  const product = getProduct(input.productId ?? DEFAULT_PRODUCT_ID);
+  if (!product) {
+    return NextResponse.json({ error: 'unknown-product' }, { status: 400 });
+  }
+
   // Схема вже валідувала межі, але серверу не можна довіряти клієнту:
-  // clamp по-розмірно і перевірка сумарних меж ще раз.
-  const sizes = Object.fromEntries(
-    SIZES.map((s) => [s, Math.max(0, Math.min(10, input.sizes[s]))]),
-  ) as Record<Size, number>;
-  const totalCount = totalQuantity(sizes);
-  if (totalCount < 1 || totalCount > 10) {
+  // clamp по кожному варіанту й перевірка сумарних меж ще раз.
+  const counts: VariantCounts = {};
+  for (const key of variantKeys(product)) {
+    counts[key] = Math.max(
+      0,
+      Math.min(product.maxPerOrder, Math.trunc(input.sizes[key] ?? 0)),
+    );
+  }
+  const totalCount = totalQuantity(counts);
+  if (totalCount < 1 || totalCount > product.maxPerOrder) {
     return NextResponse.json({ error: 'invalid quantity' }, { status: 400 });
   }
-  const positions = SIZES.filter((s) => sizes[s] > 0);
+  const positions = variantKeys(product).filter((k) => counts[k] > 0);
 
   const merchantAccount = requireEnv('WAYFORPAY_MERCHANT_ACCOUNT');
   const merchantDomainName = requireEnv('WAYFORPAY_MERCHANT_DOMAIN');
   const secret = requireEnv('WAYFORPAY_SECRET_KEY');
 
-  const orderReference = newOrderReference('DROP01');
+  const orderReference = newOrderReference(product.id);
 
   // Резерв складу ДО прийому оплати: товару лише по 20 шт. на розмір.
   // Якщо Mongo лежить — замовлення не приймаємо (краще не продати, ніж
@@ -50,20 +60,23 @@ export async function POST(req: NextRequest) {
   try {
     const db = await getDb();
     await releaseExpiredReservations(db);
-    if (!(await reserveStock(db, 'DROP01', sizes))) {
+    if (!(await reserveStock(db, product.id, counts))) {
       // Прострочені резерви щойно звільнили вище — тут достатньо
       // чистого читання без повторної очистки.
       return NextResponse.json(
-        { error: 'out-of-stock', availability: await currentAvailability(db, 'DROP01', [...SIZES]) },
+        {
+          error: 'out-of-stock',
+          availability: await currentAvailability(db, product.id, variantKeys(product)),
+        },
         { status: 409 },
       );
     }
     reserved = true;
     await createPendingOrder(db, {
       orderReference,
-      productId: 'DROP01',
-      sizes,
-      amount: PRODUCT.price * totalCount,
+      productId: product.id,
+      sizes: counts,
+      amount: product.price * totalCount,
       customer: {
         name: input.fullName,
         phone: input.phone.replace(/[\s()-]/g, ''),
@@ -76,7 +89,7 @@ export async function POST(req: NextRequest) {
       // Заявка не записалась — повертаємо щойно списаний резерв, інакше
       // він завис би назавжди (звільняти нічим: замовлення в базі нема).
       try {
-        await unreserveStock(await getDb(), 'DROP01', sizes);
+        await unreserveStock(await getDb(), product.id, counts);
       } catch (rollbackErr) {
         console.error('Reservation rollback failed', orderReference, rollbackErr);
       }
@@ -92,11 +105,11 @@ export async function POST(req: NextRequest) {
     merchantDomainName,
     orderReference,
     orderDate,
-    amount: PRODUCT.price * totalCount,
-    currency: PRODUCT.currency,
-    productName: positions.map((s) => `Футболка - ${PRODUCT.name} (${s})`),
-    productCount: positions.map((s) => sizes[s]),
-    productPrice: positions.map(() => PRODUCT.price),
+    amount: product.price * totalCount,
+    currency: product.currency,
+    productName: positions.map((k) => positionName(product, k)),
+    productCount: positions.map((k) => counts[k]),
+    productPrice: positions.map(() => product.price),
   };
 
   const params: WayForPayParams & {
@@ -126,10 +139,11 @@ export async function POST(req: NextRequest) {
   try {
     const text = formatPendingOrderMessage({
       orderReference,
+      productName: product.name,
       fullName: input.fullName,
       phone: input.phone.replace(/[\s()-]/g, ''),
       email: input.email,
-      sizes,
+      sizes: counts,
       amount: base.amount,
       deliveryMode: input.deliveryMode,
       city: input.city,

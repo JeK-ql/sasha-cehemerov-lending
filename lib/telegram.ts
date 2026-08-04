@@ -2,6 +2,7 @@ import type { RefundResult } from './inventory';
 
 export interface PendingOrder {
   orderReference: string;
+  productName: string;
   fullName: string;
   phone: string;
   email: string;
@@ -49,7 +50,7 @@ export function formatPendingOrderMessage(o: PendingOrder): string {
   return [
     '🕓 <b>Заявка (очікує оплати)</b>',
     `<b>№:</b> ${esc(o.orderReference)}`,
-    `<b>Товар:</b> too much яром too much долиною · ${sizesLine}`,
+    `<b>Товар:</b> ${esc(o.productName)} · ${sizesLine}`,
     `<b>Сума:</b> ${o.amount} ₴`,
     '',
     `<b>Покупець:</b> ${esc(o.fullName)}`,
