@@ -19,7 +19,7 @@ export type VariantCounts = Record<string, number>;
 /** Історична назва — лишена, щоб не переписувати наявні імпорти. */
 export type SizeCounts = VariantCounts;
 
-export type OrderStatus = 'pending' | 'paid' | 'released';
+export type OrderStatus = 'pending' | 'paid' | 'released' | 'refunded';
 
 export interface Customer {
   name: string;
@@ -39,6 +39,7 @@ export interface OrderDoc {
   paidAt?: Date;
   /** Оплата прийшла після звільнення резерву, а складу вже не вистачило. */
   oversold?: boolean;
+  refundedAt?: Date;
   customer: Customer;
 }
 
@@ -172,6 +173,8 @@ export type MarkPaidResult =
   | 'paid-after-release'
   /** Оплачено, а складу вже нема — менеджер мусить розрулити вручну. */
   | 'oversold'
+  /** Замовлення повернене раніше — оплата не воскрешає його. */
+  | 'refunded'
   /** Замовлення створене до впровадження обліку — в базі його нема. */
   | 'unknown';
 
@@ -214,7 +217,39 @@ export async function markOrderPaid(
   }
 
   const existing = await orders.findOne({ _id: orderReference });
-  return existing ? 'already-paid' : 'unknown';
+  if (!existing) return 'unknown';
+  // Повернене замовлення не воскресає: гроші вже пішли назад покупцю.
+  if (existing.status === 'refunded') return 'refunded';
+  return 'already-paid';
+}
+
+export type RefundResult =
+  /** Замовлення позначене поверненим. */
+  | 'refunded'
+  /** Повторний колбек по вже поверненому замовленню. */
+  | 'already-refunded'
+  /** Замовлення в базі немає. */
+  | 'unknown';
+
+/**
+ * Фіксує повернення коштів. Склад НЕ інкрементується свідомо: повернення
+ * зазвичай приходить після відправлення або по бракованому екземпляру, і
+ * автоповернення виставило б на продаж товар, якого фізично немає.
+ * Менеджер повертає одиницю вручну через `npm run seed:stock`.
+ */
+export async function markOrderRefunded(
+  db: Db,
+  orderReference: string,
+  now = new Date(),
+): Promise<RefundResult> {
+  const orders = ordersOf(db);
+  const claimed = await orders.findOneAndUpdate(
+    { _id: orderReference, status: { $ne: 'refunded' } },
+    { $set: { status: 'refunded', refundedAt: now } },
+  );
+  if (claimed) return 'refunded';
+  const existing = await orders.findOne({ _id: orderReference });
+  return existing ? 'already-refunded' : 'unknown';
 }
 
 /**

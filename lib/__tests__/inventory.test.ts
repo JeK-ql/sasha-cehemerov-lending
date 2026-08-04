@@ -12,6 +12,7 @@ import {
   createPendingOrder,
   markOrderPaid,
   releaseOrder,
+  markOrderRefunded,
   type SizeCounts,
 } from '../inventory';
 
@@ -40,6 +41,7 @@ function matches(doc: Record<string, unknown>, filter: Record<string, unknown>):
       const ops = cond as Record<string, unknown>;
       if ('$gte' in ops && !(Number(actual) >= Number(ops.$gte))) return false;
       if ('$lt' in ops && !(Number(actual) < Number(ops.$lt))) return false;
+      if ('$ne' in ops && actual === ops.$ne) return false;
       return true;
     }
     return actual === cond;
@@ -383,5 +385,59 @@ describe('кілька товарів в одній колекції склад�
     expect(await markOrderPaid(db, 'PEDAL01-1')).toBe('paid-after-release');
     expect(pedalStock().STANDARD).toBe(9);
     expect(stock()).toEqual(counts(18, 11, 15));
+  });
+});
+
+describe('markOrderRefunded', () => {
+  const order = {
+    orderReference: 'PEDAL01-r1',
+    productId: 'PEDAL01',
+    sizes: { STANDARD: 1 },
+    amount: 3000,
+    customer: { name: 'Тест Тестовий', phone: '0670000000', email: 't@t.ua' },
+  };
+
+  beforeEach(() => {
+    inventoryDocs.push({ _id: 'PEDAL01', stock: { STANDARD: 10 } });
+  });
+
+  const pedalStock = () =>
+    (inventoryDocs.find((d) => d._id === 'PEDAL01') as { stock: Record<string, number> })
+      .stock;
+
+  it('оплачене замовлення переходить у refunded, склад НЕ повертається', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    await markOrderPaid(db, order.orderReference);
+    expect(pedalStock().STANDARD).toBe(9);
+
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded');
+    expect(orderDocs[0]).toMatchObject({ status: 'refunded' });
+    expect(orderDocs[0].refundedAt).toBeInstanceOf(Date);
+    // Менеджер повертає одиницю вручну — автоповернення виставило б на
+    // продаж педаль, якої фізично може не бути.
+    expect(pedalStock().STANDARD).toBe(9);
+  });
+
+  it('повторний колбек про повернення → already-refunded', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    await markOrderPaid(db, order.orderReference);
+    await markOrderRefunded(db, order.orderReference);
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('already-refunded');
+  });
+
+  it('невідоме замовлення → unknown', async () => {
+    expect(await markOrderRefunded(db, 'PEDAL01-нема')).toBe('unknown');
+  });
+
+  it('Approved після повернення не воскрешає оплату', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    await markOrderPaid(db, order.orderReference);
+    await markOrderRefunded(db, order.orderReference);
+    expect(await markOrderPaid(db, order.orderReference)).toBe('refunded');
+    expect(orderDocs[0].status).toBe('refunded');
+    expect(pedalStock().STANDARD).toBe(9);
   });
 });
