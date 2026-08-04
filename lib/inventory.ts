@@ -224,7 +224,9 @@ export async function markOrderPaid(
 }
 
 export type RefundResult =
-  /** Замовлення позначене поверненим. */
+  /** Було `pending`: резерв повернувся на склад автоматично. */
+  | 'refunded-restocked'
+  /** Було `paid` або `released`: замовлення позначене поверненим, склад не чіпали. */
   | 'refunded'
   /** Повторний колбек по вже поверненому замовленню. */
   | 'already-refunded'
@@ -236,12 +238,14 @@ export type RefundResult =
  * колбека:
  * - `pending` — резерв ще активний, товар не продано: повертаємо резерв на
  *   склад (як `releaseOrder` — спершу claim статусу, потім `$inc` складу:
- *   крах між кроками веде до недопродажу, а не оверселу);
+ *   крах між кроками веде до недопродажу, а не оверселу). Повертає
+ *   `'refunded-restocked'` — склад уже поповнено, менеджеру нічого робити;
  * - `paid` — склад НЕ інкрементується свідомо: товар могли вже відправити
  *   або він бракований, автоповернення виставило б на продаж одиницю, якої
- *   фізично немає. Менеджер повертає її вручну через `npm run seed:stock`;
+ *   фізично немає. Менеджер повертає її вручну через `npm run seed:stock`.
+ *   Повертає `'refunded'`;
  * - `released` — резерв уже й так повернутий раніше (Declined/Expired) —
- *   повторно склад не чіпаємо.
+ *   повторно склад не чіпаємо. Повертає `'refunded'`.
  */
 export async function markOrderRefunded(
   db: Db,
@@ -256,7 +260,7 @@ export async function markOrderRefunded(
   );
   if (fromPending) {
     await unreserveStock(db, orderProductId(fromPending), fromPending.sizes);
-    return 'refunded';
+    return 'refunded-restocked';
   }
 
   const fromPaid = await orders.findOneAndUpdate(

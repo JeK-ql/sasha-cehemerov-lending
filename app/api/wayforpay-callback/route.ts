@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         messages.push(
           [
             '⚠️ <b>УВАГА: оплачено, але розмір уже розпродано</b>',
-            `<b>№:</b> ${body.orderReference}`,
+            `<b>№:</b> ${escapeHtml(body.orderReference)}`,
             'Резерв встиг звільнитись (оплата пізніше 30 хв), і залишку не вистачило.',
             "Зв'яжіться з покупцем: відправити з залишків іншого замовлення або повернути кошти.",
           ].join('\n'),
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         messages.push(
           [
             '⚠️ <b>УВАГА: оплату не записано в базу складу</b>',
-            `<b>№:</b> ${body.orderReference}`,
+            `<b>№:</b> ${escapeHtml(body.orderReference)}`,
             'Перевірте залишки вручну — резерв міг звільнитись за таймаутом.',
           ].join('\n'),
         );

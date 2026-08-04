@@ -446,7 +446,7 @@ describe('markOrderRefunded', () => {
     await createPendingOrder(db, order);
     expect(pedalStock().STANDARD).toBe(9); // резерв активний
 
-    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded');
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded-restocked');
     expect(orderDocs[0]).toMatchObject({ status: 'refunded' });
     expect(orderDocs[0].refundedAt).toBeInstanceOf(Date);
     expect(pedalStock().STANDARD).toBe(10); // резерв повернувся

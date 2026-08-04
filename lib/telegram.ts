@@ -71,25 +71,44 @@ export function formatPaidMessage(orderReference: string, amount: number): strin
 }
 
 /**
- * Повернення коштів. Склад автоматично не поповнюється — менеджер вирішує,
- * чи екземпляр фізично повернувся у продаж.
+ * Повернення коштів. Текст залежить від того, що фактично сталося зі
+ * складом (`RefundResult`) — інакше повідомлення може сказати менеджеру
+ * зробити те, що вже зроблено автоматично (або навпаки).
  */
 export function formatRefundedMessage(
   orderReference: string,
   amount: number,
   result: RefundResult,
 ): string {
+  if (result === 'unknown') {
+    return [
+      '❓ <b>Повернення коштів: замовлення не знайдено</b>',
+      `<b>№:</b> ${escapeHtml(orderReference)}`,
+      `<b>Сума:</b> ${amount} ₴`,
+      '',
+      'Такого замовлення немає в базі. Перевірте статус вручну.',
+    ].join('\n');
+  }
+
   const head =
     result === 'already-refunded'
       ? '↩️ <b>Повернення коштів (повторний колбек)</b>'
       : '↩️ <b>Повернення коштів</b>';
+
+  const stockLine =
+    result === 'refunded-restocked'
+      ? 'Одиниця складу повернена автоматично — додаткових дій не потрібно.'
+      : [
+          'Одиниця складу автоматично НЕ повернена.',
+          'Якщо товар фізично повернувся у продаж — поверніть його командою npm run seed:stock.',
+        ].join('\n');
+
   return [
     head,
     `<b>№:</b> ${escapeHtml(orderReference)}`,
     `<b>Сума:</b> ${amount} ₴`,
     '',
-    'Одиниця складу автоматично НЕ повернена.',
-    'Якщо товар фізично повернувся у продаж — поверніть його командою npm run seed:stock.',
+    stockLine,
   ].join('\n');
 }
 
