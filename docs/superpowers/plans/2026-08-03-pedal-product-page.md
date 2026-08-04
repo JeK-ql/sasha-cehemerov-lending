@@ -2190,7 +2190,8 @@ export function productLd(product: Product) {
     '@id': `${SITE_URL}/#product-${product.id}`,
     name: product.name,
     sku: product.sku,
-    brand: { '@type': 'Brand', name: 'Sasha Chemerov × Димна Суміш' },
+    // Бренд у товару свій: футболку випускає артист, педаль зібрала Kosko FX.
+    brand: { '@type': 'Brand', name: product.brandName },
     image: product.ogImage ? [`${SITE_URL}${product.ogImage}`] : undefined,
     description: product.schemaDescription,
     // Розміри декларуємо лише там, де вибір справді є.
@@ -2326,13 +2327,29 @@ export function ProductHero({ product }: { product: Product }) {
 }
 ```
 
-У `PedalFooter.tsx` посилання дзеркальне — з педалі назад на футболку (ми вже на `/pedal`, посилатись на себе не треба):
+У `PedalFooter.tsx` посилання дзеркальне — з педалі назад на футболку (ми вже на `/pedal`, посилатись на себе не треба), **плюс кредит виробника**. Педаль зробила Kosko FX, і на сторінці товару це має бути видно:
 
 ```tsx
+        <nav className={styles.legal} aria-label="Навігація і правова інформація">
           <Link href="/" className={styles.promo}>
             Футболка «too much яром too much долиною»
           </Link>
+          <Link href="/offer">Публічна оферта</Link>
+          <Link href="/returns">Умови повернення</Link>
+        </nav>
 ```
+
+а в правій навігації, перед соцмережами:
+
+```tsx
+          <a href="https://koskofx.top/" target="_blank" rel="noopener">
+            Педаль зібрано Kosko FX
+          </a>
+```
+
+`rel="noopener"` обовʼязково — це той самий захист, який уже стоїть на соцпосиланнях у наявному футері.
+
+Кредит Kosko FX ставиться **тільки** у `PedalFooter`, не в спільний `Footer`: на головній продається футболка, до якої Kosko FX стосунку не має. У спільному футері лишається тільки промо-посилання на `/pedal`.
 
 `.promo` в `PedalFooter.module.css` — така сама, як у `Footer.module.css`.
 
@@ -2790,6 +2807,13 @@ describe('медіа педалі', () => {
     expect(PRODUCTS.DROP01.gallery).toBeUndefined();
   });
 });
+
+describe('бренд товару', () => {
+  it('у кожного товару свій бренд: футболку випускає артист, педаль зібрала Kosko FX', () => {
+    expect(PRODUCTS.DROP01.brandName).toBe('Sasha Chemerov × Димна Суміш');
+    expect(PRODUCTS.PEDAL01.brandName).toBe('Kosko FX × Саша Чемеров');
+  });
+});
 ```
 
 - [ ] **Step 2: Запустити, переконатись що падає**
@@ -2845,12 +2869,21 @@ Expected: чотири файли в `public/`, кожен **менший за 4
 
 - [ ] **Step 5: Оновити реєстр**
 
-У `lib/products.ts`, інтерфейс `Product` — нове необовʼязкове поле поруч із `thumb`:
+У `lib/products.ts`, інтерфейс `Product` — два нові поля. `gallery` поруч із `thumb`:
 
 ```ts
   /** Додаткові фото товару для модалки замовлення. */
   gallery?: string[];
 ```
+
+і `brandName` поруч із `name` (обовʼязкове — заповнити обом товарам):
+
+```ts
+  /** Бренд для schema.org. Педаль зібрала інша компанія, ніж футболку. */
+  brandName: string;
+```
+
+Значення: `DROP01` → `'Sasha Chemerov × Димна Суміш'` (те, що зараз захардкоджене в `lib/structuredData.ts`), `PEDAL01` → `'Kosko FX × Саша Чемеров'`.
 
 У записі `PEDAL01` замінити три рядки:
 
