@@ -232,10 +232,16 @@ export type RefundResult =
   | 'unknown';
 
 /**
- * Фіксує повернення коштів. Склад НЕ інкрементується свідомо: повернення
- * зазвичай приходить після відправлення або по бракованому екземпляру, і
- * автоповернення виставило б на продаж товар, якого фізично немає.
- * Менеджер повертає одиницю вручну через `npm run seed:stock`.
+ * Фіксує повернення коштів. Поведінка залежить від стану заявки на момент
+ * колбека:
+ * - `pending` — резерв ще активний, товар не продано: повертаємо резерв на
+ *   склад (як `releaseOrder` — спершу claim статусу, потім `$inc` складу:
+ *   крах між кроками веде до недопродажу, а не оверселу);
+ * - `paid` — склад НЕ інкрементується свідомо: товар могли вже відправити
+ *   або він бракований, автоповернення виставило б на продаж одиницю, якої
+ *   фізично немає. Менеджер повертає її вручну через `npm run seed:stock`;
+ * - `released` — резерв уже й так повернутий раніше (Declined/Expired) —
+ *   повторно склад не чіпаємо.
  */
 export async function markOrderRefunded(
   db: Db,
@@ -243,11 +249,28 @@ export async function markOrderRefunded(
   now = new Date(),
 ): Promise<RefundResult> {
   const orders = ordersOf(db);
-  const claimed = await orders.findOneAndUpdate(
-    { _id: orderReference, status: { $ne: 'refunded' } },
+
+  const fromPending = await orders.findOneAndUpdate(
+    { _id: orderReference, status: 'pending' },
     { $set: { status: 'refunded', refundedAt: now } },
   );
-  if (claimed) return 'refunded';
+  if (fromPending) {
+    await unreserveStock(db, orderProductId(fromPending), fromPending.sizes);
+    return 'refunded';
+  }
+
+  const fromPaid = await orders.findOneAndUpdate(
+    { _id: orderReference, status: 'paid' },
+    { $set: { status: 'refunded', refundedAt: now } },
+  );
+  if (fromPaid) return 'refunded';
+
+  const fromReleased = await orders.findOneAndUpdate(
+    { _id: orderReference, status: 'released' },
+    { $set: { status: 'refunded', refundedAt: now } },
+  );
+  if (fromReleased) return 'refunded';
+
   const existing = await orders.findOne({ _id: orderReference });
   return existing ? 'already-refunded' : 'unknown';
 }

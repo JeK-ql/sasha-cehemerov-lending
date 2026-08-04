@@ -440,4 +440,26 @@ describe('markOrderRefunded', () => {
     expect(orderDocs[0].status).toBe('refunded');
     expect(pedalStock().STANDARD).toBe(9);
   });
+
+  it('повернення неоплаченої (pending) заявки повертає резерв на склад', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    expect(pedalStock().STANDARD).toBe(9); // резерв активний
+
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded');
+    expect(orderDocs[0]).toMatchObject({ status: 'refunded' });
+    expect(orderDocs[0].refundedAt).toBeInstanceOf(Date);
+    expect(pedalStock().STANDARD).toBe(10); // резерв повернувся
+  });
+
+  it('повернення вже звільненої (released) заявки не подвоює склад', async () => {
+    await reserveStock(db, 'PEDAL01', order.sizes);
+    await createPendingOrder(db, order);
+    await releaseOrder(db, order.orderReference);
+    expect(pedalStock().STANDARD).toBe(10); // резерв уже повернутий
+
+    expect(await markOrderRefunded(db, order.orderReference)).toBe('refunded');
+    expect(orderDocs[0]).toMatchObject({ status: 'refunded' });
+    expect(pedalStock().STANDARD).toBe(10); // не повернувся вдруге
+  });
 });
