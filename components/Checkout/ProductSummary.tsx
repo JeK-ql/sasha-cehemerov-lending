@@ -18,6 +18,11 @@ export function ProductSummary({
   sizes: Record<string, number>;
 }) {
   const chosen = variantKeys(product).filter((k) => (sizes[k] ?? 0) > 0);
+  // metaLabel («OVERSIZE» тощо) завжди йде першим, навіть коли ще нічого
+  // не обрано — так само, як робив нерозрізаний CheckoutForm.
+  const metaParts = [product.metaLabel, ...chosen.map((k) => `${k} ×${sizes[k]}`)].filter(
+    Boolean,
+  );
 
   return (
     <>
@@ -41,9 +46,7 @@ export function ProductSummary({
             <span>{product.name.toUpperCase()}</span>
           </div>
           <div className={`${styles.orderMeta} mono`}>
-            {product.showVariantPicker
-              ? chosen.map((k) => `${k} ×${sizes[k]}`).join(' · ')
-              : `${product.price} ₴`}
+            {product.showVariantPicker ? metaParts.join(' · ') : `${product.price} ₴`}
           </div>
         </div>
       </div>

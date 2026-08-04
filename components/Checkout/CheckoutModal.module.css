@@ -108,10 +108,14 @@
    one continuous run of inputs (the .field margin-bottom keeps the field-
    to-field spacing consistent across the boundary). */
 .block + .block { margin-top: 0; }
-/* Виняток: РОЗМІР-блок (№1) закінчується степерами без нижнього відступу,
-   тож контактний блок (№2) треба відсунути явно, інакше «ІМ'Я І ПРІЗВИЩЕ»
-   налазить на розмір. Стик контакти↔доставка (№3) лишається безшовним. */
-.block:nth-of-type(2) { margin-top: 24px; }
+/* Контактний блок позначений явним класом (.blockContact), а не порядковим
+   номером: для футболки він завжди йде одразу після розмірного .block, що
+   закінчується степерами без нижнього відступу, і без цього правила
+   «ІМ'Я І ПРІЗВИЩЕ» налазило б на розмір. Для педалі (розмірного блоку
+   немає) .blockContact не сусідить з іншим .block, тож це правило не
+   спрацьовує — потрібний відступ уже дає базове .block вище. Стик
+   контакти↔доставка лишається безшовним для обох товарів. */
+.block + .blockContact { margin-top: 24px; }
 .legend { font-size: 10px; color: #c1baac; margin-bottom: 16px; }
 .field { display: block; margin-bottom: 20px; position: relative; }
 .fieldLabel { font-size: 9px; color: #c1baac; display: block; margin-bottom: 9px;
@@ -266,9 +270,12 @@
 }
 .order, .block, .payRow { animation: riseIn 440ms var(--ease-out) backwards; }
 .order { animation-delay: 170ms; }
-.block:nth-of-type(1) { animation-delay: 230ms; }
-.block:nth-of-type(2) { animation-delay: 290ms; }
-.block:nth-of-type(3) { animation-delay: 350ms; }
+/* Класи замість nth-of-type: у педалі немає розмірного блоку, тож
+   порядкова позиція вже не відповідає ролі блоку (див. .blockContact
+   вище). Кожен блок сам каже, чим він є. */
+.blockVariant { animation-delay: 230ms; }
+.blockContact { animation-delay: 290ms; }
+.blockDelivery { animation-delay: 350ms; }
 .payRow { animation-delay: 410ms; }
 
 /* Reduced motion — the panel slide is kept intentionally: it conveys where
@@ -276,31 +283,7 @@
    decorative content stagger is dropped. */
 @media (prefers-reduced-motion: reduce) {
   .order, .block, .payRow { animation: none; }
-  .zoomBackdrop, .zoomImage { animation: none; }
 }
-
-/* ---------- photo lightbox (rendered in a body-level portal so it escapes
-   the modal panel's transform-induced containing block) ---------- */
-.zoomBackdrop {
-  position: fixed; inset: 0; z-index: 100;
-  background: rgba(13, 13, 13, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px;
-  cursor: zoom-out;
-  animation: zoomFadeIn 220ms var(--ease-out) both;
-}
-.zoomImage {
-  max-width: 100%; max-height: 100%;
-  object-fit: contain;
-  display: block;
-  cursor: default;
-  animation: zoomScaleIn 280ms var(--ease-out) both;
-}
-@keyframes zoomFadeIn  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes zoomScaleIn { from { opacity: 0; transform: scale(0.94); }
-                         to   { opacity: 1; transform: scale(1); } }
 
 /* Плейсхолдер фото — доки команда не дала файли. */
 .thumbPlaceholder {

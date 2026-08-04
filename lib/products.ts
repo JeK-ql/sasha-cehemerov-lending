@@ -62,6 +62,12 @@ export interface Product {
   description?: string[];
   /** Таблиця «ключ — значення» в модалці. */
   specs?: ProductSpec[];
+  /**
+   * Категорійний лейбл у рядку підсумку замовлення (напр. «OVERSIZE»).
+   * Показується перед обраними варіантами; не заданий — рядок починається
+   * одразу з варіантів (або, для одноваріантного товару, з ціни).
+   */
+  metaLabel?: string;
 }
 
 export const PRODUCTS: Record<ProductId, Product> = {
@@ -84,6 +90,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     ],
     maxPerOrder: 10,
     showVariantPicker: true,
+    metaLabel: 'OVERSIZE',
     media: { kind: 'video', src: '/tshirt.mp4', poster: '/video.jpg' },
     thumb: '/too-much-яром-too-much-долиною.webp',
     ogImage: '/too-much-yarom-dolynoyu.jpg',

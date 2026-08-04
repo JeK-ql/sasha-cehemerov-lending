@@ -29,7 +29,7 @@ export function VariantPicker({
   const chosen = product.variants.filter((v) => (sizes[v.key] ?? 0) > 0);
 
   return (
-    <fieldset className={styles.block}>
+    <fieldset className={`${styles.block} ${styles.blockVariant}`}>
       <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>РОЗМІР</span>
       <div className={styles.segRow} role="group" aria-label="Розмір">
         {product.variants.map((v) => {

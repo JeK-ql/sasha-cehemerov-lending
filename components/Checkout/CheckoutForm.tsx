@@ -240,7 +240,7 @@ export function CheckoutForm({ product }: { product: Product }) {
         <span className={`${styles.fieldError} mono`}>{stockMsg}</span>
       )}
 
-      <fieldset className={styles.block}>
+      <fieldset className={`${styles.block} ${styles.blockContact}`}>
         <Field
           label="ІМ'Я І ПРІЗВИЩЕ"
           value={data.fullName}
@@ -287,7 +287,7 @@ export function CheckoutForm({ product }: { product: Product }) {
         />
       </fieldset>
 
-      <fieldset className={styles.block}>
+      <fieldset className={`${styles.block} ${styles.blockDelivery}`}>
         <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>ДОСТАВКА</span>
         <div className={styles.segRow} role="radiogroup" aria-label="Спосіб доставки">
           <button

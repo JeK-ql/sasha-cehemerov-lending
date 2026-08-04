@@ -65,6 +65,11 @@ describe('реєстр товарів', () => {
   it('DEFAULT_PRODUCT_ID — футболка (сумісність зі старими замовленнями)', () => {
     expect(DEFAULT_PRODUCT_ID).toBe('DROP01');
   });
+
+  it('metaLabel: у футболки задано "OVERSIZE", у педалі — не задано', () => {
+    expect(PRODUCTS.DROP01.metaLabel).toBe('OVERSIZE');
+    expect(PRODUCTS.PEDAL01.metaLabel).toBeUndefined();
+  });
 });
 
 describe('медіа педалі', () => {
