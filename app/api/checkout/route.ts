@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     ...base,
     merchantSignature: purchaseSignature(secret, base),
     clientFirstName: firstName,
-    clientLastName: lastParts.join(' ') || '-',
+    clientLastName: lastParts.join(' '),
     clientEmail: input.email,
     clientPhone: input.phone.replace(/[\s()-]/g, ''),
     language: 'UA',

@@ -11,11 +11,19 @@ import { PRODUCT_IDS, isProductId } from './products';
 const SUFFIX_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 const SUFFIX_LENGTH = 4;
 
-export function newOrderReference(productId: string, now = Date.now()): string {
-  const bytes = randomBytes(SUFFIX_LENGTH);
+/**
+ * Мапить випадкові байти на символи `SUFFIX_ALPHABET` (`byte % 36`).
+ * Винесено окремо, щоб тестувати мапінг детерміновано — на конкретних
+ * байтах, а не покладатись на статистику `crypto.randomBytes`.
+ */
+export function suffixFromBytes(bytes: Buffer): string {
   let suffix = '';
   for (const b of bytes) suffix += SUFFIX_ALPHABET[b % SUFFIX_ALPHABET.length];
-  return `${productId}-${now}${suffix}`;
+  return suffix;
+}
+
+export function newOrderReference(productId: string, now = Date.now()): string {
+  return `${productId}-${now}${suffixFromBytes(randomBytes(SUFFIX_LENGTH))}`;
 }
 
 /**
