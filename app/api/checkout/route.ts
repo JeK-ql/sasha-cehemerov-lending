@@ -48,17 +48,18 @@ export async function POST(req: NextRequest) {
   try {
     const db = await getDb();
     await releaseExpiredReservations(db);
-    if (!(await reserveStock(db, sizes))) {
+    if (!(await reserveStock(db, 'DROP01', sizes))) {
       // Прострочені резерви щойно звільнили вище — тут достатньо
       // чистого читання без повторної очистки.
       return NextResponse.json(
-        { error: 'out-of-stock', availability: await currentAvailability(db) },
+        { error: 'out-of-stock', availability: await currentAvailability(db, 'DROP01', [...SIZES]) },
         { status: 409 },
       );
     }
     reserved = true;
     await createPendingOrder(db, {
       orderReference,
+      productId: 'DROP01',
       sizes,
       amount: PRODUCT.price * totalCount,
       customer: {
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
       // Заявка не записалась — повертаємо щойно списаний резерв, інакше
       // він завис би назавжди (звільняти нічим: замовлення в базі нема).
       try {
-        await unreserveStock(await getDb(), sizes);
+        await unreserveStock(await getDb(), 'DROP01', sizes);
       } catch (rollbackErr) {
         console.error('Reservation rollback failed', orderReference, rollbackErr);
       }

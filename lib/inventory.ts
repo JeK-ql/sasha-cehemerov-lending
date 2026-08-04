@@ -1,5 +1,5 @@
 import type { Db } from 'mongodb';
-import { SIZES, type Size } from './products';
+import { DEFAULT_PRODUCT_ID } from './products';
 
 /**
  * Облік залишків дропу. Весь склад — ОДИН документ у колекції `inventory`:
@@ -12,10 +12,12 @@ import { SIZES, type Size } from './products';
  * або якщо WayForPay повідомив Declined/Expired.
  */
 
-export const INVENTORY_ID = 'DROP01';
 export const RESERVATION_TTL_MS = 30 * 60 * 1000;
 
-export type SizeCounts = Record<Size, number>;
+/** Кількості по ключах варіантів товару. */
+export type VariantCounts = Record<string, number>;
+/** Історична назва — лишена, щоб не переписувати наявні імпорти. */
+export type SizeCounts = VariantCounts;
 
 export type OrderStatus = 'pending' | 'paid' | 'released';
 
@@ -27,7 +29,9 @@ export interface Customer {
 
 export interface OrderDoc {
   _id: string;
-  sizes: SizeCounts;
+  /** Відсутнє в замовленнях, створених до появи реєстру товарів. */
+  productId?: string;
+  sizes: VariantCounts;
   amount: number;
   status: OrderStatus;
   createdAt: Date;
@@ -40,26 +44,33 @@ export interface OrderDoc {
 
 interface InventoryDoc {
   _id: string;
-  stock: SizeCounts;
+  stock: VariantCounts;
 }
 
 const inventoryOf = (db: Db) => db.collection<InventoryDoc>('inventory');
 const ordersOf = (db: Db) => db.collection<OrderDoc>('orders');
 
-/** Умова «кожного замовленого розміру вистачає» для findOneAndUpdate. */
-export function reserveFilter(sizes: SizeCounts): Record<string, unknown> {
-  const filter: Record<string, unknown> = { _id: INVENTORY_ID };
-  for (const s of SIZES) {
-    if (sizes[s] > 0) filter[`stock.${s}`] = { $gte: sizes[s] };
+/** Товар замовлення; старі документи поля не мають. */
+export const orderProductId = (o: { productId?: string }): string =>
+  o.productId ?? DEFAULT_PRODUCT_ID;
+
+/** Умова «кожного замовленого варіанта вистачає» для findOneAndUpdate. */
+export function reserveFilter(
+  productId: string,
+  counts: VariantCounts,
+): Record<string, unknown> {
+  const filter: Record<string, unknown> = { _id: productId };
+  for (const [key, qty] of Object.entries(counts)) {
+    if (qty > 0) filter[`stock.${key}`] = { $gte: qty };
   }
   return filter;
 }
 
 /** `$inc` на ±замовлені кількості (sign: -1 резерв, +1 повернення). */
-export function stockInc(sizes: SizeCounts, sign: 1 | -1): Record<string, number> {
+export function stockInc(counts: VariantCounts, sign: 1 | -1): Record<string, number> {
   const inc: Record<string, number> = {};
-  for (const s of SIZES) {
-    if (sizes[s] > 0) inc[`stock.${s}`] = sign * sizes[s];
+  for (const [key, qty] of Object.entries(counts)) {
+    if (qty > 0) inc[`stock.${key}`] = sign * qty;
   }
   return inc;
 }
@@ -82,28 +93,35 @@ export async function releaseExpiredReservations(db: Db, now = new Date()): Prom
  * Атомарно резервує замовлені кількості. false — товару не вистачає
  * (або документ складу ще не створений seed-скриптом).
  */
-export async function reserveStock(db: Db, sizes: SizeCounts): Promise<boolean> {
-  const res = await inventoryOf(db).updateOne(reserveFilter(sizes), {
-    $inc: stockInc(sizes, -1),
+export async function reserveStock(
+  db: Db,
+  productId: string,
+  counts: VariantCounts,
+): Promise<boolean> {
+  const res = await inventoryOf(db).updateOne(reserveFilter(productId, counts), {
+    $inc: stockInc(counts, -1),
   });
   return res.modifiedCount === 1;
 }
 
 /** Повертає резерв на склад (відкат, коли заявка не записалась). */
-export async function unreserveStock(db: Db, sizes: SizeCounts): Promise<void> {
-  await inventoryOf(db).updateOne(
-    { _id: INVENTORY_ID },
-    { $inc: stockInc(sizes, 1) },
-  );
+export async function unreserveStock(
+  db: Db,
+  productId: string,
+  counts: VariantCounts,
+): Promise<void> {
+  await inventoryOf(db).updateOne({ _id: productId }, { $inc: stockInc(counts, 1) });
 }
 
 /** Чисте читання наявності, без побічних ефектів (для гарячих шляхів,
  *  де прострочені резерви щойно звільнили). */
-export async function currentAvailability(db: Db): Promise<Record<Size, boolean>> {
-  const doc = await inventoryOf(db).findOne({ _id: INVENTORY_ID });
-  return Object.fromEntries(
-    SIZES.map((s) => [s, (doc?.stock[s] ?? 0) > 0]),
-  ) as Record<Size, boolean>;
+export async function currentAvailability(
+  db: Db,
+  productId: string,
+  keys: string[],
+): Promise<Record<string, boolean>> {
+  const doc = await inventoryOf(db).findOne({ _id: productId });
+  return Object.fromEntries(keys.map((k) => [k, (doc?.stock[k] ?? 0) > 0]));
 }
 
 /**
@@ -113,16 +131,21 @@ export async function currentAvailability(db: Db): Promise<Record<Size, boolean>
  * checkout ніхто не викличе — і без цієї очистки резерви не звільнилися б
  * ніколи.
  */
-export async function stockAvailability(db: Db): Promise<Record<Size, boolean>> {
+export async function stockAvailability(
+  db: Db,
+  productId: string,
+  keys: string[],
+): Promise<Record<string, boolean>> {
   await releaseExpiredReservations(db);
-  return currentAvailability(db);
+  return currentAvailability(db, productId, keys);
 }
 
 export async function createPendingOrder(
   db: Db,
   input: {
     orderReference: string;
-    sizes: SizeCounts;
+    productId: string;
+    sizes: VariantCounts;
     amount: number;
     customer: Customer;
   },
@@ -130,6 +153,7 @@ export async function createPendingOrder(
 ): Promise<void> {
   await ordersOf(db).insertOne({
     _id: input.orderReference,
+    productId: input.productId,
     sizes: input.sizes,
     amount: input.amount,
     status: 'pending',
@@ -180,7 +204,8 @@ export async function markOrderPaid(
     // склад — перший reserveStock тоді хибно не знайде залишку. Кілька
     // коротких повторів дають $inc долетіти, перш ніж оголосити oversold.
     for (let attempt = 0; ; attempt++) {
-      if (await reserveStock(db, fromReleased.sizes)) return 'paid-after-release';
+      if (await reserveStock(db, orderProductId(fromReleased), fromReleased.sizes))
+        return 'paid-after-release';
       if (attempt >= retries) break;
       await new Promise((r) => setTimeout(r, retryDelayMs));
     }
@@ -203,5 +228,5 @@ export async function releaseOrder(db: Db, orderReference: string): Promise<void
     { _id: orderReference, status: 'pending' },
     { $set: { status: 'released' } },
   );
-  if (claimed) await unreserveStock(db, claimed.sizes);
+  if (claimed) await unreserveStock(db, orderProductId(claimed), claimed.sizes);
 }

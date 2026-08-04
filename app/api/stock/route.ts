@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   try {
-    const availability = await stockAvailability(await getDb());
+    const availability = await stockAvailability(await getDb(), 'DROP01', [...SIZES]);
     return NextResponse.json(availability);
   } catch (err) {
     console.error('stockAvailability failed', err);
