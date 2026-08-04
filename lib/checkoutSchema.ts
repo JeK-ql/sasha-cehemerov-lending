@@ -1,15 +1,21 @@
 import { z } from 'zod';
-import { SIZES, type Size } from './products';
+import { DEFAULT_PRODUCT_ID, getProduct, variantKeys, type Product } from './products';
 
 /** Нормалізує телефон перед перевіркою: прибирає пробіли, дужки, дефіси. */
 const normalizePhone = (v: string) => v.replace(/[\s()-]/g, '');
 
-/** Кількість одного розміру: ціле, 0–10. Сумарні межі — у superRefine. */
-const sizeCount = z.number().int().min(0).max(10);
+/** Найбільший ліміт серед товарів — груба верхня межа до перевірки товару. */
+const HARD_MAX = 10;
 
 /** Сумарна кількість штук у замовленні. */
-export const totalQuantity = (sizes: Record<Size, number>): number =>
-  SIZES.reduce((sum, s) => sum + sizes[s], 0);
+export const totalQuantity = (sizes: Record<string, number>): number =>
+  Object.values(sizes).reduce((sum, n) => sum + n, 0);
+
+/** Стартовий стан кількостей: одноваріантний товар одразу має 1 шт. */
+export function emptySizes(product: Product): Record<string, number> {
+  if (!product.showVariantPicker) return { [product.variants[0].key]: 1 };
+  return Object.fromEntries(variantKeys(product).map((k) => [k, 0]));
+}
 
 /** Схема замовлення — спільна для клієнтської форми і /api/checkout. */
 export const checkoutSchema = z
@@ -34,11 +40,8 @@ export const checkoutSchema = z
     email: z
       .string()
       .refine((v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), 'Невірний e-mail'),
-    sizes: z.object({
-      МАЛЕНЬКИЙ: sizeCount,
-      СЕРЕДНІЙ: sizeCount,
-      ВЕЛИКИЙ: sizeCount,
-    }),
+    productId: z.string().optional(),
+    sizes: z.record(z.string(), z.number().int().min(0).max(HARD_MAX)),
     deliveryMode: z.enum(['np', 'other']),
     // --- Нова Пошта ---
     city: z.string(),
@@ -53,14 +56,40 @@ export const checkoutSchema = z
     zip: z.string(),
   })
   .superRefine((data, ctx) => {
-    const total = totalQuantity(data.sizes as Record<Size, number>);
-    if (total < 1) {
-      ctx.addIssue({ code: 'custom', path: ['sizes'], message: 'Оберіть розмір' });
-    } else if (total > 10) {
+    const product = getProduct(data.productId ?? DEFAULT_PRODUCT_ID);
+    if (!product) {
+      ctx.addIssue({ code: 'custom', path: ['productId'], message: 'Невідомий товар' });
+      return;
+    }
+
+    // Набір ключів мусить ТОЧНО збігатися з варіантами товару. Не просто
+    // «без зайвих»: пропущений ключ означав би, що клієнт і сервер по-різному
+    // уявляють товар, а totalQuantity мовчки прочитала б undefined.
+    const expected = variantKeys(product);
+    const got = Object.keys(data.sizes);
+    const sameKeys =
+      got.length === expected.length && expected.every((k) => k in data.sizes);
+    if (!sameKeys) {
       ctx.addIssue({
         code: 'custom',
         path: ['sizes'],
-        message: 'Максимум 10 штук у замовленні',
+        message: 'Невірний набір варіантів товару',
+      });
+      return;
+    }
+
+    const total = totalQuantity(data.sizes);
+    if (total < 1) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['sizes'],
+        message: product.showVariantPicker ? 'Оберіть розмір' : 'Товар недоступний',
+      });
+    } else if (total > product.maxPerOrder) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['sizes'],
+        message: `Максимум ${product.maxPerOrder} шт. у замовленні`,
       });
     }
 

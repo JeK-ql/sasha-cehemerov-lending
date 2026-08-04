@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { checkoutSchema } from '../checkoutSchema';
-import { SIZES } from '../products';
+import { checkoutSchema, emptySizes } from '../checkoutSchema';
+import { PRODUCTS, variantKeys } from '../products';
 
 const npOrder = {
   fullName: 'Чемеров Олександр',
@@ -125,7 +125,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
     expect(res.success).toBe(false);
     if (!res.success) {
       const issue = res.error.issues.find((i) => i.path[0] === 'sizes');
-      expect(issue?.message).toBe('Максимум 10 штук у замовленні');
+      expect(issue?.message).toBe('Максимум 10 шт. у замовленні');
     }
   });
   it('rejects a negative count', () => {
@@ -152,12 +152,16 @@ describe('checkoutSchema - розміри (мультирозмірне замо
       }).success,
     ).toBe(false);
   });
-  it('keeps schema keys in sync with SIZES', () => {
-    // Якщо в SIZES додасться четвертий розмір, а обʼєкт sizes у схемі - ні,
-    // totalQuantity почне читати undefined і валідація «зʼїде» мовчки.
-    // checkoutSchema - ZodEffects (через superRefine), тому .shape бере
-    // innerType().
-    expect(Object.keys(checkoutSchema.innerType().shape.sizes.shape)).toEqual([...SIZES]);
+  it('набір ключів звіряється з реєстром товарів, а не з константою', () => {
+    // Якщо в реєстрі зʼявиться четвертий варіант, а форма надішле три —
+    // валідація має впасти, а не мовчки прочитати undefined.
+    const res = checkoutSchema.safeParse({
+      ...npOrder,
+      sizes: Object.fromEntries(
+        variantKeys(PRODUCTS.DROP01).map((k, i) => [k, i === 0 ? 1 : 0]),
+      ),
+    });
+    expect(res.success).toBe(true);
   });
 });
 
@@ -207,5 +211,103 @@ describe('checkoutSchema - режим «Інше» (Укрпошта/світ)',
   });
   it('accepts an empty flat (optional)', () => {
     expect(checkoutSchema.safeParse({ ...otherOrder, flat: '' }).success).toBe(true);
+  });
+});
+
+describe('checkoutSchema - вибір товару', () => {
+  it('без productId форма трактується як футболка', () => {
+    expect(checkoutSchema.safeParse(npOrder).success).toBe(true);
+  });
+
+  it('невідомий productId відхиляється', () => {
+    const res = checkoutSchema.safeParse({
+      ...npOrder,
+      productId: 'НЕМАЄ',
+      sizes: { STANDARD: 1 },
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.find((i) => i.path[0] === 'productId')?.message).toBe(
+        'Невідомий товар',
+      );
+    }
+  });
+
+  it('ключі варіантів чужого товару відхиляються', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        productId: 'PEDAL01',
+        sizes: { СЕРЕДНІЙ: 1 },
+      }).success,
+    ).toBe(false);
+  });
+
+  it('зайвий ключ поверх правильних відхиляється', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, ГІГАНТСЬКИЙ: 1 },
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe('checkoutSchema - ліміт кількості залежить від товару', () => {
+  const pedal = { ...npOrder, productId: 'PEDAL01' };
+
+  it('педаль: одна штука проходить', () => {
+    expect(checkoutSchema.safeParse({ ...pedal, sizes: { STANDARD: 1 } }).success).toBe(
+      true,
+    );
+  });
+
+  it('педаль: дві штуки відхиляються — «Максимум 1 шт. у замовленні»', () => {
+    const res = checkoutSchema.safeParse({ ...pedal, sizes: { STANDARD: 2 } });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.find((i) => i.path[0] === 'sizes')?.message).toBe(
+        'Максимум 1 шт. у замовленні',
+      );
+    }
+  });
+
+  it('педаль: нуль штук відхиляється без згадки про розмір', () => {
+    const res = checkoutSchema.safeParse({ ...pedal, sizes: { STANDARD: 0 } });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.find((i) => i.path[0] === 'sizes')?.message).toBe(
+        'Товар недоступний',
+      );
+    }
+  });
+
+  it('футболка: десять штук проходять, одинадцята — ні', () => {
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+      }).success,
+    ).toBe(true);
+    expect(
+      checkoutSchema.safeParse({
+        ...npOrder,
+        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe('emptySizes', () => {
+  it('футболка стартує з нулів — розмір обирає покупець', () => {
+    expect(emptySizes(PRODUCTS.DROP01)).toEqual({
+      МАЛЕНЬКИЙ: 0,
+      СЕРЕДНІЙ: 0,
+      ВЕЛИКИЙ: 0,
+    });
+  });
+
+  it('педаль стартує з однієї штуки — вибирати нічого', () => {
+    expect(emptySizes(PRODUCTS.PEDAL01)).toEqual({ STANDARD: 1 });
   });
 });
