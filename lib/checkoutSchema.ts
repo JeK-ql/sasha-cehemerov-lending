@@ -4,9 +4,6 @@ import { DEFAULT_PRODUCT_ID, getProduct, variantKeys, type Product } from './pro
 /** Нормалізує телефон перед перевіркою: прибирає пробіли, дужки, дефіси. */
 const normalizePhone = (v: string) => v.replace(/[\s()-]/g, '');
 
-/** Найбільший ліміт серед товарів — груба верхня межа до перевірки товару. */
-const HARD_MAX = 10;
-
 /** Сумарна кількість штук у замовленні. */
 export const totalQuantity = (sizes: Record<string, number>): number =>
   Object.values(sizes).reduce((sum, n) => sum + n, 0);
@@ -41,7 +38,13 @@ export const checkoutSchema = z
       .string()
       .refine((v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), 'Невірний e-mail'),
     productId: z.string().optional(),
-    sizes: z.record(z.string(), z.number().int().min(0).max(HARD_MAX)),
+    sizes: z.record(
+      z.string(),
+      z
+        .number()
+        .int('Кількість має бути цілим числом')
+        .min(0, 'Кількість не може бути відʼємною'),
+    ),
     deliveryMode: z.enum(['np', 'other']),
     // --- Нова Пошта ---
     city: z.string(),

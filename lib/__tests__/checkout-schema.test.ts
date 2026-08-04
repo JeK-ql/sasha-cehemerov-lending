@@ -117,7 +117,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
       expect(issue?.message).toBe('Оберіть розмір');
     }
   });
-  it('rejects more than 10 items total', () => {
+  it('rejects more than 10 items total — first sizes issue is Ukrainian', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
       sizes: { МАЛЕНЬКИЙ: 5, СЕРЕДНІЙ: 5, ВЕЛИКИЙ: 1 },
@@ -126,23 +126,36 @@ describe('checkoutSchema - розміри (мультирозмірне замо
     if (!res.success) {
       const issue = res.error.issues.find((i) => i.path[0] === 'sizes');
       expect(issue?.message).toBe('Максимум 10 шт. у замовленні');
+      // Це саме те, що читає validateCheckout(): перший елемент масиву
+      // помилок поля, а не перший знайдений issue за фільтром.
+      expect(res.error.flatten().fieldErrors.sizes?.[0]).toBe(
+        'Максимум 10 шт. у замовленні',
+      );
     }
   });
-  it('rejects a negative count', () => {
-    expect(
-      checkoutSchema.safeParse({
-        ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: -1, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 },
-      }).success,
-    ).toBe(false);
+  it('rejects a negative count with a Ukrainian message, not Zod’s built-in English one', () => {
+    const res = checkoutSchema.safeParse({
+      ...npOrder,
+      sizes: { МАЛЕНЬКИЙ: -1, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 },
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.sizes?.[0]).toBe(
+        'Кількість не може бути відʼємною',
+      );
+    }
   });
-  it('rejects a fractional count', () => {
-    expect(
-      checkoutSchema.safeParse({
-        ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 1.5, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
-      }).success,
-    ).toBe(false);
+  it('rejects a fractional count with a Ukrainian message, not Zod’s built-in English one', () => {
+    const res = checkoutSchema.safeParse({
+      ...npOrder,
+      sizes: { МАЛЕНЬКИЙ: 1.5, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.sizes?.[0]).toBe(
+        'Кількість має бути цілим числом',
+      );
+    }
   });
   it('rejects a missing size key', () => {
     expect(
@@ -267,6 +280,20 @@ describe('checkoutSchema - ліміт кількості залежить від
     expect(res.success).toBe(false);
     if (!res.success) {
       expect(res.error.issues.find((i) => i.path[0] === 'sizes')?.message).toBe(
+        'Максимум 1 шт. у замовленні',
+      );
+    }
+  });
+
+  it('педаль: 11 штук — перша помилка по sizes українська, без слідів HARD_MAX', () => {
+    // Раніше значення понад HARD_MAX=10 ловилося ще на рівні z.record і
+    // додавало ДРУГИЙ, англомовний issue («Number must be...») поряд з
+    // правильним. validateCheckout() бере лише flattened[0] — саме його
+    // тут і перевіряємо.
+    const res = checkoutSchema.safeParse({ ...pedal, sizes: { STANDARD: 11 } });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.sizes?.[0]).toBe(
         'Максимум 1 шт. у замовленні',
       );
     }
