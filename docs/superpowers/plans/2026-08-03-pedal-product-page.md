@@ -1690,6 +1690,24 @@ export function ProductSummary({
           ))}
         </dl>
       )}
+
+      {/* Решта ракурсів. Перше фото галереї — те саме, що мініатюра вище,
+          тому воно пропускається: показувати його двічі немає сенсу. */}
+      {product.gallery && product.gallery.length > 1 && (
+        <div className={styles.gallery}>
+          {product.gallery.slice(1).map((src) => (
+            <Image
+              key={src}
+              src={src}
+              alt={product.name}
+              width={800}
+              height={1000}
+              sizes="(min-width: 768px) 520px, 90vw"
+              className={styles.galleryImage}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }
@@ -1748,6 +1766,20 @@ export function ProductSummary({
 .specRow dd {
   margin: 0;
   text-align: right;
+}
+
+/* Додаткові ракурси товару. Модалка вузька — фото йдуть стовпчиком
+   на всю ширину, а не сіткою мініатюр. */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.galleryImage {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 ```
 
@@ -2067,6 +2099,10 @@ git commit -m "refactor: split checkout form into ProductSummary, VariantPicker,
 - Create: `app/pedal/page.tsx`
 - Create: `components/ProductHero/ProductHero.tsx`
 - Create: `components/ProductHero/ProductHero.module.css`
+- Create: `components/Header/PedalHeader.tsx`
+- Create: `components/Header/PedalHeader.module.css`
+- Create: `components/Footer/PedalFooter.tsx`
+- Create: `components/Footer/PedalFooter.module.css`
 - Modify: `app/page.tsx`
 - Modify: `app/layout.tsx` (прибрати `productLd`)
 - Modify: `lib/structuredData.ts`
@@ -2255,9 +2291,30 @@ export function ProductHero({ product }: { product: Product }) {
 }
 ```
 
-- [ ] **Step 6: Зробити хедер і кнопку product-aware**
+- [ ] **Step 6: Створити окремі хедер і футер для сторінки педалі**
 
-`components/Header/Header.tsx` — підпис стає пропсом:
+**Це свідоме дублювання на вимогу замовника, а не недогляд.** `/pedal` мусить мати власні хедер і футер, щоб їх можна було перефарбувати незалежно від головної сторінки. Зараз вони — точні копії; розійдуться візуально пізніше.
+
+- `components/Header/PedalHeader.tsx` — копія `Header.tsx`, з двома змінами: компонент називається `PedalHeader`, імпорт стилів веде на `./PedalHeader.module.css`. Підпис так само приймається пропсом `caption: string`.
+- `components/Header/PedalHeader.module.css` — **побайтова копія** `Header.module.css`.
+- `components/Footer/PedalFooter.tsx` — копія `Footer.tsx`, компонент `PedalFooter`, стилі з `./PedalFooter.module.css`. Внутрішні `VisaMark` і `MastercardMark` копіюються разом із ним: вони приватні для файлу, спільного експорту з них ніхто не робив.
+- `components/Footer/PedalFooter.module.css` — **побайтова копія** `Footer.module.css`.
+
+У шапці кожного з чотирьох файлів — коментар, який пояснює, чому копія існує:
+
+```tsx
+/**
+ * Хедер сторінки педалі. Свідома копія Header: /pedal має розходитись
+ * візуально з головною, тому спільний компонент тут навмисно не
+ * використовується. Правки одного НЕ переносяться в інший автоматично.
+ */
+```
+
+Оригінальні `Header.tsx` / `Footer.tsx` лишаються тільки для головної сторінки — не чіпати їх, окрім зміни підпису нижче.
+
+- [ ] **Step 7: Зробити хедер і кнопку product-aware**
+
+`components/Header/Header.tsx` — підпис стає пропсом (те саме зробити і в `PedalHeader.tsx`):
 
 ```tsx
 export function Header({ caption }: { caption: string }) {
@@ -2326,7 +2383,7 @@ export function BuyOverlay() {
 }
 ```
 
-- [ ] **Step 7: `ThankYou` повертає на сторінку свого товару**
+- [ ] **Step 8: `ThankYou` повертає на сторінку свого товару**
 
 У `components/ThankYou/ThankYou.tsx`:
 
@@ -2341,7 +2398,7 @@ export function ThankYou({ state, orderRef, homePath }: Props) {
   }
 ```
 
-- [ ] **Step 8: `wayforpay-return` веде на сторінку свого товару**
+- [ ] **Step 9: `wayforpay-return` веде на сторінку свого товару**
 
 ```ts
 import { NextRequest, NextResponse } from 'next/server';
@@ -2369,15 +2426,17 @@ export async function GET() {
 }
 ```
 
-- [ ] **Step 9: Створити `app/pedal/page.tsx`**
+- [ ] **Step 10: Створити `app/pedal/page.tsx`**
 
 ```tsx
 import type { Metadata } from 'next';
 import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
-import { Header } from '@/components/Header/Header';
+// Власні хедер/футер сторінки педалі — щоб її можна було перефарбувати
+// незалежно від головної. Див. Step 6.
+import { PedalHeader } from '@/components/Header/PedalHeader';
 import { ProductHero } from '@/components/ProductHero/ProductHero';
 import { BuyOverlay } from '@/components/BuyOverlay/BuyOverlay';
-import { Footer } from '@/components/Footer/Footer';
+import { PedalFooter } from '@/components/Footer/PedalFooter';
 import { ThankYou } from '@/components/ThankYou/ThankYou';
 import { PRODUCTS } from '@/lib/products';
 import { productLd } from '@/lib/structuredData';
@@ -2414,10 +2473,10 @@ export default async function PedalPage({ searchParams }: { searchParams: Search
         <h1 className={styles.srOnly}>
           Димна Суміш — фузз-педаль Kosko FX × Саша Чемеров, лімітована серія 10 екземплярів
         </h1>
-        <Header caption={product.headerCaption} />
+        <PedalHeader caption={product.headerCaption} />
         <ProductHero product={product} />
         <BuyOverlay />
-        <Footer />
+        <PedalFooter />
         {thankState && (
           <ThankYou state={thankState} orderRef={orderRef} homePath={product.path} />
         )}
@@ -2431,7 +2490,7 @@ export default async function PedalPage({ searchParams }: { searchParams: Search
 }
 ```
 
-- [ ] **Step 10: Привести `app/page.tsx` до тієї ж форми**
+- [ ] **Step 11: Привести `app/page.tsx` до тієї ж форми**
 
 ```tsx
 import { preload } from 'react-dom';
@@ -2481,7 +2540,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
 Видалити з `app/page.module.css` правила `.fill` і його медіазапит — вони переїхали в `ProductHero.module.css`.
 
-- [ ] **Step 11: Додати `/pedal` у sitemap**
+- [ ] **Step 12: Додати `/pedal` у sitemap**
 
 ```ts
   return [
@@ -2492,12 +2551,12 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   ];
 ```
 
-- [ ] **Step 12: Перевірити збірку**
+- [ ] **Step 13: Перевірити збірку**
 
 Run: `npm test && npx tsc --noEmit && npm run lint && npm run build`
 Expected: усе PASS. У виводі `npm run build` має зʼявитись роут `/pedal`.
 
-- [ ] **Step 13: Коміт**
+- [ ] **Step 14: Коміт**
 
 ```bash
 git add app/ components/ lib/structuredData.ts lib/__tests__/structuredData.test.ts
@@ -2644,6 +2703,146 @@ git commit -m "refactor: drop temporary product registry re-exports"
 
 ---
 
+### Task 12: Медіа педалі
+
+> **Порядок виконання:** ця задача додана після старту, коли команда прислала фото.
+> Виконується **після Task 7 і до Task 8** — Task 8 рендерить галерею з цих файлів.
+
+Оригінали вже лежать у `source-assets/pedal/` (git-ignored, ~33 МБ разом):
+`pedal-front.png` (фронтально, всі три ручки й лого), `pedal-angle.png` (3/4 ракурс),
+`pedal-kit.png` (педаль + коробка + стікери). У `public/` їх немає і бути не повинно —
+33 МБ у git це назавжди.
+
+**Files:**
+- Modify: `scripts/optimize-images.mjs`
+- Modify: `lib/products.ts` (media/thumb/ogImage/gallery для `PEDAL01`)
+- Modify: `lib/__tests__/products.test.ts`
+- Create (згенеровані, комітяться): `public/pedal-front.webp`, `public/pedal-angle.webp`, `public/pedal-kit.webp`, `public/pedal-front.jpg`
+
+**Interfaces:**
+- Consumes: `Product`, `ProductMedia` з Task 1.
+- Produces: `Product.gallery?: string[]` — додаткові фото для модалки замовлення.
+
+- [ ] **Step 1: Написати падаючий тест**
+
+Дописати в `lib/__tests__/products.test.ts`:
+
+```ts
+describe('медіа педалі', () => {
+  it('героєм сторінки є фронтальне фото, а не плейсхолдер', () => {
+    expect(PRODUCTS.PEDAL01.media).toEqual({
+      kind: 'image',
+      src: '/pedal-front.webp',
+    });
+  });
+
+  it('мініатюра в модалці та OG-картинка задані', () => {
+    expect(PRODUCTS.PEDAL01.thumb).toBe('/pedal-front.webp');
+    // JSON-LD і OpenGraph: jpg, бо частина скраперів не читає webp.
+    expect(PRODUCTS.PEDAL01.ogImage).toBe('/pedal-front.jpg');
+  });
+
+  it('галерея містить три фото, перше — те саме, що мініатюра', () => {
+    expect(PRODUCTS.PEDAL01.gallery).toEqual([
+      '/pedal-front.webp',
+      '/pedal-angle.webp',
+      '/pedal-kit.webp',
+    ]);
+  });
+
+  it('футболка галереї не має — у неї своє відео', () => {
+    expect(PRODUCTS.DROP01.gallery).toBeUndefined();
+  });
+});
+```
+
+- [ ] **Step 2: Запустити, переконатись що падає**
+
+Run: `npm test -- products`
+Expected: FAIL — `media` усе ще `{ kind: 'placeholder', caption: '【ФОТО ПЕДАЛІ】' }`, поля `gallery` немає.
+
+- [ ] **Step 3: Додати педаль в `scripts/optimize-images.mjs`**
+
+Наявний масив `photos` **не чіпати** — він читає файли з `source-assets/regenerated/`, яких може вже не бути, і використовує `.jpeg()` попри розширення `.webp` (успадкована дивина, не наша задача).
+
+Замість цього додати окремий блок після масиву `photos` і **до** блоку логотипа:
+
+```js
+/**
+ * Педаль «Димна Суміш». Оригінали — 10-12 МБ кожен, у public/ їм не місце.
+ * Ширина 1400 — та сама, що й для решти фото товару.
+ */
+const pedalPhotos = [
+  { src: "source-assets/pedal/pedal-front.png", out: "public/pedal-front.webp" },
+  { src: "source-assets/pedal/pedal-angle.png", out: "public/pedal-angle.webp" },
+  { src: "source-assets/pedal/pedal-kit.png", out: "public/pedal-kit.webp" },
+];
+
+for (const { src, out } of pedalPhotos) {
+  const info = await sharp(p(src))
+    .resize({ width: 1400, withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toFile(p(out));
+  total += info.size;
+  console.log(`${out.padEnd(26)} ${info.width}w  ${(info.size / 1024).toFixed(0)} KB`);
+}
+
+// JPEG-двійник фронтального фото: OpenGraph і JSON-LD читають деякі
+// скрапери, що не розуміють webp.
+const pedalOg = await sharp(p("source-assets/pedal/pedal-front.png"))
+  .resize({ width: 1200, withoutEnlargement: true })
+  .jpeg({ quality: 82, mozjpeg: true })
+  .toFile(p("public/pedal-front.jpg"));
+total += pedalOg.size;
+console.log(`${"public/pedal-front.jpg".padEnd(26)} ${pedalOg.width}w  ${(pedalOg.size / 1024).toFixed(0)} KB`);
+```
+
+- [ ] **Step 4: Прогнати оптимізацію**
+
+Run: `npm run optimize:images`
+
+Якщо скрипт падає на першому масиві `photos` (файлів `source-assets/regenerated/*.jpeg` може не бути) — **не чинити його**. Тимчасово закоментувати наявний цикл `photos` і блок логотипа, прогнати лише педальну частину, потім розкоментувати назад. У комміт має піти файл із незміненою секцією `photos`.
+
+Expected: чотири файли в `public/`, кожен **менший за 400 КБ**. Перевірити: `ls -la public/pedal-*`.
+
+Якщо котрийсь вийшов більший за 400 КБ — знизити `quality` до 78 і прогнати ще раз. Розмір важливіший за останні відсотки якості: це сторінка, яку відкриють з телефона.
+
+- [ ] **Step 5: Оновити реєстр**
+
+У `lib/products.ts`, інтерфейс `Product` — нове необовʼязкове поле поруч із `thumb`:
+
+```ts
+  /** Додаткові фото товару для модалки замовлення. */
+  gallery?: string[];
+```
+
+У записі `PEDAL01` замінити три рядки:
+
+```ts
+    media: { kind: 'image', src: '/pedal-front.webp' },
+    thumb: '/pedal-front.webp',
+    gallery: ['/pedal-front.webp', '/pedal-angle.webp', '/pedal-kit.webp'],
+    ogImage: '/pedal-front.jpg',
+```
+
+Плейсхолдер `【ФОТО ПЕДАЛІ】` із запису зникає. Гілка `kind: 'placeholder'` у типі `ProductMedia` **лишається** — вона знадобиться наступному товару без фото.
+
+- [ ] **Step 6: Запустити тести**
+
+Run: `npm test && npx tsc --noEmit`
+Expected: PASS. Чотири нові тести зелені.
+
+- [ ] **Step 7: Коміт**
+
+```bash
+git add scripts/optimize-images.mjs lib/products.ts lib/__tests__/products.test.ts public/pedal-front.webp public/pedal-angle.webp public/pedal-kit.webp public/pedal-front.jpg
+git commit -m "feat: optimised pedal photos and registry media entries"
+```
+
+Перевірити, що жоден `.png` з `source-assets/` у коміт не потрапив: `git show --stat HEAD`.
+
+---
+
 ## Ручна перевірка перед деплоєм
 
 Не входить у задачі — робиться людиною після мержу.
@@ -2655,7 +2854,7 @@ git commit -m "refactor: drop temporary product registry re-exports"
 5. `npm run seed:stock -- PEDAL01 0` → `/pedal` показує неактивну «Розпродано», модалка не відкривається. Повернути `10`.
 6. Оплата футболки, як і раніше, повертає на `/`.
 7. У кабінеті WayForPay `serviceUrl` = `https://isusneisus.com/api/wayforpay-callback` (без змін).
-8. Замінити плейсхолдери, коли приїдуть медіа: `media` і `thumb` у `PRODUCTS.PEDAL01`, `ogImage` — і зняти `ogImage: null` з JSON-LD.
+8. Медіа педалі вже на місці (Task 12) — плейсхолдера в реєстрі більше немає.
 9. Уточнити ціну педалі — зараз 3000 ₴ тимчасово.
 
 ## Відомий борг (свідомо не в скоупі)
