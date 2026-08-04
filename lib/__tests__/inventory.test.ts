@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { Db } from 'mongodb';
-import { SIZES } from '../products';
 import {
   RESERVATION_TTL_MS,
   reserveFilter,
@@ -15,6 +14,11 @@ import {
   markOrderRefunded,
   type SizeCounts,
 } from '../inventory';
+
+// Локальна копія розмірів DROP01, а не імпорт з реєстру: тест фіксує
+// поведінку lib/inventory незалежно від lib/products, інакше перевірка
+// стала б тавтологічною.
+const SIZES = ['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'] as const;
 
 /**
  * Мінімальний in-memory двійник частини Mongo API, яку використовує

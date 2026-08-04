@@ -160,20 +160,3 @@ export function positionName(p: Product, variantKey: string): string {
   const label = p.variants.find((v) => v.key === variantKey)?.label ?? variantKey;
   return `${p.paymentName} (${label})`;
 }
-
-// --- Тимчасові реекспорти даних DROP01 -------------------------------------
-// Знімаються в Task 11, коли всі споживачі стануть product-aware.
-
-export const SIZES = ['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'] as const;
-export type Size = (typeof SIZES)[number];
-
-export const SIZE_MEASUREMENTS: Record<
-  Size,
-  { widthCm: number; lengthCm: number } | null
-> = {
-  МАЛЕНЬКИЙ: null,
-  СЕРЕДНІЙ: null,
-  ВЕЛИКИЙ: null,
-};
-
-export const PRODUCT = PRODUCTS.DROP01;
