@@ -66,3 +66,37 @@ describe('реєстр товарів', () => {
     expect(DEFAULT_PRODUCT_ID).toBe('DROP01');
   });
 });
+
+describe('медіа педалі', () => {
+  it('героєм сторінки є фронтальне фото, а не плейсхолдер', () => {
+    expect(PRODUCTS.PEDAL01.media).toEqual({
+      kind: 'image',
+      src: '/pedal-front.webp',
+    });
+  });
+
+  it('мініатюра в модалці та OG-картинка задані', () => {
+    expect(PRODUCTS.PEDAL01.thumb).toBe('/pedal-front.webp');
+    // JSON-LD і OpenGraph: jpg, бо частина скраперів не читає webp.
+    expect(PRODUCTS.PEDAL01.ogImage).toBe('/pedal-front.jpg');
+  });
+
+  it('галерея містить три фото, перше — те саме, що мініатюра', () => {
+    expect(PRODUCTS.PEDAL01.gallery).toEqual([
+      '/pedal-front.webp',
+      '/pedal-angle.webp',
+      '/pedal-kit.webp',
+    ]);
+  });
+
+  it('футболка галереї не має — у неї своє відео', () => {
+    expect(PRODUCTS.DROP01.gallery).toBeUndefined();
+  });
+});
+
+describe('бренд товару', () => {
+  it('у кожного товару свій бренд: футболку випускає артист, педаль зібрала Kosko FX', () => {
+    expect(PRODUCTS.DROP01.brandName).toBe('Sasha Chemerov × Димна Суміш');
+    expect(PRODUCTS.PEDAL01.brandName).toBe('Kosko FX × Саша Чемеров');
+  });
+});

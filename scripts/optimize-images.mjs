@@ -55,6 +55,34 @@ for (const { src, out, width, quality } of photos) {
   );
 }
 
+/**
+ * Педаль «Димна Суміш». Оригінали — 10-12 МБ кожен, у public/ їм не місце.
+ * Ширина 1400 — та сама, що й для решти фото товару.
+ */
+const pedalPhotos = [
+  { src: "source-assets/pedal/pedal-front.png", out: "public/pedal-front.webp" },
+  { src: "source-assets/pedal/pedal-angle.png", out: "public/pedal-angle.webp" },
+  { src: "source-assets/pedal/pedal-kit.png", out: "public/pedal-kit.webp" },
+];
+
+for (const { src, out } of pedalPhotos) {
+  const info = await sharp(p(src))
+    .resize({ width: 1400, withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toFile(p(out));
+  total += info.size;
+  console.log(`${out.padEnd(26)} ${info.width}w  ${(info.size / 1024).toFixed(0)} KB`);
+}
+
+// JPEG-двійник фронтального фото: OpenGraph і JSON-LD читають деякі
+// скрапери, що не розуміють webp.
+const pedalOg = await sharp(p("source-assets/pedal/pedal-front.png"))
+  .resize({ width: 1200, withoutEnlargement: true })
+  .jpeg({ quality: 82, mozjpeg: true })
+  .toFile(p("public/pedal-front.jpg"));
+total += pedalOg.size;
+console.log(`${"public/pedal-front.jpg".padEnd(26)} ${pedalOg.width}w  ${(pedalOg.size / 1024).toFixed(0)} KB`);
+
 // Logo — recoloured at runtime via CSS filter; just needs to be small.
 const logo = await sharp(p("source-assets/logo.png"))
   .resize({ height: 140, withoutEnlargement: true })

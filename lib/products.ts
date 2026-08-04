@@ -35,6 +35,8 @@ export interface Product {
   path: string;
   /** Назва для UI. */
   name: string;
+  /** Бренд для schema.org. Педаль зібрала інша компанія, ніж футболку. */
+  brandName: string;
   /** Назва позиції у платежі й фіскальному чеку WayForPay. */
   paymentName: string;
   /** Рядок під логотипом у хедері. */
@@ -50,6 +52,8 @@ export interface Product {
   media: ProductMedia;
   /** Фото в модалці замовлення; null — файлу ще немає. */
   thumb: string | null;
+  /** Додаткові фото товару для модалки замовлення. */
+  gallery?: string[];
   /** Картинка для JSON-LD і OpenGraph; null — файлу ще немає. */
   ogImage: string | null;
   /** Опис для schema.org. */
@@ -65,6 +69,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     id: 'DROP01',
     path: '/',
     name: 'too much яром too much долиною',
+    brandName: 'Sasha Chemerov × Димна Суміш',
     paymentName: 'Футболка - too much яром too much долиною',
     headerCaption: 'DROP 01 // МАЛЕНЬКИЙ · СЕРЕДНІЙ · ВЕЛИКИЙ',
     price: 2600,
@@ -89,6 +94,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     id: 'PEDAL01',
     path: '/pedal',
     name: 'Димна Суміш',
+    brandName: 'Kosko FX × Саша Чемеров',
     paymentName: 'Педаль Kosko FX × Саша Чемеров - Димна Суміш',
     headerCaption: 'ДИМНА СУМІШ // LIMITED 10',
     price: 3000,
@@ -97,9 +103,10 @@ export const PRODUCTS: Record<ProductId, Product> = {
     variants: [{ key: 'STANDARD', label: 'STANDARD' }],
     maxPerOrder: 1,
     showVariantPicker: false,
-    media: { kind: 'placeholder', caption: '【ФОТО ПЕДАЛІ】' },
-    thumb: null,
-    ogImage: null,
+    media: { kind: 'image', src: '/pedal-front.webp' },
+    thumb: '/pedal-front.webp',
+    gallery: ['/pedal-front.webp', '/pedal-angle.webp', '/pedal-kit.webp'],
+    ogImage: '/pedal-front.jpg',
     schemaDescription:
       'Фузз-дисторшн "Димна Суміш" — лімітована колаборація Kosko FX × Саша Чемеров на основі схеми EarthQuaker Devices Hizumitas. Ручна робота, тираж 10 штук.',
     description: [
