@@ -37,8 +37,20 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error('markOrderPaid failed', body.orderReference, err);
       }
-      const messages = [formatPaidMessage(body.orderReference, body.amount)];
-      if (paidResult === 'oversold') {
+      // Кожен MarkPaidResult отримує чесне повідомлення: «Оплату
+      // підтверджено» лише для результатів, що дійсно ним є. 'refunded' і
+      // 'unknown' — колбек по замовленню, яке вже повернене або якого
+      // взагалі нема в базі; підтвердження оплати тут ввело б менеджера в
+      // оману і призвело б до відправки вже повернутого/невідомого товару.
+      const messages: string[] = [];
+      if (
+        paidResult === 'paid' ||
+        paidResult === 'already-paid' ||
+        paidResult === 'paid-after-release'
+      ) {
+        messages.push(formatPaidMessage(body.orderReference, body.amount));
+      } else if (paidResult === 'oversold') {
+        messages.push(formatPaidMessage(body.orderReference, body.amount));
         messages.push(
           [
             '⚠️ <b>УВАГА: оплачено, але розмір уже розпродано</b>',
@@ -48,11 +60,31 @@ export async function POST(req: NextRequest) {
           ].join('\n'),
         );
       } else if (paidResult === 'db-error') {
+        messages.push(formatPaidMessage(body.orderReference, body.amount));
         messages.push(
           [
             '⚠️ <b>УВАГА: оплату не записано в базу складу</b>',
             `<b>№:</b> ${escapeHtml(body.orderReference)}`,
             'Перевірте залишки вручну — резерв міг звільнитись за таймаутом.',
+          ].join('\n'),
+        );
+      } else if (paidResult === 'refunded') {
+        messages.push(
+          [
+            '⚠️ <b>УВАГА: підтверджено оплату по вже поверненому замовленню</b>',
+            `<b>№:</b> ${escapeHtml(body.orderReference)}`,
+            `<b>Сума:</b> ${escapeHtml(String(body.amount))} ₴`,
+            'Кошти за це замовлення вже повернені покупцю раніше.',
+            'НЕ відправляйте товар — спершу перевірте статус замовлення вручну.',
+          ].join('\n'),
+        );
+      } else if (paidResult === 'unknown') {
+        messages.push(
+          [
+            '⚠️ <b>УВАГА: підтвердження оплати по невідомому замовленню</b>',
+            `<b>№:</b> ${escapeHtml(body.orderReference)}`,
+            `<b>Сума:</b> ${escapeHtml(String(body.amount))} ₴`,
+            'Такого замовлення немає в базі. Перевірте статус вручну перед відправкою товару.',
           ].join('\n'),
         );
       }
