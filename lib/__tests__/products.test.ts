@@ -42,8 +42,8 @@ describe('реєстр товарів', () => {
     expect(p.showVariantPicker).toBe(false);
     expect(p.path).toBe('/pedal');
     expect(p.price).toBe(13000);
-    // Модалка — крок оплати: короткий опис і компактна таблиця характеристик.
-    expect(p.description?.length).toBe(1);
+    // Модалка — крок оплати: без опису, лише компактна таблиця характеристик.
+    // expect(p.description).toBeUndefined();
     expect(p.specs?.map((s) => s.label)).toEqual([
       'Тип ефекту',
       'Схема',

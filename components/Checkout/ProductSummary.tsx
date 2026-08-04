@@ -70,13 +70,13 @@ export function ProductSummary({
         </div>
       </div>
 
-      {product.description && (
+      {/* {product.description && (
         <div className={styles.productCopy}>
           {product.description.map((p) => (
             <p key={p.slice(0, 32)}>{p}</p>
           ))}
         </div>
-      )}
+      )} */}
 
       {product.specs && (
         <dl className={`${styles.specs} mono`}>
