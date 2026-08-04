@@ -1,23 +1,29 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import Image from 'next/image';
-import { PRODUCT, SIZES, SIZE_MEASUREMENTS, type Size } from '@/lib/products';
+import type { Product } from '@/lib/products';
+import { variantKeys } from '@/lib/products';
 import type { CheckoutFormState } from '@/lib/types';
-import { totalQuantity } from '@/lib/checkoutSchema';
+import { totalQuantity, emptySizes } from '@/lib/checkoutSchema';
 import { validateCheckout } from '@/lib/validateCheckout';
 import styles from './CheckoutModal.module.css';
 import { NovaPoshtaPicker } from './NovaPoshtaPicker';
 import { OtherDeliveryFields } from './OtherDeliveryFields';
+import { ProductSummary } from './ProductSummary';
+import { VariantPicker } from './VariantPicker';
 
 type FieldKey = keyof CheckoutFormState;
 
-const EMPTY: CheckoutFormState = {
+// Чернетка розводиться по товарах: інакше форма педалі підхопить розміри
+// футболки. Версія v2 — структура форми змінилась, старі чернетки несумісні.
+const draftKey = (productId: string) => `isus-checkout-draft-v2:${productId}`;
+
+const emptyForm = (product: Product): CheckoutFormState => ({
+  productId: product.id,
+  sizes: emptySizes(product),
   fullName: '',
   phone: '',
   email: '',
-  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
   deliveryMode: 'np',
   city: '',
   cityRef: '',
@@ -28,56 +34,46 @@ const EMPTY: CheckoutFormState = {
   building: '',
   flat: '',
   zip: '',
-};
+});
 
-// Сумарний ліміт штук на замовлення - синхронно з superRefine схеми і серверним clamp.
-const MAX_QUANTITY = 10;
-
-// Чернетка форми в localStorage — щоб рефреш/повторне відкриття не втрачали
-// введене (включно з вибором розмірів). Версія в ключі: зміниш форму полів —
-// підніми версію, щоб стара несумісна чернетка не зламала гідратацію.
-const DRAFT_KEY = 'isus-checkout-draft-v1';
-const clearDraft = () => {
-  try {
-    localStorage.removeItem(DRAFT_KEY);
-  } catch {
-    /* приватний режим / вимкнене сховище — ігноруємо */
-  }
-};
-
-type ZoomTarget = 'front' | 'back' | null;
-
-export function CheckoutForm() {
+export function CheckoutForm({ product }: { product: Product }) {
   // Ленивий ініт із чернетки. Форма монтується лише на клієнті (модалка до
   // відкриття рендерить null), тож читати localStorage тут безпечно — SSR її
   // не рендерить, розбіжності гідратації немає.
   const [data, setData] = useState<CheckoutFormState>(() => {
     try {
-      const raw = typeof window !== 'undefined' ? localStorage.getItem(DRAFT_KEY) : null;
-      if (raw) return { ...EMPTY, ...(JSON.parse(raw) as Partial<CheckoutFormState>) };
+      const raw =
+        typeof window !== 'undefined' ? localStorage.getItem(draftKey(product.id)) : null;
+      if (raw) {
+        return {
+          ...emptyForm(product),
+          ...(JSON.parse(raw) as Partial<CheckoutFormState>),
+          // productId і кількості одноваріантного товару чернетка не задає.
+          productId: product.id,
+        };
+      }
     } catch {
       /* пошкоджена чернетка — стартуємо з чистої форми */
     }
-    return EMPTY;
+    return emptyForm(product);
   });
   const [submitting, setSubmitting] = useState(false);
-  const [zoomed, setZoomed] = useState<ZoomTarget>(null);
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   // null = наявність ще не завантажена (усі розміри доступні до відповіді).
-  const [available, setAvailable] = useState<Record<Size, boolean> | null>(null);
+  const [available, setAvailable] = useState<Record<string, boolean> | null>(null);
   const [stockMsg, setStockMsg] = useState<string | null>(null);
   const priceRef = useRef<HTMLSpanElement>(null);
 
   // Наявність + чистка розпроданих розмірів (у т.ч. відновлених із чернетки).
-  const applyAvailability = (avail: Record<Size, boolean>) => {
+  const applyAvailability = (avail: Record<string, boolean>) => {
     setAvailable(avail);
     setData((d) => {
-      const sizes = { ...(d.sizes as Record<Size, number>) };
+      const sizes = { ...d.sizes };
       let changed = false;
-      for (const s of SIZES) {
-        if (!avail[s] && sizes[s] > 0) {
-          sizes[s] = 0;
+      for (const k of variantKeys(product)) {
+        if (!avail[k] && (sizes[k] ?? 0) > 0) {
+          sizes[k] = 0;
           changed = true;
         }
       }
@@ -85,29 +81,38 @@ export function CheckoutForm() {
     });
   };
 
-  // Товару по 20 шт. на розмір: питаємо сервер, що ще в наявності.
+  // Товару обмежена кількість: питаємо сервер, що ще в наявності.
   // Помилка запиту не блокує форму — checkout переперевірить резервом.
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/stock')
+    fetch(`/api/stock?product=${product.id}`)
       .then((res) => (res.ok ? res.json() : null))
-      .then((avail: Record<Size, boolean> | null) => {
+      .then((avail: Record<string, boolean> | null) => {
         if (avail && !cancelled) applyAvailability(avail);
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- applyAvailability лише читає product.id (уже в deps) і сталі setState-функції; додавання самої функції ганяло б запит на кожен рендер
+  }, [product.id]);
 
   // Зберігаємо чернетку на кожну зміну — рефреш/повторне відкриття її відновлять.
   useEffect(() => {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+      localStorage.setItem(draftKey(product.id), JSON.stringify(data));
     } catch {
       /* сховище недоступне (приватний режим) — не критично */
     }
-  }, [data]);
+  }, [data, product.id]);
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(draftKey(product.id));
+    } catch {
+      /* приватний режим / вимкнене сховище — ігноруємо */
+    }
+  };
 
   const markTouched = (k: FieldKey) =>
     setTouched((t) => (t[k] ? t : { ...t, [k]: true }));
@@ -136,20 +141,17 @@ export function CheckoutForm() {
     );
   };
 
-  const totalCount = totalQuantity(data.sizes as Record<Size, number>);
-  const canAdd = totalCount < MAX_QUANTITY;
-
   // Уся арифметика - всередині updater: швидкі повторні тапи не гублять
   // інкременти і не пробивають сумарний ліміт (stale-closure safe).
-  const changeSize = (s: Size, delta: 1 | -1) => {
+  const changeSize = (key: string, delta: 1 | -1) => {
     let changed = false;
     setData((d) => {
-      const sizes = d.sizes as Record<Size, number>;
-      if (delta > 0 && totalQuantity(sizes) >= MAX_QUANTITY) return d;
-      const next = Math.max(0, Math.min(MAX_QUANTITY, sizes[s] + delta));
-      if (next === sizes[s]) return d;
+      if (delta > 0 && totalQuantity(d.sizes) >= product.maxPerOrder) return d;
+      const current = d.sizes[key] ?? 0;
+      const next = Math.max(0, Math.min(product.maxPerOrder, current + delta));
+      if (next === current) return d;
       changed = true;
-      return { ...d, sizes: { ...sizes, [s]: next } };
+      return { ...d, sizes: { ...d.sizes, [key]: next } };
     });
     if (delta > 0 && changed) {
       markTouched('sizes');
@@ -157,23 +159,15 @@ export function CheckoutForm() {
     }
   };
 
-  useEffect(() => {
-    if (!zoomed) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setZoomed(null);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [zoomed]);
-
   const errors = validateCheckout(data);
   const valid = Object.keys(errors).length === 0;
   const visibleError = (k: FieldKey): string | undefined =>
     errors[k] && (touched[k] || submitAttempted) ? errors[k] : undefined;
 
+  const totalCount = totalQuantity(data.sizes);
   // Display only - the authoritative amount that gets signed by the WayForPay
   // HMAC is recomputed server-side from the sizes record.
-  const total = PRODUCT.price * totalCount;
+  const total = product.price * totalCount;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -193,7 +187,7 @@ export function CheckoutForm() {
         // Товар розібрали, поки заповнювали форму: оновлюємо наявність,
         // чистимо розпродані розміри і даємо обрати заново.
         const body = (await res.json().catch(() => null)) as
-          | { availability?: Record<Size, boolean> }
+          | { availability?: Record<string, boolean> }
           | null;
         if (body?.availability) applyAvailability(body.availability);
         setStockMsg('На жаль, обраний розмір щойно розібрали. Оновили наявність.');
@@ -209,13 +203,13 @@ export function CheckoutForm() {
       new window.Wayforpay().run(
         params,
         () => {
-          // Оплату прийнято: чистимо чернетку і ведемо на подяку (/?paid=1).
+          // Оплату прийнято: чистимо чернетку і ведемо на подяку.
           clearDraft();
-          window.location.assign(`/?paid=1${ref}`);
+          window.location.assign(`${product.path}?paid=1${ref}`);
         },
         () => {
           // Відхилено: чернетку лишаємо, щоб можна було спробувати ще раз.
-          window.location.assign(`/?paid=0${ref}`);
+          window.location.assign(`${product.path}?paid=0${ref}`);
         },
         () => {
           /* pending (для карток рідко) — віджет сам покаже статус */
@@ -230,88 +224,21 @@ export function CheckoutForm() {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <div className={styles.order}>
-        <div
-          className={styles.thumbBtn}
+      <ProductSummary product={product} sizes={data.sizes} />
 
-        >
-          <Image src="/too-much-яром-too-much-долиною.webp" alt="" fill sizes="(min-width: 768px) 220px, 33vw" className={styles.thumb} />
-        </div>
-
-        <div className={styles.orderInfo}>
-          <div className={styles.orderName}>
-            <span>TOO MUCH ЯРОМ TOO MUCH ДОЛИНОЮ</span>
-          </div>
-          <div className={`${styles.orderMeta} mono`}>
-            OVERSIZE
-            {SIZES.filter((s) => data.sizes[s] > 0)
-              .map((s) => ` · ${s} ×${data.sizes[s]}`)
-              .join('')}
-          </div>
-        </div>
-      </div>
-
-      <fieldset className={styles.block}>
-        <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>РОЗМІР</span>
-        <div className={styles.segRow} role="group" aria-label="Розмір">
-          {SIZES.map((s) => {
-            const soldOut = available?.[s] === false;
-            return (
-              <button
-                key={s}
-                type="button"
-                className={styles.segBtn}
-                data-active={data.sizes[s] > 0 ? 'true' : undefined}
-                aria-pressed={data.sizes[s] > 0}
-                disabled={soldOut}
-                onClick={() => changeSize(s, 1)}
-              >
-                {s}
-                {soldOut ? (
-                  <span className={styles.soldOut}>РОЗПРОДАНО</span>
-                ) : (
-                  data.sizes[s] > 0 ? ` ×${data.sizes[s]}` : ''
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {stockMsg && <span className={`${styles.fieldError} mono`}>{stockMsg}</span>}
-        {SIZES.filter((s) => data.sizes[s] > 0).map((s) => (
-          <div key={s}>
-            <div className={styles.sizeQtyRow}>
-              <span className={`${styles.sizeQtyLabel} mono`}>{s}</span>
-              <button
-                type="button"
-                className={`${styles.qtyBtn} ${styles.qtyBtnSmall}`}
-                onClick={() => changeSize(s, -1)}
-                aria-label={`Менше: ${s}`}
-              >
-                −
-              </button>
-              <span className={`${styles.sizeQtyCount} mono`}>{data.sizes[s]}</span>
-              <button
-                type="button"
-                className={`${styles.qtyBtn} ${styles.qtyBtnSmall}`}
-                aria-disabled={!canAdd}
-                onClick={() => changeSize(s, 1)}
-                aria-label={`Більше: ${s}`}
-              >
-                +
-              </button>
-            </div>
-            {SIZE_MEASUREMENTS[s] && (
-              <span className={`${styles.fieldHint} mono`}>
-                ШИРИНА {SIZE_MEASUREMENTS[s]!.widthCm} СМ · ДОВЖИНА{' '}
-                {SIZE_MEASUREMENTS[s]!.lengthCm} СМ
-              </span>
-            )}
-          </div>
-        ))}
-        {visibleError('sizes') && (
-          <span className={`${styles.fieldError} mono`}>{visibleError('sizes')}</span>
-        )}
-      </fieldset>
+      {product.showVariantPicker && (
+        <VariantPicker
+          product={product}
+          sizes={data.sizes}
+          available={available}
+          stockMsg={stockMsg}
+          error={visibleError('sizes')}
+          onChange={changeSize}
+        />
+      )}
+      {!product.showVariantPicker && stockMsg && (
+        <span className={`${styles.fieldError} mono`}>{stockMsg}</span>
+      )}
 
       <fieldset className={styles.block}>
         <Field
@@ -416,7 +343,7 @@ export function CheckoutForm() {
         >
           {submitting ? 'ЗАЧЕКАЙТЕ…' : (
             <span ref={priceRef} className={styles.payAmount}>
-              {total} ₴ (×{totalCount})
+              {total} ₴{product.showVariantPicker ? ` (×${totalCount})` : ''}
             </span>
           )}
         </button>
@@ -425,24 +352,6 @@ export function CheckoutForm() {
       <p className={`${styles.deliveryNote} mono`}>
         Доставка - за рахунок отримувача, за тарифами перевізника
       </p>
-
-      {zoomed && typeof document !== 'undefined' && createPortal(
-        <div
-          className={styles.zoomBackdrop}
-          onClick={() => setZoomed(null)}
-          role="dialog"
-          aria-label="Збільшене фото"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={zoomed === 'front' ? '/front.webp' : '/back.webp'}
-            alt={PRODUCT.name}
-            className={styles.zoomImage}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>,
-        document.body,
-      )}
     </form>
   );
 }

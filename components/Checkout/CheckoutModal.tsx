@@ -8,7 +8,7 @@ import styles from './CheckoutModal.module.css';
 const EXIT_MS = 420;
 
 export function CheckoutModal() {
-  const { isOpen, close } = useCheckout();
+  const { isOpen, close, product } = useCheckout();
   const [mounted, setMounted] = useState(false);
 
   // Mount on open; keep mounted through the exit animation, then unmount.
@@ -60,7 +60,7 @@ export function CheckoutModal() {
             <span className={`${styles.title} display`}>ЗАМОВЛЕННЯ</span>
             <button className={styles.x} onClick={close} aria-label="Закрити">✕</button>
           </div>
-          <CheckoutForm />
+          <CheckoutForm product={product} />
         </div>
       </div>
     </div>

@@ -1,12 +1,14 @@
 'use client';
 
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import type { Product } from '@/lib/products';
 import { CheckoutModal } from './CheckoutModal';
 
 interface CheckoutContextValue {
   isOpen: boolean;
   open: () => void;
   close: () => void;
+  product: Product;
 }
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null);
@@ -17,10 +19,18 @@ export function useCheckout() {
   return ctx;
 }
 
-export function CheckoutProvider({ children }: { children: ReactNode }) {
+export function CheckoutProvider({
+  product,
+  children,
+}: {
+  product: Product;
+  children: ReactNode;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <CheckoutContext.Provider value={{ isOpen, open: () => setIsOpen(true), close: () => setIsOpen(false) }}>
+    <CheckoutContext.Provider
+      value={{ isOpen, open: () => setIsOpen(true), close: () => setIsOpen(false), product }}
+    >
       {children}
       <CheckoutModal />
     </CheckoutContext.Provider>

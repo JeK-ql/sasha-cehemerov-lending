@@ -301,3 +301,67 @@
 @keyframes zoomFadeIn  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes zoomScaleIn { from { opacity: 0; transform: scale(0.94); }
                          to   { opacity: 1; transform: scale(1); } }
+
+/* Плейсхолдер фото — доки команда не дала файли. */
+.thumbPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.5;
+  border: 1.5px dashed #c1baac;
+}
+
+/* Опис товару — тільки для товарів, що його мають. */
+.productCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.specs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  margin: 0;
+}
+
+.specRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #c1baac;
+  padding-bottom: 4px;
+}
+
+.specRow dt {
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.specRow dd {
+  margin: 0;
+  text-align: right;
+}
+
+/* Додаткові ракурси товару. Модалка вузька — фото йдуть стовпчиком
+   на всю ширину, а не сіткою мініатюр. */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.galleryImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}

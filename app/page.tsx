@@ -4,6 +4,7 @@ import { Header } from '@/components/Header/Header';
 import { BuyOverlay } from '@/components/BuyOverlay/BuyOverlay';
 import { Footer } from '@/components/Footer/Footer';
 import { ThankYou } from '@/components/ThankYou/ThankYou';
+import { PRODUCTS } from '@/lib/products';
 import styles from './page.module.css';
 
 type SearchParams = Promise<{ paid?: string; ref?: string }>;
@@ -16,7 +17,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const orderRef = ref && /^DROP01-\d{10,16}$/.test(ref) ? ref : undefined;
 
   return (
-    <CheckoutProvider>
+    <CheckoutProvider product={PRODUCTS.DROP01}>
       <main className={styles.page}>
         <h1 className={styles.srOnly}>
           too much яром too much долиною — оверсайз-футболка Sasha Chemerov × Димна Суміш, Drop 01
