@@ -6,12 +6,14 @@ import { SITE_URL, requireEnv } from '@/lib/config';
 import type { WayForPayParams } from '@/lib/types';
 import { formatPendingOrderMessage, sendToTelegram } from '@/lib/telegram';
 import { getDb } from '@/lib/mongo';
+import { newOrderReference } from '@/lib/orderReference';
 import {
   createPendingOrder,
   currentAvailability,
   releaseExpiredReservations,
   reserveStock,
   unreserveStock,
+  RESERVATION_TTL_MS,
 } from '@/lib/inventory';
 
 export async function POST(req: NextRequest) {
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest) {
   const merchantDomainName = requireEnv('WAYFORPAY_MERCHANT_DOMAIN');
   const secret = requireEnv('WAYFORPAY_SECRET_KEY');
 
-  const orderReference = `DROP01-${Date.now()}`;
+  const orderReference = newOrderReference('DROP01');
 
   // Резерв складу ДО прийому оплати: товару лише по 20 шт. на розмір.
   // Якщо Mongo лежить — замовлення не приймаємо (краще не продати, ніж
@@ -82,7 +84,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'inventory-unavailable' }, { status: 503 });
   }
   const orderDate = Math.floor(Date.now() / 1000);
-  const [lastName, ...firstParts] = input.fullName.trim().split(/\s+/);
+  // Поле форми — «ІМ'Я І ПРІЗВИЩЕ»: перше слово імʼя, решта прізвище.
+  const [firstName, ...lastParts] = input.fullName.trim().split(/\s+/);
 
   const base = {
     merchantAccount,
@@ -100,17 +103,21 @@ export async function POST(req: NextRequest) {
     serviceUrl: string;
     returnUrl: string;
     merchantTransactionSecureType: string;
+    orderTimeout: number;
   } = {
     ...base,
     merchantSignature: purchaseSignature(secret, base),
-    clientFirstName: firstParts.join(' ') || '-',
-    clientLastName: lastName,
+    clientFirstName: firstName,
+    clientLastName: lastParts.join(' ') || '-',
     clientEmail: input.email,
     clientPhone: input.phone.replace(/[\s()-]/g, ''),
     language: 'UA',
     serviceUrl: `${SITE_URL}/api/wayforpay-callback`,
     returnUrl: `${SITE_URL}/api/wayforpay-return`,
     merchantTransactionSecureType: 'AUTO',
+    // Рахунок WayForPay має померти разом із резервом складу, інакше
+    // оплата прилітає після звільнення резерву й дає oversold.
+    orderTimeout: Math.floor(RESERVATION_TTL_MS / 1000),
   };
 
   // Повні дані замовлення (розмір, адреса) WayForPay назад не повертає,

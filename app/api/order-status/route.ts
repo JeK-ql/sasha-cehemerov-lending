@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongo';
 import type { OrderDoc } from '@/lib/inventory';
+import { ORDER_REF_RE } from '@/lib/orderReference';
 
 // Статус завжди свіжий — сторінка подяки опитує його одразу після оплати.
 export const dynamic = 'force-dynamic';
-
-/** Формат нашого orderReference; чужі значення навіть не питаємо в бази. */
-const REF_RE = /^DROP01-\d{10,16}$/;
 
 /**
  * Публічний статус замовлення для сторінки подяки. Джерело правди —
@@ -16,7 +14,7 @@ const REF_RE = /^DROP01-\d{10,16}$/;
  */
 export async function GET(req: NextRequest) {
   const ref = req.nextUrl.searchParams.get('ref') ?? '';
-  if (!REF_RE.test(ref)) {
+  if (!ORDER_REF_RE.test(ref)) {
     return NextResponse.json({ status: 'unknown' }, { status: 400 });
   }
   try {
