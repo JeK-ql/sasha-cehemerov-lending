@@ -2103,6 +2103,8 @@ git commit -m "refactor: split checkout form into ProductSummary, VariantPicker,
 - Create: `components/Header/PedalHeader.module.css`
 - Create: `components/Footer/PedalFooter.tsx`
 - Create: `components/Footer/PedalFooter.module.css`
+- Modify: `components/Footer/Footer.tsx` (посилання на `/pedal`)
+- Modify: `components/Footer/Footer.module.css` (клас `.promo`)
 - Modify: `app/page.tsx`
 - Modify: `app/layout.tsx` (прибрати `productLd`)
 - Modify: `lib/structuredData.ts`
@@ -2299,6 +2301,40 @@ export function ProductHero({ product }: { product: Product }) {
 - `components/Header/PedalHeader.module.css` — **побайтова копія** `Header.module.css`.
 - `components/Footer/PedalFooter.tsx` — копія `Footer.tsx`, компонент `PedalFooter`, стилі з `./PedalFooter.module.css`. Внутрішні `VisaMark` і `MastercardMark` копіюються разом із ним: вони приватні для файлу, спільного експорту з них ніхто не робив.
 - `components/Footer/PedalFooter.module.css` — **побайтова копія** `Footer.module.css`.
+
+**Плюс перехресні посилання між товарами** (вимога замовника: педаль треба знайти з головної).
+
+У `components/Footer/Footer.tsx` — цей футер віддається на `/`, `/offer` і `/returns` — додати посилання на педаль **першим** елементом лівої навігації і розширити її `aria-label`:
+
+```tsx
+        <nav className={styles.legal} aria-label="Навігація і правова інформація">
+          <Link href="/pedal" className={styles.promo}>
+            Педаль «Димна Суміш» · 10 шт.
+          </Link>
+          <Link href="/offer">Публічна оферта</Link>
+          <Link href="/returns">Умови повернення</Link>
+        </nav>
+```
+
+У `components/Footer/Footer.module.css` — акцент, щоб промо-посилання не читалось як юридична дрібниця:
+
+```css
+/* Посилання на другий товар. Виділене, бо це не легал, а вітрина. */
+.promo {
+  color: #dcc5a3;
+  letter-spacing: 0.04em;
+}
+```
+
+У `PedalFooter.tsx` посилання дзеркальне — з педалі назад на футболку (ми вже на `/pedal`, посилатись на себе не треба):
+
+```tsx
+          <Link href="/" className={styles.promo}>
+            Футболка «too much яром too much долиною»
+          </Link>
+```
+
+`.promo` в `PedalFooter.module.css` — така сама, як у `Footer.module.css`.
 
 У шапці кожного з чотирьох файлів — коментар, який пояснює, чому копія існує:
 
