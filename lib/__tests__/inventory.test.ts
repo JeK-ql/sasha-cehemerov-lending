@@ -507,4 +507,27 @@ describe('markOrderRefunded', () => {
     expect(await markOrderRefunded(db, order.orderReference)).toBe('already-refunded');
     expect(pedalStock().STANDARD).toBe(9); // склад не змінився
   });
+
+  it('редеставлений колбек по документі старого формату (без stockReturned) → обережний невідомий результат', async () => {
+    // Документ, записаний до появи поля stockReturned: status уже
+    // 'refunded', але поле відсутнє. Такий документ у продакшні неможливий
+    // (markOrderRefunded завжди пише stockReturned разом з refundedAt), але
+    // це саме той момент, де read-back не має мовчки трактувати "поле
+    // відсутнє" як "false" — інакше менеджер отримає seed:stock наосліп.
+    orderDocs.push({
+      _id: 'PEDAL01-legacy',
+      productId: 'PEDAL01',
+      sizes: order.sizes,
+      amount: order.amount,
+      status: 'refunded',
+      createdAt: new Date(),
+      expiresAt: new Date(),
+      refundedAt: new Date(),
+      customer: order.customer,
+      // навмисно без stockReturned
+    });
+
+    expect(await markOrderRefunded(db, 'PEDAL01-legacy')).toBe('already-refunded-unknown');
+    expect(pedalStock().STANDARD).toBe(10); // склад узагалі не чіпаємо
+  });
 });

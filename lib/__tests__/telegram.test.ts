@@ -168,4 +168,14 @@ describe('formatRefundedMessage', () => {
     expect(msg).toContain('повторний');
     expect(msg).toContain('seed:stock');
   });
+
+  // Регрес на баг: документ старого формату без stockReturned не має
+  // мовчки трактуватись як "не повернено" — це видало б менеджеру
+  // seed:stock наосліп і ризикувало поставити на продаж 11-ту одиницю.
+  it('already-refunded-unknown — повторний колбек, доля складу невідома, БЕЗ seed:stock', () => {
+    const msg = formatRefundedMessage('PEDAL01-6', 3000, 'already-refunded-unknown');
+    expect(msg).toContain('повторний');
+    expect(msg).not.toContain('seed:stock');
+    expect(msg).toContain('звірте поточний залишок');
+  });
 });

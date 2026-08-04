@@ -90,7 +90,10 @@ export function formatRefundedMessage(
     ].join('\n');
   }
 
-  const isRedelivered = result === 'already-refunded' || result === 'already-refunded-restocked';
+  const isRedelivered =
+    result === 'already-refunded' ||
+    result === 'already-refunded-restocked' ||
+    result === 'already-refunded-unknown';
   const head = isRedelivered
     ? '↩️ <b>Повернення коштів (повторний колбек)</b>'
     : '↩️ <b>Повернення коштів</b>';
@@ -103,10 +106,17 @@ export function formatRefundedMessage(
             'Одиниця складу вже була повернена автоматично раніше',
             '(заявку звільнено ще до цього повернення коштів) — додаткових дій не потрібно.',
           ].join(' ')
-        : [
-            'Одиниця складу автоматично НЕ повернена.',
-            'Якщо товар фізично повернувся у продаж — поверніть його командою npm run seed:stock.',
-          ].join('\n');
+        : result === 'already-refunded-unknown'
+          ? [
+              'Доля одиниці складу за оригінальним поверненням невідома',
+              '(замовлення старого формату, без збереженого стану складу).',
+              'Нічого не робіть автоматично — спершу вручну звірте поточний залишок на складі,',
+              'і лише тоді вирішуйте, чи потрібна корекція.',
+            ].join(' ')
+          : [
+              'Одиниця складу автоматично НЕ повернена.',
+              'Якщо товар фізично повернувся у продаж — поверніть його командою npm run seed:stock.',
+            ].join('\n');
 
   return [
     head,

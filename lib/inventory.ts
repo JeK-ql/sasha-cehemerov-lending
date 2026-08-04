@@ -241,6 +241,14 @@ export type RefundResult =
   | 'already-refunded-restocked'
   /** Повторний (redelivered) колбек; склад оригінальним поверненням НЕ повертався. */
   | 'already-refunded'
+  /**
+   * Повторний (redelivered) колбек по документі старого формату — без
+   * збереженого `stockReturned` доля складу невідома. Це НЕ «не повернено»:
+   * акт на невідомому — небезпечний напрямок (можна виставити на продаж
+   * одиницю, яка вже фізично на складі). Менеджер сам перевіряє поточний
+   * залишок, перш ніж щось міняти.
+   */
+  | 'already-refunded-unknown'
   /** Замовлення в базі немає. */
   | 'unknown';
 
@@ -265,7 +273,17 @@ export type RefundResult =
  * (redelivered) колбек по вже поверненому замовленню. Що сталося зі
  * складом тоді, читаємо з `stockReturned`, який попередній виклик уже
  * зберіг на документі — сам поточний виклик відновити цю інформацію не
- * може. Повертає `'already-refunded-restocked'` або `'already-refunded'`.
+ * може:
+ * - `stockReturned === true` — склад було повернено оригінальним
+ *   поверненням. Повертає `'already-refunded-restocked'`;
+ * - `stockReturned === false` — оригінальне повернення склад свідомо НЕ
+ *   чіпало (paid-гілка). Повертає `'already-refunded'`;
+ * - поле відсутнє (документ старого формату, записаний до появи
+ *   `stockReturned`) — доля складу невідома. Небезпечно трактувати це як
+ *   «не повернено»: так менеджер отримає інструкцію `seed:stock`, яка може
+ *   виставити на продаж одиницю, що вже фізично на складі. Повертає
+ *   `'already-refunded-unknown'` — менеджер має сам звірити поточний
+ *   залишок, а не діяти за типовою інструкцією.
  */
 export async function markOrderRefunded(
   db: Db,
@@ -297,7 +315,12 @@ export async function markOrderRefunded(
 
   const existing = await orders.findOne({ _id: orderReference });
   if (!existing) return 'unknown';
-  return existing.stockReturned ? 'already-refunded-restocked' : 'already-refunded';
+  if (existing.stockReturned === true) return 'already-refunded-restocked';
+  if (existing.stockReturned === false) return 'already-refunded';
+  // Поле відсутнє — документ старого формату. Небезпечний напрямок
+  // невідомого тут — «не повернено» (веде до seed:stock наосліп), тож не
+  // колапсуємо в already-refunded: віддаємо окремий обережний результат.
+  return 'already-refunded-unknown';
 }
 
 /**
