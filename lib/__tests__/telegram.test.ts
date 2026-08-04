@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatPendingOrderMessage, formatPaidMessage } from '../telegram';
+import { formatPendingOrderMessage, formatPaidMessage, formatRefundedMessage } from '../telegram';
 
 const base = {
   orderReference: 'DROP01-9',
@@ -98,5 +98,24 @@ describe('formatPaidMessage', () => {
     expect(msg).toContain('DROP01-9');
     expect(msg).toContain('5200');
     expect(msg).toContain('Оплату підтверджено');
+  });
+});
+
+describe('formatRefundedMessage', () => {
+  it('містить номер, суму і явну інструкцію менеджеру', () => {
+    const msg = formatRefundedMessage('PEDAL01-1754200000000ab3z', 3000, 'refunded');
+    expect(msg).toContain('PEDAL01-1754200000000ab3z');
+    expect(msg).toContain('3000');
+    expect(msg).toContain('seed:stock');
+  });
+
+  it('повторний колбек позначається окремо', () => {
+    expect(formatRefundedMessage('PEDAL01-1', 3000, 'already-refunded')).toContain(
+      'повторний',
+    );
+  });
+
+  it('екранує HTML у номері замовлення', () => {
+    expect(formatRefundedMessage('<b>x</b>', 1, 'refunded')).toContain('&lt;b&gt;');
   });
 });

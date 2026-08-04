@@ -1,3 +1,5 @@
+import type { RefundResult } from './inventory';
+
 export interface PendingOrder {
   orderReference: string;
   fullName: string;
@@ -64,6 +66,29 @@ export function formatPaidMessage(orderReference: string, amount: number): strin
     '✅ <b>Оплату підтверджено</b>',
     `<b>№:</b> ${escapeHtml(orderReference)}`,
     `<b>Сума:</b> ${amount} ₴`,
+  ].join('\n');
+}
+
+/**
+ * Повернення коштів. Склад автоматично не поповнюється — менеджер вирішує,
+ * чи екземпляр фізично повернувся у продаж.
+ */
+export function formatRefundedMessage(
+  orderReference: string,
+  amount: number,
+  result: RefundResult,
+): string {
+  const head =
+    result === 'already-refunded'
+      ? '↩️ <b>Повернення коштів (повторний колбек)</b>'
+      : '↩️ <b>Повернення коштів</b>';
+  return [
+    head,
+    `<b>№:</b> ${escapeHtml(orderReference)}`,
+    `<b>Сума:</b> ${amount} ₴`,
+    '',
+    'Одиниця складу автоматично НЕ повернена.',
+    'Якщо товар фізично повернувся у продаж — поверніть його командою npm run seed:stock.',
   ].join('\n');
 }
 

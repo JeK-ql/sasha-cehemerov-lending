@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callbackSignature, responseSignature } from '@/lib/wayforpay';
-import { formatPaidMessage, sendToTelegram } from '@/lib/telegram';
+import { formatPaidMessage, formatRefundedMessage, escapeHtml, sendToTelegram } from '@/lib/telegram';
 import { requireEnv } from '@/lib/config';
 import { getDb } from '@/lib/mongo';
-import { markOrderPaid, releaseOrder, type MarkPaidResult } from '@/lib/inventory';
+import {
+  markOrderPaid,
+  markOrderRefunded,
+  releaseOrder,
+  type MarkPaidResult,
+  type RefundResult,
+} from '@/lib/inventory';
 
 export async function POST(req: NextRequest) {
   const secret = requireEnv('WAYFORPAY_SECRET_KEY');
@@ -62,6 +68,35 @@ export async function POST(req: NextRequest) {
         } catch (err) {
           console.error('Telegram notify failed', body.orderReference, err);
         }
+      }
+    } else if (
+      body.transactionStatus === 'Refunded' ||
+      body.transactionStatus === 'Voided'
+    ) {
+      // Без цього повернена одиниця зникає зі складу назавжди: замовлення
+      // лишається 'paid', а товару фізично вже може не бути.
+      let refundResult: RefundResult | 'db-error' = 'db-error';
+      try {
+        refundResult = await markOrderRefunded(await getDb(), body.orderReference);
+      } catch (err) {
+        console.error('markOrderRefunded failed', body.orderReference, err);
+      }
+      const text =
+        refundResult === 'db-error'
+          ? [
+              '⚠️ <b>УВАГА: повернення не записано в базу</b>',
+              `<b>№:</b> ${escapeHtml(body.orderReference)}`,
+              'Перевірте статус замовлення вручну.',
+            ].join('\n')
+          : formatRefundedMessage(body.orderReference, body.amount, refundResult);
+      try {
+        await sendToTelegram(
+          requireEnv('TELEGRAM_BOT_TOKEN'),
+          requireEnv('TELEGRAM_CHAT_ID'),
+          text,
+        );
+      } catch (err) {
+        console.error('Telegram refund notify failed', body.orderReference, err);
       }
     } else if (
       body.transactionStatus === 'Declined' ||
