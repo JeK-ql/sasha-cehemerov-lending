@@ -198,7 +198,11 @@ export function CheckoutForm({ product }: { product: Product }) {
           | { availability?: Record<string, boolean> }
           | null;
         if (body?.availability) applyAvailability(body.availability);
-        setStockMsg('На жаль, обраний розмір щойно розібрали. Оновили наявність.');
+        setStockMsg(
+          product.showVariantPicker
+            ? 'На жаль, обраний розмір щойно розібрали. Оновили наявність.'
+            : 'На жаль, товар щойно розібрали. Оновили наявність.',
+        );
         return;
       }
       if (!res.ok) throw new Error('checkout failed');

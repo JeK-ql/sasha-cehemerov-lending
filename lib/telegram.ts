@@ -66,7 +66,7 @@ export function formatPaidMessage(orderReference: string, amount: number): strin
   return [
     '✅ <b>Оплату підтверджено</b>',
     `<b>№:</b> ${escapeHtml(orderReference)}`,
-    `<b>Сума:</b> ${amount} ₴`,
+    `<b>Сума:</b> ${escapeHtml(String(amount))} ₴`,
   ].join('\n');
 }
 
@@ -84,7 +84,7 @@ export function formatRefundedMessage(
     return [
       '❓ <b>Повернення коштів: замовлення не знайдено</b>',
       `<b>№:</b> ${escapeHtml(orderReference)}`,
-      `<b>Сума:</b> ${amount} ₴`,
+      `<b>Сума:</b> ${escapeHtml(String(amount))} ₴`,
       '',
       'Такого замовлення немає в базі. Перевірте статус вручну.',
     ].join('\n');
@@ -111,7 +111,7 @@ export function formatRefundedMessage(
   return [
     head,
     `<b>№:</b> ${escapeHtml(orderReference)}`,
-    `<b>Сума:</b> ${amount} ₴`,
+    `<b>Сума:</b> ${escapeHtml(String(amount))} ₴`,
     '',
     stockLine,
   ].join('\n');
