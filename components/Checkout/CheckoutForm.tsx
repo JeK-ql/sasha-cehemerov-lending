@@ -48,8 +48,16 @@ export function CheckoutForm({ product }: { product: Product }) {
         return {
           ...emptyForm(product),
           ...(JSON.parse(raw) as Partial<CheckoutFormState>),
-          // productId і кількості одноваріантного товару чернетка не задає.
           productId: product.id,
+          // Одноваріантний товар (немає VariantPicker, кількість підняти
+          // нема як): якщо draft.sizes зберіг {STANDARD: 0} (бо на момент
+          // збереження товару не було в наявності), покупця назавжди
+          // заблокує «Товар недоступний» навіть після рефанду чи
+          // прострочки чужого резерву. Кількість такого товару завжди
+          // рахується заново з emptySizes, чернетка тут не джерело правди.
+          // Розпроданість і далі показує BuyOverlay/applyAvailability —
+          // через `available`, а не через сховану в чернетці кількість.
+          ...(!product.showVariantPicker ? { sizes: emptySizes(product) } : {}),
         };
       }
     } catch {
