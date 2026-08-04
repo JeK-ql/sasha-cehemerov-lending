@@ -11,6 +11,7 @@ import { ThankYou } from '@/components/ThankYou/ThankYou';
 import { PRODUCTS } from '@/lib/products';
 import { productLd } from '@/lib/structuredData';
 import { ORDER_REF_RE } from '@/lib/orderReference';
+import { SITE_URL } from '@/lib/config';
 import styles from '../page.module.css';
 
 const product = PRODUCTS.PEDAL01;
@@ -23,10 +24,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Димна Суміш - фузз-педаль Kosko FX × Саша Чемеров',
     description: 'Лімітована серія 10 екземплярів. Ручна робота. 3000 ₴.',
-    url: 'https://isusneisus.com/pedal',
+    url: `${SITE_URL}${product.path}`,
     siteName: 'isusneisus.com',
     locale: 'uk_UA',
     type: 'website',
+    // Без images шер у Instagram/Telegram/Facebook рендериться як голий текст.
+    images: [product.ogImage!],
   },
 };
 
