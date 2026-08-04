@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { preload } from 'react-dom';
 import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
 // Власні хедер/футер сторінки педалі — щоб її можна було перефарбувати
 // незалежно від головної. Див. Step 6.
@@ -32,6 +33,12 @@ export const metadata: Metadata = {
 type SearchParams = Promise<{ paid?: string; ref?: string }>;
 
 export default async function PedalPage({ searchParams }: { searchParams: SearchParams }) {
+  // Хіро — LCP-елемент сторінки; підказуємо браузеру якнайшвидше почати
+  // завантаження фото педалі. Плейсхолдер немає файлу — preload там
+  // не викликаємо, щоб не тягнути неіснуючий ресурс.
+  if (product.media.kind === 'image') {
+    preload(product.media.src, { as: 'image', fetchPriority: 'high' });
+  }
   const { paid, ref } = await searchParams;
   const thankState = paid === '1' ? 'ok' : paid === '0' ? 'fail' : null;
   const orderRef = ref && ORDER_REF_RE.test(ref) ? ref : undefined;

@@ -23,8 +23,22 @@ export function ProductHero({ product }: { product: Product }) {
   }
 
   if (product.media.kind === 'image') {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img className={styles.fill} src={product.media.src} alt="" />;
+    // Це LCP-елемент сторінки товару (повноекранне фото на дроп-сторінці,
+    // яку відкриють переважно з телефону за посиланням із соцмереж) —
+    // fetchPriority і decoding=async підказують браузеру качати й
+    // декодувати його одразу, не чекаючи черги. preload() з тим самим
+    // src викликається в page.tsx, щоб браузер дізнався про файл ще до
+    // того, як дійде розбору цього тега.
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        className={styles.fill}
+        src={product.media.src}
+        alt=""
+        fetchPriority="high"
+        decoding="async"
+      />
+    );
   }
 
   return (
