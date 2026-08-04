@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { purchaseSignature } from '@/lib/wayforpay';
 import { checkoutSchema, totalQuantity } from '@/lib/checkoutSchema';
-import { PRODUCT, SITE_URL, SIZES, requireEnv, type Size } from '@/lib/config';
+import { PRODUCT, SIZES, type Size } from '@/lib/products';
+import { SITE_URL, requireEnv } from '@/lib/config';
 import type { WayForPayParams } from '@/lib/types';
 import { formatPendingOrderMessage, sendToTelegram } from '@/lib/telegram';
 import { getDb } from '@/lib/mongo';

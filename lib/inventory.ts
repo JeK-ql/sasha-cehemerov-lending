@@ -1,5 +1,5 @@
 import type { Db } from 'mongodb';
-import { SIZES, type Size } from './config';
+import { SIZES, type Size } from './products';
 
 /**
  * Облік залишків дропу. Весь склад — ОДИН документ у колекції `inventory`:

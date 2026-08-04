@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { PRODUCT, SIZES, SIZE_MEASUREMENTS, type Size } from '@/lib/config';
+import { PRODUCT, SIZES, SIZE_MEASUREMENTS, type Size } from '@/lib/products';
 import type { CheckoutFormState } from '@/lib/types';
 import { totalQuantity } from '@/lib/checkoutSchema';
 import { validateCheckout } from '@/lib/validateCheckout';

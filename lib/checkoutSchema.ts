@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SIZES, type Size } from './config';
+import { SIZES, type Size } from './products';
 
 /** Нормалізує телефон перед перевіркою: прибирає пробіли, дужки, дефіси. */
 const normalizePhone = (v: string) => v.replace(/[\s()-]/g, '');

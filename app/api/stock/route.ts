@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongo';
 import { stockAvailability } from '@/lib/inventory';
-import { SIZES } from '@/lib/config';
+import { SIZES } from '@/lib/products';
 
 // Route handlers у Next 16 і так динамічні за замовчуванням — це явна
 // страховка: залишки не можна кешувати за жодних умов і майбутніх дефолтів.

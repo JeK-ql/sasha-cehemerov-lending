@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { checkoutSchema } from '../checkoutSchema';
-import { SIZES } from '../config';
+import { SIZES } from '../products';
 
 const npOrder = {
   fullName: 'Чемеров Олександр',

@@ -1,4 +1,5 @@
-import { PRODUCT, SIZES, SITE_URL } from './config';
+import { PRODUCT, SIZES } from './products';
+import { SITE_URL } from './config';
 import { SOCIAL_LINKS } from './socials';
 
 /** ASCII-імена, щоб URL у JSON-LD/og не містили сирої кирилиці. */
