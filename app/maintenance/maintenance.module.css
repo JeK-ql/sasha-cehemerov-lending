@@ -1,0 +1,23 @@
+/* Same shell as the 404 page (not-found.module.css): Header on top, the
+   headline centred in the remaining viewport, thorns watermark behind. */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px 64px;
+}
+
+.headline {
+  font-size: clamp(34px, 9vw, 84px);
+  line-height: 0.9;
+  color: var(--ink);
+  max-width: 12ch;
+}
