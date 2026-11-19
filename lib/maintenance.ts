@@ -1,4 +1,4 @@
 /** Режим «тимчасово не працюємо». true — кожна сторінка показує заглушку,
     а оформлення замовлення відповідає 503 (див. proxy.ts).
-    Щоб відкритися: постав false і задеплой. */
-export const MAINTENANCE_MODE = true;
+    Щоб закритися: постав true і задеплой. */
+export const MAINTENANCE_MODE = false;
