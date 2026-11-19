@@ -125,7 +125,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     brandName: 'Kosko FX × Саша Чемеров',
     paymentName: 'Педаль Kosko FX × Саша Чемеров - Димна Суміш',
     headerCaption: 'ДИМНА СУМІШ // LIMITED 10',
-    price: 13000,
+    price: 1,
     currency: 'UAH',
     sku: 'PEDAL01-DYMNA-SUMISH',
     variants: [{ key: 'STANDARD', label: 'STANDARD' }],
