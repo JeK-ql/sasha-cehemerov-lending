@@ -4,12 +4,40 @@ import { formatPaidMessage, formatRefundedMessage, escapeHtml, sendToTelegram } 
 import { requireEnv } from '@/lib/config';
 import { getDb } from '@/lib/mongo';
 import {
+  findOrder,
   markOrderPaid,
   markOrderRefunded,
+  orderProductId,
   releaseOrder,
   type MarkPaidResult,
   type RefundResult,
 } from '@/lib/inventory';
+import { getProduct } from '@/lib/products';
+import { appendPaidOrderRow, sheetsCredsFromEnv } from '@/lib/ordersSheet';
+
+/**
+ * Дописує оплачене замовлення в Google Таблицю менеджерів. null — записано
+ * (або таблиця не налаштована); рядок — попередження для Telegram: менеджер
+ * має внести замовлення вручну. Оплату це ніколи не блокує.
+ */
+async function recordInSheet(orderReference: string): Promise<string | null> {
+  const creds = sheetsCredsFromEnv();
+  if (!creds) return null;
+  try {
+    const order = await findOrder(await getDb(), orderReference);
+    const product = order && getProduct(orderProductId(order));
+    if (!order || !product) throw new Error('order not found in db');
+    await appendPaidOrderRow(creds, order, product, order.paidAt ?? new Date());
+    return null;
+  } catch (err) {
+    console.error('Google Sheets append failed', orderReference, err);
+    return [
+      '⚠️ <b>Замовлення не записано в Google Таблицю</b>',
+      `<b>№:</b> ${escapeHtml(orderReference)}`,
+      'Внесіть рядок в аркуш «paid» вручну (дані — у повідомленні заявки з тим самим №).',
+    ].join('\n');
+  }
+}
 
 export async function POST(req: NextRequest) {
   const secret = requireEnv('WAYFORPAY_SECRET_KEY');
@@ -87,6 +115,18 @@ export async function POST(req: NextRequest) {
             'Такого замовлення немає в базі. Перевірте статус вручну перед відправкою товару.',
           ].join('\n'),
         );
+      }
+      // Оплачене замовлення — у таблицю менеджерів. Повторний колбек
+      // ('already-paid') теж пробуємо: якщо перша спроба впала, друга
+      // допише рядок, а дубль відсіє перевірка № у самій таблиці.
+      if (
+        paidResult === 'paid' ||
+        paidResult === 'already-paid' ||
+        paidResult === 'paid-after-release' ||
+        paidResult === 'oversold'
+      ) {
+        const sheetWarning = await recordInSheet(body.orderReference);
+        if (sheetWarning) messages.push(sheetWarning);
       }
       // Кожне повідомлення — незалежно: падіння «Оплату підтверджено»
       // не має проковтнути критичне попередження про oversold.

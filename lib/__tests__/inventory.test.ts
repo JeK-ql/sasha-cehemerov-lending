@@ -9,6 +9,7 @@ import {
   stockAvailability,
   currentAvailability,
   createPendingOrder,
+  findOrder,
   markOrderPaid,
   releaseOrder,
   markOrderRefunded,
@@ -19,6 +20,7 @@ import {
 // поведінку lib/inventory незалежно від lib/products, інакше перевірка
 // стала б тавтологічною.
 const SIZES = ['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'] as const;
+const NP = { mode: 'np' as const, city: 'Львів', warehouse: 'Відділення №1' };
 
 /**
  * Мінімальний in-memory двійник частини Mongo API, яку використовує
@@ -154,7 +156,18 @@ describe('резерв і оплата', () => {
     sizes: counts(0, 2, 0),
     amount: 5200,
     customer: { name: 'Тест Тестовий', phone: '0670000000', email: 't@t.ua' },
+    delivery: NP,
   };
+
+  it('заявка зберігає доставку — її читає запис у таблицю після оплати', async () => {
+    await createPendingOrder(db, order);
+    expect((await findOrder(db, 'DROP01-1'))?.delivery).toEqual({
+      mode: 'np',
+      city: 'Львів',
+      warehouse: 'Відділення №1',
+    });
+    expect(await findOrder(db, 'НЕМАЄ')).toBeNull();
+  });
 
   it('pending → paid: склад лишається списаним', async () => {
     await reserveStock(db, 'DROP01', order.sizes);
@@ -237,6 +250,7 @@ describe('releaseExpiredReservations', () => {
         sizes: counts(1, 0, 0),
         amount: 2600,
         customer: { name: 'А Б', phone: '0', email: 'a@b.c' },
+        delivery: NP,
       },
       past,
     );
@@ -247,6 +261,7 @@ describe('releaseExpiredReservations', () => {
       sizes: counts(0, 1, 0),
       amount: 2600,
       customer: { name: 'В Г', phone: '0', email: 'v@g.d' },
+      delivery: NP,
     });
 
     await releaseExpiredReservations(db);
@@ -285,6 +300,7 @@ describe('stockAvailability', () => {
         sizes: counts(1, 0, 0),
         amount: 2600,
         customer: { name: 'А Б', phone: '0', email: 'a@b.c' },
+        delivery: NP,
       },
       new Date(Date.now() - RESERVATION_TTL_MS - 1000),
     );
@@ -338,6 +354,7 @@ describe('кілька товарів в одній колекції склад�
         sizes: counts(1, 0, 0),
         amount: 2600,
         customer: { name: 'А Б', phone: '0', email: 'a@b.c' },
+        delivery: NP,
       },
       past,
     );
@@ -350,6 +367,7 @@ describe('кілька товарів в одній колекції склад�
         sizes: { STANDARD: 1 },
         amount: 3000,
         customer: { name: 'В Г', phone: '0', email: 'v@g.d' },
+        delivery: NP,
       },
       past,
     );
@@ -370,6 +388,7 @@ describe('кілька товарів в одній колекції склад�
       createdAt: new Date(),
       expiresAt: new Date(Date.now() - 1000),
       customer: { name: 'А Б', phone: '0', email: 'a@b.c' },
+      delivery: NP,
     });
     await releaseExpiredReservations(db);
     expect(stock()).toEqual(counts(18, 11, 15));
@@ -383,6 +402,7 @@ describe('кілька товарів в одній колекції склад�
       sizes: { STANDARD: 1 },
       amount: 3000,
       customer: { name: 'В Г', phone: '0', email: 'v@g.d' },
+      delivery: NP,
     });
     await releaseOrder(db, 'PEDAL01-1');
     expect(pedalStock().STANDARD).toBe(10);
@@ -399,6 +419,7 @@ describe('markOrderRefunded', () => {
     sizes: { STANDARD: 1 },
     amount: 3000,
     customer: { name: 'Тест Тестовий', phone: '0670000000', email: 't@t.ua' },
+    delivery: NP,
   };
 
   beforeEach(() => {

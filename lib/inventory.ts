@@ -27,6 +27,19 @@ export interface Customer {
   email: string;
 }
 
+/** Куди везти замовлення — копія полів форми на момент оформлення. */
+export type Delivery =
+  | { mode: 'np'; city: string; warehouse: string }
+  | {
+      mode: 'other';
+      country: string;
+      city: string;
+      street: string;
+      building: string;
+      flat: string;
+      zip: string;
+    };
+
 export interface OrderDoc {
   _id: string;
   /** Відсутнє в замовленнях, створених до появи реєстру товарів. */
@@ -48,6 +61,11 @@ export interface OrderDoc {
    */
   stockReturned?: boolean;
   customer: Customer;
+  /**
+   * Доставка. Відсутня в замовленнях, створених до того, як її почали
+   * зберігати (тоді адреса жила лише в Telegram-повідомленні заявки).
+   */
+  delivery?: Delivery;
 }
 
 interface InventoryDoc {
@@ -156,6 +174,7 @@ export async function createPendingOrder(
     sizes: VariantCounts;
     amount: number;
     customer: Customer;
+    delivery: Delivery;
   },
   now = new Date(),
 ): Promise<void> {
@@ -168,7 +187,13 @@ export async function createPendingOrder(
     createdAt: now,
     expiresAt: new Date(now.getTime() + RESERVATION_TTL_MS),
     customer: input.customer,
+    delivery: input.delivery,
   });
+}
+
+/** Замовлення за номером; null — такого в базі немає. */
+export async function findOrder(db: Db, orderReference: string): Promise<OrderDoc | null> {
+  return ordersOf(db).findOne({ _id: orderReference });
 }
 
 export type MarkPaidResult =

@@ -82,6 +82,20 @@ export async function POST(req: NextRequest) {
         phone: input.phone.replace(/[\s()-]/g, ''),
         email: input.email,
       },
+      // Зберігаємо лише поля обраного способу: решта форми — порожні
+      // значення за замовчуванням, які в таблиці замовлень лише заважали б.
+      delivery:
+        input.deliveryMode === 'np'
+          ? { mode: 'np', city: input.city, warehouse: input.warehouse }
+          : {
+              mode: 'other',
+              country: input.country,
+              city: input.city,
+              street: input.street,
+              building: input.building,
+              flat: input.flat,
+              zip: input.zip,
+            },
     });
   } catch (err) {
     console.error('Inventory reservation failed', orderReference, err);
