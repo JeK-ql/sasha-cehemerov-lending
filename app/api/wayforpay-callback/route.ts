@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
           [
             '⚠️ <b>УВАГА: оплачено, але розмір уже розпродано</b>',
             `<b>№:</b> ${escapeHtml(body.orderReference)}`,
-            'Резерв встиг звільнитись (оплата пізніше 30 хв), і залишку не вистачило.',
+            'Резерв встиг звільнитись (оплата пізніше 10 хв), і залишку не вистачило.',
             "Зв'яжіться з покупцем: відправити з залишків іншого замовлення або повернути кошти.",
           ].join('\n'),
         );
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       body.transactionStatus === 'Declined' ||
       body.transactionStatus === 'Expired'
     ) {
-      // Оплата не відбулась — повертаємо резерв одразу, не чекаючи 30 хв.
+      // Оплата не відбулась — повертаємо резерв одразу, не чекаючи 10 хв.
       try {
         await releaseOrder(await getDb(), body.orderReference);
       } catch (err) {

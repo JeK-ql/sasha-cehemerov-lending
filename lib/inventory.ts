@@ -12,7 +12,7 @@ import { DEFAULT_PRODUCT_ID } from './products';
  * або якщо WayForPay повідомив Declined/Expired.
  */
 
-export const RESERVATION_TTL_MS = 30 * 60 * 1000;
+export const RESERVATION_TTL_MS = 10 * 60 * 1000;
 
 /** Кількості по ключах варіантів товару. */
 export type VariantCounts = Record<string, number>;
@@ -164,6 +164,24 @@ export async function stockAvailability(
 ): Promise<Record<string, boolean>> {
   await releaseExpiredReservations(db);
   return currentAvailability(db, productId, keys);
+}
+
+/**
+ * Скільки одиниць варіанта доступно до продажу зараз — з попереднім
+ * звільненням прострочених резервів. Активні резерви вже відняті, тож
+ * число падає, поки хтось оплачує, і повертається, якщо оплата не прийшла.
+ * Тут цифра свідомо публічна (тираж педалі на сторінці), на відміну від
+ * /api/stock, який віддає тільки є/нема.
+ */
+export async function stockCount(
+  db: Db,
+  productId: string,
+  key: string,
+  now = new Date(),
+): Promise<number> {
+  await releaseExpiredReservations(db, now);
+  const doc = await inventoryOf(db).findOne({ _id: productId });
+  return Math.max(0, doc?.stock[key] ?? 0);
 }
 
 export async function createPendingOrder(

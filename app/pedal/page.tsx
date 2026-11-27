@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { ViewTransition } from 'react';
+import { cache, ViewTransition } from 'react';
 import { preload } from 'react-dom';
 import { CheckoutProvider } from '@/components/Checkout/CheckoutProvider';
 // Власні хедер/футер сторінки педалі — щоб її можна було перефарбувати
@@ -12,27 +12,50 @@ import { PRODUCTS } from '@/lib/products';
 import { productLd } from '@/lib/structuredData';
 import { ORDER_REF_RE } from '@/lib/orderReference';
 import { SITE_URL } from '@/lib/config';
+import { getDb } from '@/lib/mongo';
+import { stockCount } from '@/lib/inventory';
+import { pedalEditionCopy, withPedalEdition } from '@/lib/pedalEdition';
 import styles from './pedal.module.css';
 
 const product = PRODUCTS.PEDAL01;
 
-export const metadata: Metadata = {
-  title: 'Димна Суміш - фузз-педаль Kosko FX × Саша Чемеров, лімітована серія 10 шт.',
+/** Повний тираж серії — показується, лише якщо склад прочитати не вдалось. */
+const EDITION_SIZE = 10;
+
+/**
+ * Живий залишок педалей у базі (активні резерви відняті, прострочені
+ * звільнені). cache() — один запит до бази на рендер: число потрібне і в
+ * generateMetadata, і в самій сторінці. База лежить — показуємо повний
+ * тираж: чекаут однаково перевірить наявність реальним резервом.
+ */
+const remainingPedals = cache(async (): Promise<number> => {
+  try {
+    return await stockCount(await getDb(), product.id, product.variants[0].key);
+  } catch (err) {
+    console.error('pedal stockCount failed', err);
+    return EDITION_SIZE;
+  }
+});
+
+export async function generateMetadata(): Promise<Metadata> {
   // Ціна з реєстру — під час акції (lib/promo.ts) опис збігається з чекаутом.
-  description:
-    `Фузз-дисторшн «Димна Суміш» на основі схеми EarthQuaker Devices Hizumitas. Ручна робота, тираж 10 екземплярів. ${product.price} ₴, доставка по Україні та за кордон.`,
-  alternates: { canonical: '/pedal' },
-  openGraph: {
-    title: 'Димна Суміш - фузз-педаль Kosko FX × Саша Чемеров',
-    description: `Лімітована серія 10 екземплярів. Ручна робота. ${product.price} ₴.`,
-    url: `${SITE_URL}${product.path}`,
-    siteName: 'isusneisus.com',
-    locale: 'uk_UA',
-    type: 'website',
-    // Без images шер у Instagram/Telegram/Facebook рендериться як голий текст.
-    images: [product.ogImage!],
-  },
-};
+  const copy = pedalEditionCopy(await remainingPedals(), product.price);
+  return {
+    title: copy.title,
+    description: copy.description,
+    alternates: { canonical: '/pedal' },
+    openGraph: {
+      title: 'Димна Суміш - фузз-педаль Kosko FX × Саша Чемеров',
+      description: copy.ogDescription,
+      url: `${SITE_URL}${product.path}`,
+      siteName: 'isusneisus.com',
+      locale: 'uk_UA',
+      type: 'website',
+      // Без images шер у Instagram/Telegram/Facebook рендериться як голий текст.
+      images: [product.ogImage!],
+    },
+  };
+}
 
 // Сторінка кислотно-зелена від краю до краю, тому смуга браузера збігається
 // з нею, а не зі світлим кольором решти сайту (він у app/layout.tsx).
@@ -78,9 +101,13 @@ export default async function PedalPage({ searchParams }: { searchParams: Search
   const { paid, ref } = await searchParams;
   const thankState = paid === '1' ? 'ok' : paid === '0' ? 'fail' : null;
   const orderRef = ref && ORDER_REF_RE.test(ref) ? ref : undefined;
+  const remaining = await remainingPedals();
+  const copy = pedalEditionCopy(remaining, product.price);
+  // Тираж у модалці й schema.org — теж живий залишок.
+  const liveProduct = withPedalEdition(product, remaining);
 
   return (
-    <CheckoutProvider product={product}>
+    <CheckoutProvider product={liveProduct}>
       {/* Перехід «зін-флаєр» (див. globals.css): сторінка-зін заїжджає знизу
           поверх головної і так само падає вниз на зворотному шляху. Для решти
           навігацій (browser back, /offer) default="none" вимикає анімацію. */}
@@ -90,9 +117,7 @@ export default async function PedalPage({ searchParams }: { searchParams: Search
         default="none"
       >
         <main className={styles.page}>
-          <h1 className={styles.srOnly}>
-            Димна Суміш — фузз-педаль Kosko FX × Саша Чемеров, лімітована серія 10 екземплярів
-          </h1>
+          <h1 className={styles.srOnly}>{copy.heading}</h1>
           <div className={styles.zine}>
             <PedalHeader />
             {BLOCKS.map((b) => (
@@ -124,7 +149,7 @@ export default async function PedalPage({ searchParams }: { searchParams: Search
       </ViewTransition>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd(product)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd(liveProduct)) }}
       />
     </CheckoutProvider>
   );

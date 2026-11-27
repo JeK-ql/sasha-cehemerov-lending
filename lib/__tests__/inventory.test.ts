@@ -8,6 +8,7 @@ import {
   releaseExpiredReservations,
   stockAvailability,
   currentAvailability,
+  stockCount,
   createPendingOrder,
   findOrder,
   markOrderPaid,
@@ -307,6 +308,38 @@ describe('stockAvailability', () => {
     await currentAvailability(db, 'DROP01', [...SIZES]);
     expect(orderDocs[0].status).toBe('pending'); // не звільнила
     expect(stock()).toEqual(counts(17, 11, 15));
+  });
+});
+
+describe('stockCount', () => {
+  it('віддає число доступних одиниць варіанта', async () => {
+    expect(await stockCount(db, 'DROP01', 'СЕРЕДНІЙ')).toBe(11);
+  });
+
+  it('активний резерв зменшує число, прострочений — повертає', async () => {
+    await reserveStock(db, 'DROP01', counts(0, 2, 0));
+    await createPendingOrder(
+      db,
+      {
+        orderReference: 'DROP01-abandoned',
+        productId: 'DROP01',
+        sizes: counts(0, 2, 0),
+        amount: 5200,
+        customer: { name: 'А Б', phone: '0', email: 'a@b.c' },
+        delivery: NP,
+      },
+      new Date(Date.now() - RESERVATION_TTL_MS + 60_000),
+    );
+    expect(await stockCount(db, 'DROP01', 'СЕРЕДНІЙ')).toBe(9);
+
+    // Через дві хвилини резерв уже прострочений — одиниці повертаються.
+    expect(await stockCount(db, 'DROP01', 'СЕРЕДНІЙ', new Date(Date.now() + 120_000))).toBe(11);
+    expect(orderDocs[0].status).toBe('released');
+  });
+
+  it('без документа складу — 0', async () => {
+    inventoryDocs.length = 0;
+    expect(await stockCount(db, 'PEDAL01', 'STANDARD')).toBe(0);
   });
 });
 
