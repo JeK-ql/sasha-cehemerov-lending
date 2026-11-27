@@ -31,7 +31,7 @@ export function VariantPicker({
   return (
     <fieldset className={`${styles.block} ${styles.blockVariant}`}>
       <span className={`${styles.fieldLabel} ${styles.segLabel} mono`}>РОЗМІР</span>
-      <div className={styles.segRow} role="group" aria-label="Розмір">
+      <div className={`${styles.segRow} ${styles.sizeGrid}`} role="group" aria-label="Розмір">
         {product.variants.map((v) => {
           const soldOut = available?.[v.key] === false;
           const count = sizes[v.key] ?? 0;
@@ -49,7 +49,7 @@ export function VariantPicker({
               {soldOut ? (
                 <span className={styles.soldOut}>РОЗПРОДАНО</span>
               ) : (
-                count > 0 ? ` ×${count}` : ''
+                count > 0 && <span className={styles.segCount}> ×{count}</span>
               )}
             </button>
           );

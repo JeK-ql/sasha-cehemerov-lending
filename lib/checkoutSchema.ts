@@ -14,6 +14,22 @@ export function emptySizes(product: Product): Record<string, number> {
   return Object.fromEntries(variantKeys(product).map((k) => [k, 0]));
 }
 
+/**
+ * Кількості з чернетки localStorage, приведені до поточного набору варіантів.
+ * Чернетка могла зберегтися, коли варіантів було інше число: схема вимагає
+ * точного набору ключів, тож без цього приведення замовлення відхилялось би.
+ * Одноваріантний товар чернетці не вірить — кількість у нього завжди 1.
+ */
+export function restoreDraftSizes(product: Product, draft: unknown): Record<string, number> {
+  const sizes = emptySizes(product);
+  if (!product.showVariantPicker || typeof draft !== 'object' || draft === null) return sizes;
+  for (const key of variantKeys(product)) {
+    const n = (draft as Record<string, unknown>)[key];
+    if (typeof n === 'number' && Number.isInteger(n) && n >= 0) sizes[key] = n;
+  }
+  return sizes;
+}
+
 /** Схема замовлення — спільна для клієнтської форми і /api/checkout. */
 export const checkoutSchema = z
   .object({

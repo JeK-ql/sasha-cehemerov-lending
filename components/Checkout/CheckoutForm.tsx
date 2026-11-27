@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { Product } from '@/lib/products';
 import { variantKeys } from '@/lib/products';
 import type { CheckoutFormState } from '@/lib/types';
-import { totalQuantity, emptySizes } from '@/lib/checkoutSchema';
+import { totalQuantity, emptySizes, restoreDraftSizes } from '@/lib/checkoutSchema';
 import { validateCheckout } from '@/lib/validateCheckout';
 import styles from './CheckoutModal.module.css';
 import { NovaPoshtaPicker } from './NovaPoshtaPicker';
@@ -55,19 +55,17 @@ export function CheckoutForm({ product }: { product: Product }) {
       const raw =
         typeof window !== 'undefined' ? localStorage.getItem(draftKey(product.id)) : null;
       if (raw) {
+        const draft = JSON.parse(raw) as Partial<CheckoutFormState>;
         return {
           ...emptyForm(product),
-          ...(JSON.parse(raw) as Partial<CheckoutFormState>),
+          ...draft,
           productId: product.id,
-          // Одноваріантний товар (немає VariantPicker, кількість підняти
-          // нема як): якщо draft.sizes зберіг {STANDARD: 0} (бо на момент
-          // збереження товару не було в наявності), покупця назавжди
-          // заблокує «Товар недоступний» навіть після рефанду чи
-          // прострочки чужого резерву. Кількість такого товару завжди
-          // рахується заново з emptySizes, чернетка тут не джерело правди.
+          // Кількості чернетці не довіряємо напряму: набір розмірів міг
+          // змінитися після її збереження, а одноваріантний товар із
+          // {STANDARD: 0} назавжди заблокував би покупця «Товар недоступний».
           // Розпроданість і далі показує BuyOverlay/applyAvailability —
           // через `available`, а не через сховану в чернетці кількість.
-          ...(!product.showVariantPicker ? { sizes: emptySizes(product) } : {}),
+          sizes: restoreDraftSizes(product, draft.sizes),
         };
       }
     } catch {

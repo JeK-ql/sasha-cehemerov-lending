@@ -6,7 +6,7 @@ const valid: CheckoutFormState = {
   fullName: 'Іван Іванов',
   phone: '+380671234567',
   email: 'a@b.com',
-  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 1, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
   deliveryMode: 'np',
   city: 'Львів',
   cityRef: 'ref-1',
@@ -27,7 +27,7 @@ describe('validateCheckout', () => {
   it('maps an all-zero sizes object to the sizes field', () => {
     const errs = validateCheckout({
       ...valid,
-      sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+      sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
     });
     expect(errs.sizes).toBe('Оберіть розмір');
   });

@@ -296,8 +296,8 @@
   background: none; border: 1.5px solid var(--ck-text); color: var(--ck-text);
   cursor: pointer;
   font-family: var(--font-oswald); font-weight: 700;
-  /* 14px: підписи «МАЛЕНЬКИЙ/СЕРЕДНІЙ/ВЕЛИКИЙ» мають вміщатися в третину
-     ширини мобільного екрана без переносу. */
+  /* 14px: найдовший підпис розміру («СЕРЕДНІЙ ЛОНГ») має вміщатися в
+     третину ширини мобільного екрана без переносу (див. .sizeGrid). */
   font-size: 14px; text-transform: uppercase; letter-spacing: .02em;
   padding: 0 4px;
   transition: background 150ms ease, color 150ms ease,
@@ -306,8 +306,26 @@
 .segBtn[data-active='true'] { background: var(--ck-cta-bg); color: var(--ck-cta-text); }
 .segBtn:not([data-active='true']):active { transform: scale(0.97); }
 .segBtn:disabled { opacity: .45; cursor: not-allowed; }
+/* Розміри футболки: пʼять кнопок в один ряд на телефоні не влазять. Сітка
+   на 6 треків: перші три розміри по третині, решта два — по половині, тож
+   обидва ряди закінчуються на одному краю й читаються одним блоком. Від
+   560px пʼять кнопок уже вміщаються — один ряд, як решта сегментів форми. */
+.sizeGrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+/* На вузьких телефонах (< 380px) «СЕРЕДНІЙ ЛОНГ» ділиться на два рядки
+   замість вилазити за рамку; висоти 52px на це вистачає разом з підписом. */
+.sizeGrid > .segBtn { grid-column: span 2; line-height: 1.05; text-wrap: balance;
+  padding: 0 6px; }
+.sizeGrid > .segBtn:nth-child(n + 4) { grid-column: span 3; }
+@media (min-width: 560px) {
+  .sizeGrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .sizeGrid > .segBtn,
+  .sizeGrid > .segBtn:nth-child(n + 4) { grid-column: auto; }
+}
 /* Підпис під назвою розпроданого розміру. */
 .soldOut { display: block; font-size: 8px; letter-spacing: .08em; color: var(--ck-error); }
+/* Обрана кількість — другим рядком, як і «РОЗПРОДАНО»: в один рядок
+   «СЕРЕДНІЙ ЛОНГ ×2» не вміщається в третину мобільного екрана. */
+.segCount { display: block; font-size: 11px; letter-spacing: .08em; margin-top: 2px; }
 .segRow + .fieldError, .segRow + .fieldHint { margin-top: 10px; }
 
 /* Два поля в один рядок (будинок + квартира). */

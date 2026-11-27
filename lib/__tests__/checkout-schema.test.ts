@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { checkoutSchema, emptySizes } from '../checkoutSchema';
+import { checkoutSchema, emptySizes, restoreDraftSizes } from '../checkoutSchema';
 import { PRODUCTS, variantKeys } from '../products';
 
 const npOrder = {
   fullName: 'Чемеров Олександр',
   phone: '+380671234567',
   email: 'a@b.com',
-  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 1, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
   deliveryMode: 'np' as const,
   city: 'Львів',
   cityRef: 'ref-1',
@@ -94,7 +94,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 3, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 3, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(true);
   });
@@ -102,14 +102,14 @@ describe('checkoutSchema - розміри (мультирозмірне замо
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 2, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 2, СЕРЕДНІЙ: 1, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(true);
   });
   it('rejects an all-zero order with the size message', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+      sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -120,7 +120,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
   it('rejects more than 10 items total — first sizes issue is Ukrainian', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: 5, СЕРЕДНІЙ: 5, ВЕЛИКИЙ: 1 },
+      sizes: { МАЛЕНЬКИЙ: 5, СЕРЕДНІЙ: 5, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 1, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -136,7 +136,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
   it('rejects a negative count with a Ukrainian message, not Zod’s built-in English one', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: -1, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 },
+      sizes: { МАЛЕНЬКИЙ: -1, СЕРЕДНІЙ: 2, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -148,7 +148,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
   it('rejects a fractional count with a Ukrainian message, not Zod’s built-in English one', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: 1.5, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+      sizes: { МАЛЕНЬКИЙ: 1.5, СЕРЕДНІЙ: 0, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -260,7 +260,7 @@ describe('checkoutSchema - вибір товару', () => {
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, ГІГАНТСЬКИЙ: 1 },
+        sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0, ГІГАНТСЬКИЙ: 1 },
       }).success,
     ).toBe(false);
   });
@@ -313,13 +313,13 @@ describe('checkoutSchema - ліміт кількості залежить від
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 0, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(true);
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 1, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(false);
   });
@@ -330,11 +330,43 @@ describe('emptySizes', () => {
     expect(emptySizes(PRODUCTS.DROP01)).toEqual({
       МАЛЕНЬКИЙ: 0,
       СЕРЕДНІЙ: 0,
+      'СЕРЕДНІЙ ЛОНГ': 0,
       ВЕЛИКИЙ: 0,
+      МАШИНА: 0,
     });
   });
 
   it('педаль стартує з однієї штуки — вибирати нічого', () => {
     expect(emptySizes(PRODUCTS.PEDAL01)).toEqual({ STANDARD: 1 });
+  });
+});
+
+describe('restoreDraftSizes', () => {
+  it('чернетка зі старим набором розмірів доповнюється новими ключами й проходить схему', () => {
+    // Покупець відкривав форму, коли розмірів було три: у localStorage
+    // лишились лише вони. Без доповнення сервер відхилив би замовлення.
+    const sizes = restoreDraftSizes(PRODUCTS.DROP01, { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 });
+    expect(sizes).toEqual({
+      МАЛЕНЬКИЙ: 0,
+      СЕРЕДНІЙ: 2,
+      'СЕРЕДНІЙ ЛОНГ': 0,
+      ВЕЛИКИЙ: 0,
+      МАШИНА: 0,
+    });
+    expect(checkoutSchema.safeParse({ ...npOrder, sizes }).success).toBe(true);
+  });
+
+  it('ключі, яких більше немає в реєстрі, і биті значення відкидаються', () => {
+    expect(
+      restoreDraftSizes(PRODUCTS.DROP01, { ГІГАНТСЬКИЙ: 3, МАШИНА: -1, ВЕЛИКИЙ: 1.5, МАЛЕНЬКИЙ: 1 }),
+    ).toEqual({ МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, 'СЕРЕДНІЙ ЛОНГ': 0, ВЕЛИКИЙ: 0, МАШИНА: 0 });
+  });
+
+  it('без чернетки — порожній стан', () => {
+    expect(restoreDraftSizes(PRODUCTS.DROP01, undefined)).toEqual(emptySizes(PRODUCTS.DROP01));
+  });
+
+  it('одноваріантний товар завжди стартує з однієї штуки, чернетка ігнорується', () => {
+    expect(restoreDraftSizes(PRODUCTS.PEDAL01, { STANDARD: 0 })).toEqual({ STANDARD: 1 });
   });
 });

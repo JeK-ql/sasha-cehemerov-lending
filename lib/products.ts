@@ -97,16 +97,20 @@ export const PRODUCTS: Record<ProductId, Product> = {
     name: 'too much яром too much долиною',
     brandName: 'Sasha Chemerov × Димна Суміш',
     paymentName: 'Футболка - too much яром too much долиною',
-    headerCaption: 'DROP 01 // МАЛЕНЬКИЙ · СЕРЕДНІЙ · ВЕЛИКИЙ',
+    // Пʼять розмірів не влазять у підпис хедера переліком — показуємо діапазон.
+    headerCaption: 'DROP 01 // МАЛЕНЬКИЙ — МАШИНА',
     price: 2600,
     currency: 'UAH',
     sku: 'DROP01-OVERSIZE',
     // Власні назви розмірів замість S/M/L — свідоме рішення команди
-    // (розміри не збігаються зі стандартними).
+    // (розміри не збігаються зі стандартними). Порядок — від меншого до
+    // більшого: ЛОНГ — подовжений середній, МАШИНА — найбільший (≈ XXL).
     variants: [
       { key: 'МАЛЕНЬКИЙ', label: 'МАЛЕНЬКИЙ' },
       { key: 'СЕРЕДНІЙ', label: 'СЕРЕДНІЙ' },
+      { key: 'СЕРЕДНІЙ ЛОНГ', label: 'СЕРЕДНІЙ ЛОНГ' },
       { key: 'ВЕЛИКИЙ', label: 'ВЕЛИКИЙ' },
+      { key: 'МАШИНА', label: 'МАШИНА' },
     ],
     maxPerOrder: 10,
     showVariantPicker: true,

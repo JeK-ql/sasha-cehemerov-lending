@@ -1,7 +1,7 @@
 /**
  * Створює/оновлює документ складу товару (база shop, колекція inventory).
  *
- * Запуск:  npm run seed:stock -- DROP01 18 11 15
+ * Запуск:  npm run seed:stock -- DROP01 2 5 2 4 3
  *          npm run seed:stock -- PEDAL01 10
  *          npm run seed:stock -- PEDAL01        (показує поточний стан)
  *
@@ -16,7 +16,7 @@ import path from 'node:path';
 import { MongoClient } from 'mongodb';
 
 const VARIANTS = {
-  DROP01: ['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ'],
+  DROP01: ['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'СЕРЕДНІЙ ЛОНГ', 'ВЕЛИКИЙ', 'МАШИНА'],
   PEDAL01: ['STANDARD'],
 };
 
