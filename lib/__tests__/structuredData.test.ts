@@ -24,13 +24,7 @@ describe('structuredData', () => {
   });
 
   it('Product.size відповідає SIZES з конфігу', () => {
-    expect(productLd(PRODUCTS.DROP01).size).toEqual([
-      'МАЛЕНЬКИЙ',
-      'СЕРЕДНІЙ',
-      'СЕРЕДНІЙ ЛОНГ',
-      'ВЕЛИКИЙ',
-      'МАШИНА',
-    ]);
+    expect(productLd(PRODUCTS.DROP01).size).toEqual(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ']);
   });
 
   it('return policy does not falsely claim free returns', () => {
@@ -54,9 +48,7 @@ describe('structuredData', () => {
       expect(productLd(PRODUCTS.DROP01).size).toEqual([
         'МАЛЕНЬКИЙ',
         'СЕРЕДНІЙ',
-        'СЕРЕДНІЙ ЛОНГ',
         'ВЕЛИКИЙ',
-        'МАШИНА',
       ]);
     });
 

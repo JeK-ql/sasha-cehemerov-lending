@@ -33,7 +33,7 @@ npm run dev    # локальна розробка
 npm test       # запуск тестів
 npm run build  # продакшн-збірка
 
-npm run seed:stock -- DROP01 2 5 2 4 3  # залишки футболки по розмірах
+npm run seed:stock -- DROP01 18 11 15   # залишки футболки по розмірах
 npm run seed:stock -- PEDAL01 10        # залишок педалі
 npm run seed:stock -- PEDAL01           # показати поточний стан
 ```

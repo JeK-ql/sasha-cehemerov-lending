@@ -27,16 +27,9 @@ describe('реєстр товарів', () => {
     }
   });
 
-  it('футболка: пʼять розмірів від маленького до машини, до 10 шт., пікер увімкнено', () => {
+  it('футболка: три розміри, до 10 шт., пікер варіантів увімкнено', () => {
     const p = PRODUCTS.DROP01;
-    expect(variantKeys(p)).toEqual([
-      'МАЛЕНЬКИЙ',
-      'СЕРЕДНІЙ',
-      'СЕРЕДНІЙ ЛОНГ',
-      'ВЕЛИКИЙ',
-      'МАШИНА',
-    ]);
-    expect(p.headerCaption).toBe('DROP 01 // МАЛЕНЬКИЙ — МАШИНА');
+    expect(variantKeys(p)).toEqual(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ']);
     expect(p.maxPerOrder).toBe(10);
     expect(p.showVariantPicker).toBe(true);
     expect(p.path).toBe('/');
