@@ -5,7 +5,7 @@
 ## Product: too much яром too much долиною
 - Name: too much яром too much долиною
 - Type: Oversized t-shirt (unisex)
-- Price: 2600 UAH
+- Price: 2300 UAH (Black Friday; regular price 2600 UAH)
 - SKU: DROP01-OVERSIZE
 - Availability: In stock (limited edition)
 - Material: 100% cotton

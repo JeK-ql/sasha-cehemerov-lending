@@ -8,6 +8,7 @@ import {
   variantKeys,
   DEFAULT_PRODUCT_ID,
 } from '../products';
+import { BLACK_FRIDAY } from '../promo';
 
 describe('реєстр товарів', () => {
   it('містить рівно два товари з унікальними id і шляхами', () => {
@@ -135,5 +136,23 @@ describe('бренд товару', () => {
   it('у кожного товару свій бренд: футболку випускає артист, педаль зібрала Kosko FX', () => {
     expect(PRODUCTS.DROP01.brandName).toBe('Sasha Chemerov × Димна Суміш');
     expect(PRODUCTS.PEDAL01.brandName).toBe('Kosko FX × Саша Чемеров');
+  });
+});
+
+describe('Чорна пʼятниця (lib/promo.ts)', () => {
+  it('футболка: 2300 з перекресленою 2600 під час акції, 2600 без неї', () => {
+    const p = PRODUCTS.DROP01;
+    if (BLACK_FRIDAY) {
+      expect(p.price).toBe(2300);
+      expect(p.oldPrice).toBe(2600);
+    } else {
+      expect(p.price).toBe(2600);
+      expect(p.oldPrice).toBeUndefined();
+    }
+  });
+
+  it('педаль в акції не бере участі', () => {
+    expect(PRODUCTS.PEDAL01.price).toBe(13000);
+    expect(PRODUCTS.PEDAL01.oldPrice).toBeUndefined();
   });
 });

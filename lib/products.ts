@@ -6,6 +6,11 @@
  * його документа в колекції `inventory`.
  */
 
+import { BLACK_FRIDAY } from './promo';
+
+const TEE_PRICE = 2600;
+const TEE_BLACK_FRIDAY_PRICE = 2300;
+
 export const PRODUCT_IDS = ['DROP01', 'PEDAL01'] as const;
 export type ProductId = (typeof PRODUCT_IDS)[number];
 
@@ -50,6 +55,8 @@ export interface Product {
   /** Рядок під логотипом у хедері. */
   headerCaption: string;
   price: number;
+  /** Ціна до знижки — показується перекресленою. Задана — товар у акції. */
+  oldPrice?: number;
   currency: 'UAH';
   sku: string;
   variants: ProductVariant[];
@@ -98,7 +105,8 @@ export const PRODUCTS: Record<ProductId, Product> = {
     brandName: 'Sasha Chemerov × Димна Суміш',
     paymentName: 'Футболка - too much яром too much долиною',
     headerCaption: 'DROP 01 // МАЛЕНЬКИЙ · СЕРЕДНІЙ · ВЕЛИКИЙ',
-    price: 2600,
+    price: BLACK_FRIDAY ? TEE_BLACK_FRIDAY_PRICE : TEE_PRICE,
+    ...(BLACK_FRIDAY ? { oldPrice: TEE_PRICE } : {}),
     currency: 'UAH',
     sku: 'DROP01-OVERSIZE',
     // Власні назви розмірів замість S/M/L — свідоме рішення команди

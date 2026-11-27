@@ -11,10 +11,14 @@ const display = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['900'], va
 const oswald = Oswald({ subsets: ['latin', 'cyrillic'], weight: ['600', '700'], variable: '--font-oswald' });
 const mono = IBM_Plex_Mono({ subsets: ['latin', 'cyrillic'], weight: ['400'], variable: '--font-mono' });
 
+// Ціна з реєстру — під час акції (lib/promo.ts) опис для пошуковиків і
+// соцмереж показує ту саму суму, що й чекаут.
+const teePrice = `${PRODUCTS.DROP01.price} ₴`;
+
 export const metadata: Metadata = {
   title: 'too much яром too much долиною - мерч Sasha Chemerov × Димна Суміш',
   description:
-    'Оверсайз-футболка «too much яром too much долиною» - лімітований дроп 01 Sasha Chemerov × Димна Суміш. 2600 ₴, доставка Новою Поштою по Україні, оплата карткою через WayForPay.',
+    `Оверсайз-футболка «too much яром too much долиною» - лімітований дроп 01 Sasha Chemerov × Димна Суміш. ${teePrice}, доставка Новою Поштою по Україні, оплата карткою через WayForPay.`,
   metadataBase: new URL('https://isusneisus.com'),
   alternates: {
     canonical: '/',
@@ -22,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'too much яром too much долиною - мерч Sasha Chemerov × Димна Суміш',
     description:
-      'Лімітований дроп 01. 2600 ₴, доставка Новою Поштою по Україні.',
+      `Лімітований дроп 01. ${teePrice}, доставка Новою Поштою по Україні.`,
     url: 'https://isusneisus.com/',
     siteName: 'isusneisus.com',
     locale: 'uk_UA',
