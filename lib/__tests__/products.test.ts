@@ -28,9 +28,9 @@ describe('реєстр товарів', () => {
     }
   });
 
-  it('футболка: три розміри, до 10 шт., пікер варіантів увімкнено', () => {
+  it('футболка: чотири розміри від маленького до машини, до 10 шт., пікер варіантів увімкнено', () => {
     const p = PRODUCTS.DROP01;
-    expect(variantKeys(p)).toEqual(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ']);
+    expect(variantKeys(p)).toEqual(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ', 'МАШИНА']);
     expect(p.maxPerOrder).toBe(10);
     expect(p.showVariantPicker).toBe(true);
     expect(p.path).toBe('/');
@@ -42,7 +42,7 @@ describe('реєстр товарів', () => {
     expect(p.maxPerOrder).toBe(1);
     expect(p.showVariantPicker).toBe(false);
     expect(p.path).toBe('/pedal');
-    expect(p.price).toBe(13000);
+    // Сама ціна — в блоці «Чорна пʼятниця» нижче.
     // Модалка — крок оплати: без опису, лише компактна таблиця характеристик.
     // expect(p.description).toBeUndefined();
     expect(p.specs?.map((s) => s.label)).toEqual([
@@ -151,8 +151,14 @@ describe('Чорна пʼятниця (lib/promo.ts)', () => {
     }
   });
 
-  it('педаль в акції не бере участі', () => {
-    expect(PRODUCTS.PEDAL01.price).toBe(13000);
-    expect(PRODUCTS.PEDAL01.oldPrice).toBeUndefined();
+  it('педаль: 8500 з перекресленою 13000 під час акції, 13000 без неї', () => {
+    const p = PRODUCTS.PEDAL01;
+    if (BLACK_FRIDAY) {
+      expect(p.price).toBe(8500);
+      expect(p.oldPrice).toBe(13000);
+    } else {
+      expect(p.price).toBe(13000);
+      expect(p.oldPrice).toBeUndefined();
+    }
   });
 });

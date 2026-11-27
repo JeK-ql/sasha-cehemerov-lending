@@ -306,6 +306,13 @@
 .segBtn[data-active='true'] { background: var(--ck-cta-bg); color: var(--ck-cta-text); }
 .segBtn:not([data-active='true']):active { transform: scale(0.97); }
 .segBtn:disabled { opacity: .45; cursor: not-allowed; }
+/* Розміри футболки: чотири кнопки в один ряд на телефоні не влазять —
+   «МАЛЕНЬКИЙ ×2» не вміщається в чверть екрана. До 480px сітка 2×2,
+   ширше — один ряд, як решта сегментів форми. */
+.sizeGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 480px) {
+  .sizeGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 /* Підпис під назвою розпроданого розміру. */
 .soldOut { display: block; font-size: 8px; letter-spacing: .08em; color: var(--ck-error); }
 .segRow + .fieldError, .segRow + .fieldHint { margin-top: 10px; }

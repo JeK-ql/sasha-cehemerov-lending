@@ -24,7 +24,7 @@ describe('structuredData', () => {
   });
 
   it('Product.size відповідає SIZES з конфігу', () => {
-    expect(productLd(PRODUCTS.DROP01).size).toEqual(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ']);
+    expect(productLd(PRODUCTS.DROP01).size).toEqual(['МАЛЕНЬКИЙ', 'СЕРЕДНІЙ', 'ВЕЛИКИЙ', 'МАШИНА']);
   });
 
   it('return policy does not falsely claim free returns', () => {
@@ -38,7 +38,7 @@ describe('structuredData', () => {
       const ld = productLd(PRODUCTS.PEDAL01);
       expect(ld.name).toBe('Димна Суміш');
       expect(ld.sku).toBe('PEDAL01-DYMNA-SUMISH');
-      expect(ld.offers.price).toBe('13000');
+      expect(ld.offers.price).toBe(String(PRODUCTS.PEDAL01.price));
       expect(ld.offers.url).toContain('/pedal');
       expect(ld['@id']).toContain('#product-PEDAL01');
     });
@@ -49,6 +49,7 @@ describe('structuredData', () => {
         'МАЛЕНЬКИЙ',
         'СЕРЕДНІЙ',
         'ВЕЛИКИЙ',
+        'МАШИНА',
       ]);
     });
 

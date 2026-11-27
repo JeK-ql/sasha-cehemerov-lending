@@ -2,25 +2,28 @@
 
 import { useCheckout } from '@/components/Checkout/CheckoutProvider';
 import { useSoldOut } from '@/components/Checkout/useSoldOut';
+import { PromoPrice } from '@/components/PromoPrice/PromoPrice';
+import { PROMO_TITLE } from '@/lib/promo';
 import styles from './BuyOverlay.module.css';
 
 export function BuyOverlay() {
   const { open, product } = useCheckout();
   const soldOut = useSoldOut(product);
-  // Акційна плашка (lib/promo.ts). Над розпроданою кнопкою ціна нічого не
-  // обіцяє — ховаємо.
-  const showPromo = product.oldPrice !== undefined && !soldOut;
 
   return (
     <div className={styles.overlay}>
       <div className={styles.stack}>
-        {showPromo && (
+        {/* Акційна плашка (lib/promo.ts). Над розпроданою кнопкою ціна
+            нічого не обіцяє — ховаємо. */}
+        {product.oldPrice !== undefined && !soldOut && (
           <p className={styles.promo}>
-            <span className={styles.promoTitle}>Чорна пʼятниця</span>
+            <span className={styles.promoTitle}>{PROMO_TITLE}</span>
             <span className={styles.promoPrice}>
-              {product.price} ₴
-              <span className={styles.visuallyHidden}> замість </span>
-              <s className={styles.promoOld}>{product.oldPrice} ₴</s>
+              <PromoPrice
+                price={product.price}
+                oldPrice={product.oldPrice}
+                oldClassName={styles.promoOld}
+              />
             </span>
           </p>
         )}

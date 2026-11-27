@@ -10,7 +10,7 @@ const PAID_AT = new Date('2026-07-16T15:53:00Z');
 const npOrder: OrderDoc = {
   _id: 'DROP01-1784217334721',
   productId: 'DROP01',
-  sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 2 },
+  sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 2, МАШИНА: 0 },
   amount: 7800,
   status: 'paid',
   createdAt: PAID_AT,

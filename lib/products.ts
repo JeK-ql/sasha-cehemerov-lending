@@ -10,6 +10,8 @@ import { BLACK_FRIDAY } from './promo';
 
 const TEE_PRICE = 2600;
 const TEE_BLACK_FRIDAY_PRICE = 2300;
+const PEDAL_PRICE = 13000;
+const PEDAL_BLACK_FRIDAY_PRICE = 8500;
 
 export const PRODUCT_IDS = ['DROP01', 'PEDAL01'] as const;
 export type ProductId = (typeof PRODUCT_IDS)[number];
@@ -104,17 +106,19 @@ export const PRODUCTS: Record<ProductId, Product> = {
     name: 'too much яром too much долиною',
     brandName: 'Sasha Chemerov × Димна Суміш',
     paymentName: 'Футболка - too much яром too much долиною',
-    headerCaption: 'DROP 01 // МАЛЕНЬКИЙ · СЕРЕДНІЙ · ВЕЛИКИЙ',
+    headerCaption: 'DROP 01 // МАЛЕНЬКИЙ · СЕРЕДНІЙ · ВЕЛИКИЙ · МАШИНА',
     price: BLACK_FRIDAY ? TEE_BLACK_FRIDAY_PRICE : TEE_PRICE,
     ...(BLACK_FRIDAY ? { oldPrice: TEE_PRICE } : {}),
     currency: 'UAH',
     sku: 'DROP01-OVERSIZE',
     // Власні назви розмірів замість S/M/L — свідоме рішення команди
-    // (розміри не збігаються зі стандартними).
+    // (розміри не збігаються зі стандартними). Порядок — від меншого до
+    // більшого: МАШИНА — найбільший, наш XXL.
     variants: [
       { key: 'МАЛЕНЬКИЙ', label: 'МАЛЕНЬКИЙ' },
       { key: 'СЕРЕДНІЙ', label: 'СЕРЕДНІЙ' },
       { key: 'ВЕЛИКИЙ', label: 'ВЕЛИКИЙ' },
+      { key: 'МАШИНА', label: 'МАШИНА' },
     ],
     maxPerOrder: 10,
     showVariantPicker: true,
@@ -133,7 +137,8 @@ export const PRODUCTS: Record<ProductId, Product> = {
     brandName: 'Kosko FX × Саша Чемеров',
     paymentName: 'Педаль Kosko FX × Саша Чемеров - Димна Суміш',
     headerCaption: 'ДИМНА СУМІШ // LIMITED 10',
-    price: 13000,
+    price: BLACK_FRIDAY ? PEDAL_BLACK_FRIDAY_PRICE : PEDAL_PRICE,
+    ...(BLACK_FRIDAY ? { oldPrice: PEDAL_PRICE } : {}),
     currency: 'UAH',
     sku: 'PEDAL01-DYMNA-SUMISH',
     variants: [{ key: 'STANDARD', label: 'STANDARD' }],

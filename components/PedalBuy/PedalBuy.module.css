@@ -53,6 +53,40 @@
   transform: none;
 }
 
+/* ---------- Акційна плашка (lib/promo.ts) ---------- */
+/* Плашка тягнеться на ширину кнопки під нею: стовпчик inline-flex
+   розтягує дітей по найширшій — кнопці. */
+.stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.promo {
+  margin: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 16px 14px;
+  background: #0d0d0d;
+  text-align: center;
+}
+.promoTitle {
+  font-family: 'KyivTypeSans', system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 15px;
+  color: #cded16;
+}
+.promoPrice {
+  font-family: var(--font-oswald), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 24px; line-height: 1;
+  color: #fafafa;
+}
+.promoOld {
+  margin-left: 10px;
+  font-size: 15px; font-weight: 600;
+  color: #8a8a8a;
+}
+
 /* ---------- Липка панель знизу ---------- */
 /* z-index 30 — нижче модалки чекауту й екрана подяки (обидві на 60), щоб
    панель не вилазила поверх них. */
@@ -64,6 +98,8 @@
   z-index: 30;
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 16px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
   /* Напівпрозорий чорний: кислотний фон трохи просвічує, панель читається
      як частина сторінки, а не як банер поверх неї. */
@@ -92,10 +128,23 @@
   background: #fff;
   color: #0d0d0d;
 }
+/* Акційна ціна поруч із кнопкою панелі. */
+.stickyPrice {
+  font-family: var(--font-oswald), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 22px; line-height: 1;
+  color: #fafafa;
+  white-space: nowrap;
+}
 
 @media (min-width: 768px) {
   .buy { font-size: 36px; padding: 28px 68px; }
   .stickyBuy { font-size: 22px; padding: 16px 56px; }
+  .promo { padding: 14px 20px 16px; }
+  .promoTitle { font-size: 18px; }
+  .promoPrice { font-size: 30px; }
+  .promoOld { font-size: 18px; }
+  .stickyPrice { font-size: 26px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

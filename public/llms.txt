@@ -19,7 +19,7 @@
 - Name: Димна Суміш
 - Type: Guitar effects pedal — fuzz distortion / sustainer
 - Brand: Kosko FX × Саша Чемеров
-- Price: 13000 UAH
+- Price: 8500 UAH (Black Friday; regular price 13000 UAH)
 - SKU: PEDAL01-DYMNA-SUMISH
 - Availability: Limited edition, 10 units, handmade
 - Circuit: based on EarthQuaker Devices Hizumitas (Elk Big Muff Sustainar)

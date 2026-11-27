@@ -18,12 +18,13 @@ const product = PRODUCTS.PEDAL01;
 
 export const metadata: Metadata = {
   title: 'Димна Суміш - фузз-педаль Kosko FX × Саша Чемеров, лімітована серія 10 шт.',
+  // Ціна з реєстру — під час акції (lib/promo.ts) опис збігається з чекаутом.
   description:
-    'Фузз-дисторшн «Димна Суміш» на основі схеми EarthQuaker Devices Hizumitas. Ручна робота, тираж 10 екземплярів. 13000 ₴, доставка по Україні та за кордон.',
+    `Фузз-дисторшн «Димна Суміш» на основі схеми EarthQuaker Devices Hizumitas. Ручна робота, тираж 10 екземплярів. ${product.price} ₴, доставка по Україні та за кордон.`,
   alternates: { canonical: '/pedal' },
   openGraph: {
     title: 'Димна Суміш - фузз-педаль Kosko FX × Саша Чемеров',
-    description: 'Лімітована серія 10 екземплярів. Ручна робота. 13000 ₴.',
+    description: `Лімітована серія 10 екземплярів. Ручна робота. ${product.price} ₴.`,
     url: `${SITE_URL}${product.path}`,
     siteName: 'isusneisus.com',
     locale: 'uk_UA',

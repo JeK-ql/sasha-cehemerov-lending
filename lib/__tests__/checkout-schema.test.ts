@@ -6,7 +6,7 @@ const npOrder = {
   fullName: 'Чемеров Олександр',
   phone: '+380671234567',
   email: 'a@b.com',
-  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+  sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0, МАШИНА: 0 },
   deliveryMode: 'np' as const,
   city: 'Львів',
   cityRef: 'ref-1',
@@ -94,7 +94,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 3, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 3, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(true);
   });
@@ -102,14 +102,14 @@ describe('checkoutSchema - розміри (мультирозмірне замо
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 2, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 2, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(true);
   });
   it('rejects an all-zero order with the size message', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+      sizes: { МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -120,7 +120,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
   it('rejects more than 10 items total — first sizes issue is Ukrainian', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: 5, СЕРЕДНІЙ: 5, ВЕЛИКИЙ: 1 },
+      sizes: { МАЛЕНЬКИЙ: 5, СЕРЕДНІЙ: 5, ВЕЛИКИЙ: 1, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -136,7 +136,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
   it('rejects a negative count with a Ukrainian message, not Zod’s built-in English one', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: -1, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 },
+      sizes: { МАЛЕНЬКИЙ: -1, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -148,7 +148,7 @@ describe('checkoutSchema - розміри (мультирозмірне замо
   it('rejects a fractional count with a Ukrainian message, not Zod’s built-in English one', () => {
     const res = checkoutSchema.safeParse({
       ...npOrder,
-      sizes: { МАЛЕНЬКИЙ: 1.5, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+      sizes: { МАЛЕНЬКИЙ: 1.5, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
     });
     expect(res.success).toBe(false);
     if (!res.success) {
@@ -260,7 +260,7 @@ describe('checkoutSchema - вибір товару', () => {
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, ГІГАНТСЬКИЙ: 1 },
+        sizes: { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, МАШИНА: 0, ГІГАНТСЬКИЙ: 1 },
       }).success,
     ).toBe(false);
   });
@@ -313,13 +313,13 @@ describe('checkoutSchema - ліміт кількості залежить від
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(true);
     expect(
       checkoutSchema.safeParse({
         ...npOrder,
-        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0 },
+        sizes: { МАЛЕНЬКИЙ: 10, СЕРЕДНІЙ: 1, ВЕЛИКИЙ: 0, МАШИНА: 0 },
       }).success,
     ).toBe(false);
   });
@@ -331,6 +331,7 @@ describe('emptySizes', () => {
       МАЛЕНЬКИЙ: 0,
       СЕРЕДНІЙ: 0,
       ВЕЛИКИЙ: 0,
+      МАШИНА: 0,
     });
   });
 
@@ -340,9 +341,10 @@ describe('emptySizes', () => {
 });
 
 describe('restoreDraftSizes', () => {
-  it('чернетка з пʼятьма розмірами зводиться до трьох і проходить схему', () => {
+  it('чернетка з пʼятьма розмірами: ЛОНГ відкидається, МАШИНА лишається, схема проходить', () => {
     // Покупець відкривав форму, коли розмірів було пʼять: у localStorage
-    // лишились і ЛОНГ, і МАШИНА. Без приведення сервер відхилив би замовлення.
+    // лишився і ЛОНГ, якого більше немає. Без приведення сервер відхилив би
+    // замовлення.
     const sizes = restoreDraftSizes(PRODUCTS.DROP01, {
       МАЛЕНЬКИЙ: 0,
       СЕРЕДНІЙ: 2,
@@ -350,14 +352,20 @@ describe('restoreDraftSizes', () => {
       ВЕЛИКИЙ: 0,
       МАШИНА: 3,
     });
-    expect(sizes).toEqual({ МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0 });
+    expect(sizes).toEqual({ МАЛЕНЬКИЙ: 0, СЕРЕДНІЙ: 2, ВЕЛИКИЙ: 0, МАШИНА: 3 });
+    expect(checkoutSchema.safeParse({ ...npOrder, sizes }).success).toBe(true);
+  });
+
+  it('чернетка з трьома розмірами доповнюється МАШИНОЮ і проходить схему', () => {
+    const sizes = restoreDraftSizes(PRODUCTS.DROP01, { МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 });
+    expect(sizes).toEqual({ МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, МАШИНА: 0 });
     expect(checkoutSchema.safeParse({ ...npOrder, sizes }).success).toBe(true);
   });
 
   it('ключі, яких більше немає в реєстрі, і биті значення відкидаються', () => {
     expect(
       restoreDraftSizes(PRODUCTS.DROP01, { ГІГАНТСЬКИЙ: 3, СЕРЕДНІЙ: -1, ВЕЛИКИЙ: 1.5, МАЛЕНЬКИЙ: 1 }),
-    ).toEqual({ МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0 });
+    ).toEqual({ МАЛЕНЬКИЙ: 1, СЕРЕДНІЙ: 0, ВЕЛИКИЙ: 0, МАШИНА: 0 });
   });
 
   it('без чернетки — порожній стан', () => {

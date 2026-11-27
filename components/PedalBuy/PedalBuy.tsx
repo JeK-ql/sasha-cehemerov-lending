@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCheckout } from '@/components/Checkout/CheckoutProvider';
 import { useSoldOut } from '@/components/Checkout/useSoldOut';
+import { PromoPrice } from '@/components/PromoPrice/PromoPrice';
+import { PROMO_TITLE } from '@/lib/promo';
 import styles from './PedalBuy.module.css';
 
 /**
@@ -37,18 +39,32 @@ export function PedalBuy() {
   // над контентом нічого не додає, тільки з'їдає екран.
   const showSticky = !anchorSeen && !soldOut;
   const label = soldOut ? 'Розпродано' : 'Забрати';
+  // Акція (lib/promo.ts): плашка над основною кнопкою і ціна в липкій
+  // панелі — основна кнопка стоїть аж наприкінці зіна, а панель видно з
+  // першого екрана. Над розпроданою кнопкою ціна нічого не обіцяє.
+  const oldPrice = soldOut ? undefined : product.oldPrice;
 
   return (
     <>
       <div className={styles.wrap} ref={anchorRef}>
-        <button
-          className={styles.buy}
-          onClick={open}
-          disabled={soldOut}
-          data-sold-out={soldOut ? 'true' : undefined}
-        >
-          {label}
-        </button>
+        <div className={styles.stack}>
+          {oldPrice !== undefined && (
+            <p className={styles.promo}>
+              <span className={styles.promoTitle}>{PROMO_TITLE}</span>
+              <span className={styles.promoPrice}>
+                <PromoPrice price={product.price} oldPrice={oldPrice} oldClassName={styles.promoOld} />
+              </span>
+            </p>
+          )}
+          <button
+            className={styles.buy}
+            onClick={open}
+            disabled={soldOut}
+            data-sold-out={soldOut ? 'true' : undefined}
+          >
+            {label}
+          </button>
+        </div>
       </div>
       <div
         className={styles.sticky}
@@ -57,6 +73,11 @@ export function PedalBuy() {
         // скрінрідер не читав «Забрати» двічі.
         inert={!showSticky}
       >
+        {oldPrice !== undefined && (
+          <span className={styles.stickyPrice}>
+            <PromoPrice price={product.price} oldPrice={oldPrice} oldClassName={styles.promoOld} />
+          </span>
+        )}
         <button className={`${styles.buy} ${styles.stickyBuy}`} onClick={open}>
           {label}
         </button>
